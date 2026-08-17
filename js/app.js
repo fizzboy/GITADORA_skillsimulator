@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase.js';
 import {
   register, login, logout, changePassword, getSession,
@@ -26,7 +25,6 @@ function hide(id) { $(id).classList.add('hidden'); }
 
 function showAuth(mode = 'login') {
   currentAuthMode = mode;
-
   hide('appScreen');
   show('authScreen');
 
@@ -34,11 +32,8 @@ function showAuth(mode = 'login') {
   $('authTitle').textContent = isLogin ? 'ログイン' : '新規登録';
   $('authSubmit').textContent = isLogin ? 'ログイン' : '登録する';
   $('authSwitch').textContent = isLogin ? '新規登録はこちら' : 'ログインはこちら';
-
-  // data-mode は「次に切り替える画面」だけに使う
   $('authSwitch').dataset.mode = isLogin ? 'register' : 'login';
 
-  // 新規登録時のパスワードは自動生成なので入力不要
   $('authPassword').required = isLogin;
   $('authPassword').disabled = !isLogin;
   $('authPassword').value = '';
@@ -292,6 +287,40 @@ async function openMyPage() {
 
 function closeMyPage() { $('mypageModal').style.display = 'none'; }
 
+
+let pendingCredentialUsername = '';
+let pendingCredentialPassword = '';
+
+function showCredentialModal(username, password) {
+  pendingCredentialUsername = username;
+  pendingCredentialPassword = password;
+
+  $('credentialUsername').textContent = username;
+  $('credentialPassword').value = password;
+  $('copyStatus').textContent = '';
+  $('credentialModal').style.display = 'flex';
+}
+
+function closeCredentialModalAndPrepareLogin() {
+  $('credentialModal').style.display = 'none';
+  showAuth('login');
+  $('authUsername').value = pendingCredentialUsername;
+  $('authPassword').value = pendingCredentialPassword;
+}
+
+async function copyInitialPassword() {
+  const password = $('credentialPassword').value;
+  try {
+    await navigator.clipboard.writeText(password);
+    $('copyStatus').textContent = 'コピーしました';
+  } catch (_) {
+    $('credentialPassword').focus();
+    $('credentialPassword').select();
+    document.execCommand('copy');
+    $('copyStatus').textContent = 'コピーしました';
+  }
+}
+
 $('authForm').addEventListener('submit', async e => {
   e.preventDefault();
   const mode = currentAuthMode;
@@ -309,9 +338,11 @@ $('authForm').addEventListener('submit', async e => {
       }
 
       alert(`登録完了しました。\n\n登録名: ${username}\n初期パスワード: ${password}\n\nこのパスワードを保存してください。ログイン後、マイページから変更できます。`);
-      showAuth('login');
-      $('authUsername').value = username;
       $('authPassword').value = password;
+      $('authSwitch').dataset.mode = 'login';
+      $('authTitle').textContent = 'ログイン';
+      $('authSubmit').textContent = 'ログイン';
+      $('authSwitch').textContent = '新規登録はこちら';
     } else {
       await login(username, $('authPassword').value);
     }
@@ -321,6 +352,10 @@ $('authForm').addEventListener('submit', async e => {
     $('authSubmit').disabled = false;
   }
 });
+
+
+$('btnCopyPassword').addEventListener('click', copyInitialPassword);
+$('btnUseCredentials').addEventListener('click', closeCredentialModalAndPrepareLogin);
 
 $('authSwitch').addEventListener('click', () => {
   showAuth($('authSwitch').dataset.mode);
