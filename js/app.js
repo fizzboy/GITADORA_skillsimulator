@@ -1,7 +1,7 @@
 import { supabase } from './supabase.js';
 import {
   register, login, logout, changePassword, getSession,
-  generateInitialPassword, validateUsername
+  validateUsername
 } from './auth.js';
 import { PARTS, searchSongs, getSongByTitleAndPart } from './songs.js';
 import {
@@ -34,10 +34,15 @@ function showAuth(mode = 'login') {
   $('authSwitch').textContent = isLogin ? '新規登録はこちら' : 'ログインはこちら';
   $('authSwitch').dataset.mode = isLogin ? 'register' : 'login';
 
-  $('authPassword').required = isLogin;
-  $('authPassword').disabled = !isLogin;
+  $('authPassword').disabled = false;
+  $('authPassword').required = true;
   $('authPassword').value = '';
-  $('authPassword').placeholder = isLogin ? 'パスワードを入力' : '登録時に自動生成されます';
+  $('authPassword').placeholder = isLogin ? 'パスワードを入力' : '8文字以上で設定';
+  $('authPassword').autocomplete = isLogin ? 'current-password' : 'new-password';
+
+  $('authPasswordConfirmGroup').classList.toggle('hidden', isLogin);
+  $('authPasswordConfirm').required = !isLogin;
+  $('authPasswordConfirm').value = '';
 }
 
 function showApp(session) {
@@ -288,58 +293,43 @@ async function openMyPage() {
 function closeMyPage() { $('mypageModal').style.display = 'none'; }
 
 
-let pendingCredentialUsername = '';
-let pendingCredentialPassword = '';
-
-function showCredentialModal(username, password) {
-  pendingCredentialUsername = username;
-  pendingCredentialPassword = password;
-
-  $('credentialUsername').textContent = username;
-  $('credentialPassword').value = password;
-  $('copyStatus').textContent = '';
-  $('credentialModal').style.display = 'flex';
-}
-
-function closeCredentialModalAndPrepareLogin() {
-  $('credentialModal').style.display = 'none';
-  showAuth('login');
-  $('authUsername').value = pendingCredentialUsername;
-  $('authPassword').value = pendingCredentialPassword;
-}
-
-async function copyInitialPassword() {
-  const password = $('credentialPassword').value;
-  try {
-    await navigator.clipboard.writeText(password);
-    $('copyStatus').textContent = 'コピーしました';
-  } catch (_) {
-    $('credentialPassword').focus();
-    $('credentialPassword').select();
-    document.execCommand('copy');
-    $('copyStatus').textContent = 'コピーしました';
-  }
-}
 
 $('authForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const mode = currentAuthMode;
   const username = $('authUsername').value.trim();
+  const password = $('authPassword').value;
+
   try {
     $('authSubmit').disabled = true;
+
     if (mode === 'register') {
-      if (!validateUsername(username)) throw new Error('登録名は半角英数字と _ を使用して3〜32文字で入力してください。');
-      const password = generateInitialPassword();
+      if (!validateUsername(username)) {
+        throw new Error('登録名は半角英数字と _ を使用して3〜32文字で入力してください。');
+      }
+
+      if (password.length < 8) {
+        throw new Error('パスワードは8文字以上で設定してください。');
+      }
+
+      const confirmPassword = $('authPasswordConfirm').value;
+      if (password !== confirmPassword) {
+        throw new Error('確認用パスワードが一致していません。');
+      }
+
       const result = await register(username, password);
 
-      // Email confirmation must be disabled in Supabase for this username-only flow.
       if (result.user && !result.session) {
         throw new Error('Supabase側でメール確認が有効です。Authentication > Providers > Email の Confirm email をOFFにしてください。');
       }
 
-      showCredentialModal(username, password);
+      // Confirm email がOFFなら登録と同時にログイン状態になるため、そのままTOPへ。
+      if (result.session) {
+        showApp(result.session);
+      }
     } else {
-      await login(username, $('authPassword').value);
+      await login(username, password);
     }
   } catch (err) {
     alert(err.message || String(err));
@@ -349,8 +339,6 @@ $('authForm').addEventListener('submit', async e => {
 });
 
 
-$('btnCopyPassword').addEventListener('click', copyInitialPassword);
-$('btnUseCredentials').addEventListener('click', closeCredentialModalAndPrepareLogin);
 
 $('authSwitch').addEventListener('click', () => {
   showAuth($('authSwitch').dataset.mode);
