@@ -1,4 +1,3 @@
-
 import { supabase } from './supabase.js';
 
 export function calcSkill(level, achievementRate) {
@@ -27,17 +26,25 @@ export async function getMyScores() {
   return data ?? [];
 }
 
-export async function saveScore({ scoreId, songId, achievementRate }) {
+export async function saveScore({ scoreId, songId, achievementRate, fc = '', playOption = 'NORMAL' }) {
   const rate = Number(achievementRate);
   if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
     throw new Error('達成率は0.00〜100.00の範囲で入力してください。');
   }
+
   const roundedRate = Math.floor((rate + Number.EPSILON) * 100) / 100;
+  const normalizedFc = fc || null;
+  const normalizedOption = playOption || 'NORMAL';
 
   if (scoreId) {
     const { data, error } = await supabase
       .from('user_scores')
-      .update({ song_id: songId, achievement_rate: roundedRate })
+      .update({
+        song_id: songId,
+        achievement_rate: roundedRate,
+        fc: normalizedFc,
+        play_option: normalizedOption
+      })
       .eq('id', scoreId)
       .select('id')
       .single();
@@ -53,7 +60,9 @@ export async function saveScore({ scoreId, songId, achievementRate }) {
     .upsert({
       user_id: userData.user.id,
       song_id: songId,
-      achievement_rate: roundedRate
+      achievement_rate: roundedRate,
+      fc: normalizedFc,
+      play_option: normalizedOption
     }, { onConflict: 'user_id,song_id' })
     .select('id')
     .single();
