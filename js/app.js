@@ -407,7 +407,21 @@ document.addEventListener('click', async e => {
 
 $('headerUsername').addEventListener('click', openMyPage);
 $('btnLogout').addEventListener('click', async () => {
-  try { await logout(); } catch (e) { alert(e.message); }
+  try {
+    // ログアウト前にマイページを閉じ、表示中の個人情報を消す
+    closeMyPage();
+    $('mypageUsername').textContent = '';
+    $('newPassword').value = '';
+
+    // 画面側の保持データもクリア
+    scores = [];
+    editingScoreId = null;
+    selectedSong = null;
+
+    await logout();
+  } catch (e) {
+    alert(e.message);
+  }
 });
 $('btnCloseMypage').addEventListener('click', closeMyPage);
 $('btnChangePassword').addEventListener('click', async () => {
