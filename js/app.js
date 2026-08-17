@@ -1,19 +1,21 @@
 import { supabase } from './supabase.js';
-import {
-  register, login, logout, changePassword, getSession,
-  validateUsername
-} from './auth.js';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js';
 import { PARTS, searchSongs, getSongByTitleAndPart } from './songs.js';
-import {
-  calcSkill, formatLevel, formatRate, formatSkill,
-  getMyScores, saveScore, deleteScore
-} from './scores.js';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js';
+import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, accountAdmin } from './admin.js';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
 let scores = [];
 let editingScoreId = null;
 let selectedSong = null;
+
+let adminEnabled = false;
+let adminTab = 'songs';
+let adminSongs = [];
+let adminUsers = [];
+let adminEditingSongId = null;
+let adminPasswordUserId = null;
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -34,8 +36,8 @@ function showAuth(mode = 'login') {
   $('authSwitch').textContent = isLogin ? '新規登録はこちら' : 'ログインはこちら';
   $('authSwitch').dataset.mode = isLogin ? 'register' : 'login';
 
-  $('authPassword').disabled = false;
   $('authPassword').required = true;
+  $('authPassword').disabled = false;
   $('authPassword').value = '';
   $('authPassword').placeholder = isLogin ? 'パスワードを入力' : '8文字以上で設定';
   $('authPassword').autocomplete = isLogin ? 'current-password' : 'new-password';
@@ -45,22 +47,30 @@ function showAuth(mode = 'login') {
   $('authPasswordConfirm').value = '';
 }
 
-function showApp(session) {
+async function showApp(session) {
   hide('authScreen');
   show('appScreen');
-  $('headerUsername').textContent = session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || '';
-  loadScores();
+  $('headerUsername').textContent =
+    session?.user?.user_metadata?.username ||
+    session?.user?.email?.split('@')[0] || '';
+
+  await Promise.all([loadScores(), checkAdminAccess()]);
 }
 
 async function init() {
   $('partSelect').innerHTML = PARTS.map(p => `<option value="${p}">${p}</option>`).join('');
   const session = await getSession();
-  if (session) showApp(session);
+  if (session) await showApp(session);
   else showAuth('login');
 
-  supabase.auth.onAuthStateChange((_event, session) => {
-    if (session) showApp(session);
-    else showAuth('login');
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session) await showApp(session);
+    else {
+      adminEnabled = false;
+      $('btnAdmin').classList.add('hidden');
+      closeAdmin();
+      showAuth('login');
+    }
   });
 }
 
@@ -74,17 +84,19 @@ async function loadScores() {
   }
 }
 
-function getFilteredScores() {
-  const keyword = $('domSearch').value.trim().toLowerCase();
-  return scores.filter(r => {
-    if (keyword && !r.title.toLowerCase().includes(keyword)) return false;
-    return true;
-  });
-}
-
 function totals() {
-  const hot = scores.filter(s => s.is_hot).reduce((a, b) => a + Number(b.skill), 0);
-  const other = scores.filter(s => !s.is_hot).reduce((a, b) => a + Number(b.skill), 0);
+  const hotTop25 = scores
+    .filter(s => s.is_hot)
+    .sort((a,b) => Number(b.skill) - Number(a.skill))
+    .slice(0,25);
+
+  const otherTop25 = scores
+    .filter(s => !s.is_hot)
+    .sort((a,b) => Number(b.skill) - Number(a.skill))
+    .slice(0,25);
+
+  const hot = hotTop25.reduce((sum, s) => sum + Number(s.skill), 0);
+  const other = otherTop25.reduce((sum, s) => sum + Number(s.skill), 0);
   return { hot, other, total: hot + other };
 }
 
@@ -132,6 +144,7 @@ function createCard(record, index, mode = 'MANAGE') {
   const fcBadge = getFcBadgeMarkup(record.fc);
   const optionBadge = getOptionBadgeMarkup(record.play_option);
   const hotTag = getHotTagMarkup(record.is_hot);
+
   let boxColor = '';
   if (skill >= 180) boxColor = 'm-box-deep-rainbow';
   else if (skill >= 170) boxColor = 'm-box-rainbow';
@@ -188,22 +201,28 @@ function createCard(record, index, mode = 'MANAGE') {
 }
 
 function renderSkill() {
-  const sorted = [...scores].sort((a, b) => Number(b.skill) - Number(a.skill));
-  const hot = sorted.filter(s => s.is_hot).slice(0, 25);
-  const other = sorted.filter(s => !s.is_hot).slice(0, 25);
+  const sorted = [...scores].sort((a,b) => Number(b.skill) - Number(a.skill));
+  const hot = sorted.filter(s => s.is_hot).slice(0,25);
+  const other = sorted.filter(s => !s.is_hot).slice(0,25);
 
   $('viewSkill').innerHTML = `
     <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
-      ${hot.map((r, i) => createCard(r, i + 1, 'SKILL')).join('')}
+      ${hot.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
     </div></div>
     <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
-      ${other.map((r, i) => createCard(r, i + 1, 'SKILL')).join('')}
+      ${other.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
     </div></div>`;
 }
 
 function renderManage() {
-  const data = getFilteredScores().sort((a, b) => Number(b.skill) - Number(a.skill));
-  $('viewAllManage').innerHTML = data.map((r, i) => createCard(r, i + 1)).join('');
+  const keyword = $('domSearch').value.trim().toLowerCase();
+  const data = scores
+    .filter(r => !keyword || r.title.toLowerCase().includes(keyword))
+    .sort((a,b) => Number(b.skill) - Number(a.skill));
+
+  $('viewAllManage').innerHTML =
+    data.map((r,i) => createCard(r,i+1)).join('') ||
+    '<div class="empty-state">登録データがありません</div>';
 }
 
 function render() {
@@ -211,9 +230,11 @@ function render() {
   $('txtHotTotal').textContent = formatSkill(t.hot);
   $('txtOtherTotal').textContent = formatSkill(t.other);
   $('txtGrandTotal').textContent = formatSkill(t.total);
-  tintHeaderValues(t.hot, t.other, t.total);
+  tintHeaderValues(t.hot,t.other,t.total);
 
-  ['viewSkill','viewAllManage'].forEach(id => hide(id));
+  hide('viewSkill');
+  hide('viewAllManage');
+
   if (activeTabName === 'SKILL') {
     show('viewSkill');
     renderSkill();
@@ -225,26 +246,36 @@ function render() {
 
 function switchTab(tab) {
   activeTabName = tab;
-  document.querySelectorAll('.p-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.p-tab-btn').forEach(
+    b => b.classList.toggle('active', b.dataset.tab === tab)
+  );
   $('domSearch').value = '';
   $('searchArea').classList.toggle('hidden', tab === 'SKILL');
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
   render();
 }
 
 function openScoreModal(score = null) {
   editingScoreId = score?.score_id || null;
-  selectedSong = score ? { id: score.song_id, title: score.title, part: score.part, level: score.level } : null;
-  $('domModalTitle').textContent = score ? '登録情報の編集' : '曲の新規追加';
+  selectedSong = score ? {
+    id: score.song_id,
+    title: score.title,
+    part: score.part,
+    level: score.level,
+    is_hot: score.is_hot
+  } : null;
+
+  $('domModalTitle').textContent = score ? '登録情報の編集' : 'スコア登録';
   $('formTitle').value = score?.title || '';
-  $('partSelect').value = score?.part || 'MAS-G';
-  $('formRate').value = score ? formatRate(score.achievement_rate) : '';
+  $('partSelect').value = score?.part || 'EXT-G';
   $('formLevel').value = score ? formatLevel(score.level) : '';
+  $('formRate').value = score ? formatRate(score.achievement_rate) : '';
   $('formFc').value = score?.fc || '';
   $('formOption').value = score?.play_option || 'NORMAL';
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
   $('songSuggestions').innerHTML = '';
   $('domModal').style.display = 'flex';
+
   if (!score) $('formTitle').focus();
 }
 
@@ -257,13 +288,28 @@ function closeModal() {
 async function suggestSongs() {
   const title = $('formTitle').value.trim();
   const part = $('partSelect').value;
-  if (!title) { $('songSuggestions').innerHTML = ''; return; }
+
+  selectedSong = null;
+  $('formLevel').value = '';
+  updateSkillPreview();
+
+  if (!title) {
+    $('songSuggestions').innerHTML = '';
+    return;
+  }
+
   try {
-    const rows = await searchSongs(title, part);
+    const rows = await searchSongs(title,part);
     $('songSuggestions').innerHTML = rows.map(r => `
-      <button class="suggestion" data-song-id="${r.id}" data-title="${esc(r.title)}" data-part="${r.part}" data-level="${r.level}" data-is-hot="${r.is_hot ? '1' : '0'}">
-        ${r.is_hot ? '[HOT] ' : ''}${esc(r.title)} <span>${r.part} / Lv ${formatLevel(r.level)}</span>
-      </button>`).join('');
+      <button class="suggestion"
+        data-song-id="${r.id}"
+        data-title="${esc(r.title)}"
+        data-part="${r.part}"
+        data-level="${r.level}"
+        data-is-hot="${r.is_hot ? '1':'0'}">
+        <span>${r.is_hot ? '[HOT] ' : ''}${esc(r.title)}</span>
+        <span>${r.part} / Lv ${formatLevel(r.level)}</span>
+      </button>`).join('') || '<div class="empty-state">該当する譜面がありません</div>';
   } catch (e) {
     console.error(e);
   }
@@ -274,43 +320,50 @@ function selectSong(song) {
   $('formTitle').value = song.title;
   $('partSelect').value = song.part;
   $('formLevel').value = formatLevel(song.level);
-  updateSkillPreview();
   $('songSuggestions').innerHTML = '';
+  updateSkillPreview();
 }
 
 function updateSkillPreview() {
   const level = Number($('formLevel').value);
-  const rate = Number($('formRate').value);
+  const rateText = $('formRate').value;
+  const rate = Number(rateText);
+
   $('formSkill').textContent =
-    Number.isFinite(level) && Number.isFinite(rate) ? formatSkill(calcSkill(level, rate)) : '-';
+    $('formLevel').value && rateText !== '' && Number.isFinite(level) && Number.isFinite(rate)
+      ? formatSkill(calcSkill(level,rate))
+      : '-';
 }
 
 async function submitScore() {
   const title = $('formTitle').value.trim();
   const part = $('partSelect').value;
   const rate = $('formRate').value;
-  const fc = $('formFc').value;
-  const playOption = $('formOption').value;
 
   if (!title) throw new Error('曲名を入力してください。');
+  if (rate === '') throw new Error('達成率を入力してください。');
 
   if (!selectedSong || selectedSong.title !== title || selectedSong.part !== part) {
-    selectedSong = await getSongByTitleAndPart(title, part);
+    selectedSong = await getSongByTitleAndPart(title,part);
   }
-  if (!selectedSong) throw new Error('曲名とパートに一致する曲データがありません。');
+
+  if (!selectedSong) {
+    throw new Error('曲名とPartに一致する曲マスターがありません。候補から曲を選択してください。');
+  }
 
   await saveScore({
     scoreId: editingScoreId,
     songId: selectedSong.id,
     achievementRate: rate,
-    fc,
-    playOption
+    fc: $('formFc').value,
+    playOption: $('formOption').value
   });
 
   closeModal();
   await loadScores();
 }
 
+/* ---------- マイページ ---------- */
 async function openMyPage() {
   const { data } = await supabase.auth.getUser();
   $('mypageUsername').textContent = data.user?.user_metadata?.username || '';
@@ -318,10 +371,162 @@ async function openMyPage() {
   $('mypageModal').style.display = 'flex';
 }
 
-function closeMyPage() { $('mypageModal').style.display = 'none'; }
+function closeMyPage() {
+  $('mypageModal').style.display = 'none';
+}
 
+async function deleteOwnAccount() {
+  const ok1 = confirm('アカウントを削除します。登録したスコアもすべて削除されます。よろしいですか？');
+  if (!ok1) return;
+  const typed = prompt('確認のため「削除」と入力してください。');
+  if (typed !== '削除') return;
 
+  try {
+    $('btnDeleteAccount').disabled = true;
+    await accountAdmin('delete_self');
+    try { await logout(); } catch (_) {}
+    closeMyPage();
+    scores = [];
+    showAuth('login');
+    alert('アカウントを削除しました。');
+  } catch (e) {
+    alert('アカウント削除に失敗しました: ' + e.message);
+  } finally {
+    $('btnDeleteAccount').disabled = false;
+  }
+}
 
+/* ---------- 管理者 ---------- */
+async function checkAdminAccess() {
+  try {
+    adminEnabled = await isAdmin();
+  } catch (e) {
+    console.error('管理者判定エラー:', e);
+    adminEnabled = false;
+  }
+  $('btnAdmin').classList.toggle('hidden', !adminEnabled);
+}
+
+async function openAdmin() {
+  if (!adminEnabled) return;
+  $('adminModal').style.display = 'block';
+  await switchAdminTab('songs');
+}
+
+function closeAdmin() {
+  $('adminModal').style.display = 'none';
+  $('adminSongFormMask').style.display = 'none';
+  $('adminPasswordMask').style.display = 'none';
+}
+
+async function switchAdminTab(tab) {
+  adminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(
+    b => b.classList.toggle('active', b.dataset.adminTab === tab)
+  );
+  $('adminSongToolbar').classList.toggle('hidden', tab !== 'songs');
+  $('adminUserToolbar').classList.toggle('hidden', tab !== 'users');
+
+  if (tab === 'songs') await loadAdminSongs();
+  else await loadAdminUsers();
+}
+
+async function loadAdminSongs() {
+  $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
+  try {
+    adminSongs = await getAdminSongs($('adminSongSearch').value);
+    $('adminBody').innerHTML = adminSongs.map(song => `
+      <div class="admin-card">
+        <div class="admin-card-top">
+          ${song.is_hot ? '<span class="hot-tag">HOT</span>' : ''}
+          <div class="admin-card-title">${esc(song.title)}</div>
+          <div class="admin-actions">
+            <button class="admin-edit" data-admin-edit-song="${song.id}">編集</button>
+            <button class="admin-delete" data-admin-delete-song="${song.id}">削除</button>
+          </div>
+        </div>
+        <div class="admin-card-meta">
+          <span>${song.part}</span>
+          <span>Lv ${formatLevel(song.level)}</span>
+        </div>
+      </div>`).join('') || '<div class="empty-state">該当する曲がありません</div>';
+  } catch (e) {
+    $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
+  }
+}
+
+async function loadAdminUsers() {
+  $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
+  try {
+    adminUsers = await getAdminUsers($('adminUserSearch').value);
+    $('adminBody').innerHTML = adminUsers.map(user => `
+      <div class="admin-card">
+        <div class="admin-card-top">
+          <div class="admin-card-title">${esc(user.username)}</div>
+          <div class="admin-actions">
+            <button class="admin-reset" data-admin-reset-user="${user.id}">PW変更</button>
+            <button class="admin-delete" data-admin-delete-user="${user.id}">削除</button>
+          </div>
+        </div>
+        <div class="admin-card-meta">
+          <span>${new Date(user.created_at).toLocaleString('ja-JP')}</span>
+        </div>
+      </div>`).join('') || '<div class="empty-state">該当するユーザーがいません</div>';
+  } catch (e) {
+    $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
+  }
+}
+
+function openAdminSongForm(song = null) {
+  adminEditingSongId = song?.id || null;
+  $('adminSongFormTitle').textContent = song ? '曲マスター編集' : '曲マスター追加';
+  $('adminFormTitle').value = song?.title || '';
+  $('adminFormPart').value = song?.part || 'EXT-G';
+  $('adminFormLevel').value = song ? formatLevel(song.level) : '';
+  $('adminFormHot').checked = Boolean(song?.is_hot);
+  $('adminSongFormMask').style.display = 'flex';
+}
+
+function closeAdminSongForm() {
+  $('adminSongFormMask').style.display = 'none';
+  adminEditingSongId = null;
+}
+
+async function submitAdminSong() {
+  await saveMasterSong({
+    id: adminEditingSongId,
+    isHot: $('adminFormHot').checked,
+    title: $('adminFormTitle').value,
+    part: $('adminFormPart').value,
+    level: $('adminFormLevel').value
+  });
+  closeAdminSongForm();
+  await loadAdminSongs();
+}
+
+function openAdminPassword(userId) {
+  const user = adminUsers.find(u => u.id === userId);
+  if (!user) return;
+  adminPasswordUserId = userId;
+  $('adminPasswordUsername').textContent = user.username;
+  $('adminPasswordValue').value = '';
+  $('adminPasswordMask').style.display = 'flex';
+}
+
+function closeAdminPassword() {
+  $('adminPasswordMask').style.display = 'none';
+  adminPasswordUserId = null;
+}
+
+async function submitAdminPassword() {
+  const password = $('adminPasswordValue').value;
+  if (password.length < 8) throw new Error('パスワードは8文字以上にしてください。');
+  await accountAdmin('set_password', { target_user_id: adminPasswordUserId, password });
+  closeAdminPassword();
+  alert('パスワードを変更しました。');
+}
+
+/* ---------- イベント ---------- */
 $('authForm').addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -336,41 +541,27 @@ $('authForm').addEventListener('submit', async e => {
       if (!validateUsername(username)) {
         throw new Error('登録名は半角英数字と _ を使用して3〜32文字で入力してください。');
       }
-
-      if (password.length < 8) {
-        throw new Error('パスワードは8文字以上で設定してください。');
-      }
-
-      const confirmPassword = $('authPasswordConfirm').value;
-      if (password !== confirmPassword) {
+      if (password.length < 8) throw new Error('パスワードは8文字以上で設定してください。');
+      if (password !== $('authPasswordConfirm').value) {
         throw new Error('確認用パスワードが一致していません。');
       }
 
-      const result = await register(username, password);
-
+      const result = await register(username,password);
       if (result.user && !result.session) {
-        throw new Error('Supabase側でメール確認が有効です。Authentication > Providers > Email の Confirm email をOFFにしてください。');
+        throw new Error('Supabase側でメール確認が有効です。Confirm email をOFFにしてください。');
       }
-
-      // Confirm email がOFFなら登録と同時にログイン状態になるため、そのままTOPへ。
-      if (result.session) {
-        showApp(result.session);
-      }
+      if (result.session) await showApp(result.session);
     } else {
-      await login(username, password);
+      await login(username,password);
     }
-  } catch (err) {
-    alert(err.message || String(err));
+  } catch (e) {
+    alert(e.message || String(e));
   } finally {
     $('authSubmit').disabled = false;
   }
 });
 
-
-
-$('authSwitch').addEventListener('click', () => {
-  showAuth($('authSwitch').dataset.mode);
-});
+$('authSwitch').addEventListener('click', () => showAuth($('authSwitch').dataset.mode));
 
 document.querySelectorAll('.p-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -379,7 +570,7 @@ document.querySelectorAll('.p-tab-btn').forEach(btn => {
 $('domSearch').addEventListener('input', renderManage);
 $('btnHeaderAdd').addEventListener('click', () => openScoreModal());
 $('formTitle').addEventListener('input', suggestSongs);
-$('partSelect').addEventListener('change', () => { selectedSong = null; suggestSongs(); });
+$('partSelect').addEventListener('change', suggestSongs);
 $('formRate').addEventListener('input', updateSkillPreview);
 $('btnSubmitForm').addEventListener('click', async () => {
   try {
@@ -393,10 +584,85 @@ $('btnSubmitForm').addEventListener('click', async () => {
 });
 $('btnCancelForm').addEventListener('click', closeModal);
 
+$('headerUsername').addEventListener('click', openMyPage);
+$('btnCloseMypage').addEventListener('click', closeMyPage);
+$('btnDeleteAccount').addEventListener('click', deleteOwnAccount);
+
+$('btnLogout').addEventListener('click', async () => {
+  try {
+    closeMyPage();
+    scores = [];
+    editingScoreId = null;
+    selectedSong = null;
+    await logout();
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+$('btnChangePassword').addEventListener('click', async () => {
+  const password = $('newPassword').value;
+  if (password.length < 8) return alert('パスワードは8文字以上にしてください。');
+  try {
+    await changePassword(password);
+    alert('パスワードを変更しました。');
+    closeMyPage();
+  } catch (e) {
+    alert('変更に失敗しました: ' + e.message);
+  }
+});
+
+$('btnAdmin').addEventListener('click', openAdmin);
+$('btnCloseAdmin').addEventListener('click', closeAdmin);
+
+document.querySelectorAll('.admin-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchAdminTab(btn.dataset.adminTab));
+});
+
+let adminSongSearchTimer = null;
+$('adminSongSearch').addEventListener('input', () => {
+  clearTimeout(adminSongSearchTimer);
+  adminSongSearchTimer = setTimeout(loadAdminSongs,250);
+});
+let adminUserSearchTimer = null;
+$('adminUserSearch').addEventListener('input', () => {
+  clearTimeout(adminUserSearchTimer);
+  adminUserSearchTimer = setTimeout(loadAdminUsers,250);
+});
+
+$('btnAdminAddSong').addEventListener('click', () => openAdminSongForm());
+$('btnAdminCancelSong').addEventListener('click', closeAdminSongForm);
+$('btnAdminSaveSong').addEventListener('click', async () => {
+  try {
+    $('btnAdminSaveSong').disabled = true;
+    await submitAdminSong();
+  } catch (e) {
+    alert('保存に失敗しました: ' + e.message);
+  } finally {
+    $('btnAdminSaveSong').disabled = false;
+  }
+});
+
+$('btnAdminPasswordCancel').addEventListener('click', closeAdminPassword);
+$('btnAdminPasswordSave').addEventListener('click', async () => {
+  try {
+    $('btnAdminPasswordSave').disabled = true;
+    await submitAdminPassword();
+  } catch (e) {
+    alert('変更に失敗しました: ' + e.message);
+  } finally {
+    $('btnAdminPasswordSave').disabled = false;
+  }
+});
+
 document.addEventListener('click', async e => {
+  const suggestion = e.target.closest('.suggestion');
   const edit = e.target.closest('[data-edit]');
   const del = e.target.closest('[data-delete]');
-  const suggestion = e.target.closest('.suggestion');
+  const adminEditSong = e.target.closest('[data-admin-edit-song]');
+  const adminDeleteSong = e.target.closest('[data-admin-delete-song]');
+  const adminDeleteUser = e.target.closest('[data-admin-delete-user]');
+  const adminResetUser = e.target.closest('[data-admin-reset-user]');
 
   if (suggestion) {
     selectSong({
@@ -407,49 +673,53 @@ document.addEventListener('click', async e => {
       is_hot: suggestion.dataset.isHot === '1'
     });
   }
+
   if (edit) {
     const score = scores.find(s => s.score_id === edit.dataset.edit);
     if (score) openScoreModal(score);
   }
+
   if (del) {
-    if (!confirm('このデータを削除しますか？')) return;
+    if (!confirm('この登録データを削除しますか？')) return;
     try {
       await deleteScore(del.dataset.delete);
       await loadScores();
-    } catch (err) {
-      alert('削除に失敗しました: ' + err.message);
+    } catch (e) {
+      alert('削除に失敗しました: ' + e.message);
     }
   }
-});
 
-$('headerUsername').addEventListener('click', openMyPage);
-$('btnLogout').addEventListener('click', async () => {
-  try {
-    // ログアウト前にマイページを閉じ、表示中の個人情報を消す
-    closeMyPage();
-    $('mypageUsername').textContent = '';
-    $('newPassword').value = '';
-
-    // 画面側の保持データもクリア
-    scores = [];
-    editingScoreId = null;
-    selectedSong = null;
-
-    await logout();
-  } catch (e) {
-    alert(e.message);
+  if (adminEditSong) {
+    const song = adminSongs.find(s => s.id === adminEditSong.dataset.adminEditSong);
+    if (song) openAdminSongForm(song);
   }
-});
-$('btnCloseMypage').addEventListener('click', closeMyPage);
-$('btnChangePassword').addEventListener('click', async () => {
-  const password = $('newPassword').value;
-  if (password.length < 8) return alert('パスワードは8文字以上にしてください。');
-  try {
-    await changePassword(password);
-    alert('パスワードを変更しました。');
-    closeMyPage();
-  } catch (e) {
-    alert('変更に失敗しました: ' + e.message);
+
+  if (adminDeleteSong) {
+    const song = adminSongs.find(s => s.id === adminDeleteSong.dataset.adminDeleteSong);
+    if (!song) return;
+    if (!confirm(`「${song.title} / ${song.part}」を曲マスターから削除しますか？\nこの譜面を登録しているユーザーの記録も削除されます。`)) return;
+    try {
+      await deleteMasterSong(song.id);
+      await loadAdminSongs();
+    } catch (e) {
+      alert('削除に失敗しました: ' + e.message);
+    }
+  }
+
+  if (adminDeleteUser) {
+    const user = adminUsers.find(u => u.id === adminDeleteUser.dataset.adminDeleteUser);
+    if (!user) return;
+    if (!confirm(`ユーザー「${user.username}」を削除しますか？\n登録スコアも削除され、元に戻せません。`)) return;
+    try {
+      await accountAdmin('delete_user', { target_user_id: user.id });
+      await loadAdminUsers();
+    } catch (e) {
+      alert('ユーザー削除に失敗しました: ' + e.message);
+    }
+  }
+
+  if (adminResetUser) {
+    openAdminPassword(adminResetUser.dataset.adminResetUser);
   }
 });
 
