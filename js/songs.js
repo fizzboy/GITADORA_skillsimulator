@@ -7,7 +7,7 @@ export async function searchSongs(keyword = '', part = '') {
     .from('songs')
     .select('id,is_hot,title,part,level')
     .order('title', { ascending: true })
-    .limit(30);
+    .limit(50);
 
   if (keyword.trim()) query = query.ilike('title', `%${keyword.trim()}%`);
   if (part) query = query.eq('part', part);
@@ -24,17 +24,6 @@ export async function getSongByTitleAndPart(title, part) {
     .eq('title', title)
     .eq('part', part)
     .maybeSingle();
-
   if (error) throw error;
   return data;
-}
-
-export async function getAllSongs() {
-  const { data, error } = await supabase
-    .from('songs')
-    .select('id,is_hot,title,part,level')
-    .order('title', { ascending: true });
-
-  if (error) throw error;
-  return data ?? [];
 }
