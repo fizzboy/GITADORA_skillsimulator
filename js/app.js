@@ -77,16 +77,14 @@ async function loadScores() {
 function getFilteredScores() {
   const keyword = $('domSearch').value.trim().toLowerCase();
   return scores.filter(r => {
-    if (activeTabName === 'HOT' && r.type !== 'HOT') return false;
-    if (activeTabName === 'OTHER' && r.type !== 'OTHER') return false;
     if (keyword && !r.title.toLowerCase().includes(keyword)) return false;
     return true;
   });
 }
 
 function totals() {
-  const hot = scores.filter(s => s.type === 'HOT').reduce((a, b) => a + Number(b.skill), 0);
-  const other = scores.filter(s => s.type === 'OTHER').reduce((a, b) => a + Number(b.skill), 0);
+  const hot = scores.filter(s => s.is_hot).reduce((a, b) => a + Number(b.skill), 0);
+  const other = scores.filter(s => !s.is_hot).reduce((a, b) => a + Number(b.skill), 0);
   return { hot, other, total: hot + other };
 }
 
@@ -110,8 +108,30 @@ function getPartColorClass(part) {
   return '';
 }
 
+function getFcBadgeMarkup(fc) {
+  return fc ? `<span class="fc-unified-badge ${fc.toLowerCase()}">${esc(fc)}</span>` : '';
+}
+
+function getOptionBadgeMarkup(option) {
+  const value = option || 'NORMAL';
+  if (value === 'NORMAL') return '';
+  const cls =
+    value === 'RAN' ? 'opt-ran' :
+    value === 'SRA' ? 'opt-sra' :
+    value === 'RAN+' ? 'opt-ran-plus' :
+    value === 'SRA+' ? 'opt-sra-plus' : '';
+  return `<span class="opt-badge ${cls}">${esc(value)}</span>`;
+}
+
+function getHotTagMarkup(isHot) {
+  return isHot ? '<span class="hot-tag">HOT</span>' : '';
+}
+
 function createCard(record, index, mode = 'MANAGE') {
   const skill = Number(record.skill);
+  const fcBadge = getFcBadgeMarkup(record.fc);
+  const optionBadge = getOptionBadgeMarkup(record.play_option);
+  const hotTag = getHotTagMarkup(record.is_hot);
   let boxColor = '';
   if (skill >= 180) boxColor = 'm-box-deep-rainbow';
   else if (skill >= 170) boxColor = 'm-box-rainbow';
@@ -128,12 +148,14 @@ function createCard(record, index, mode = 'MANAGE') {
         <span class="sk-rank">#${index}</span>
         <div class="sk-badge-column">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
+          <div class="fc-zone">${fcBadge}</div>
         </div>
         <div class="sk-text-column">
-          <div class="sk-title">${esc(record.title)}</div>
+          <div class="sk-title">${hotTag} ${esc(record.title)}</div>
           <div class="sk-meta">
             <span class="sk-meta-lv">Lv: <strong>${formatLevel(record.level)}</strong></span>
             <span class="sk-meta-rate">Rate: <strong>${formatRate(record.achievement_rate)}%</strong></span>
+            <span class="opt-slot">${optionBadge}</span>
           </div>
         </div>
         <div class="sk-val-box">${formatSkill(skill)}</div>
@@ -146,13 +168,15 @@ function createCard(record, index, mode = 'MANAGE') {
       <div class="m-main-area">
         <div class="m-upper-row">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
-          <div class="m-title-text">${esc(record.title)}</div>
+          <div class="m-title-text">${hotTag} ${esc(record.title)}</div>
           <div class="m-card-val-box ${boxColor}">${formatSkill(skill)}</div>
         </div>
         <div class="m-lower-row">
+          <div class="fc-zone">${fcBadge}</div>
           <div class="m-flow-container">
             <span class="m-txt-lv">Lv <strong>${formatLevel(record.level)}</strong></span>
             <span class="m-txt-rate">Rate <strong>${formatRate(record.achievement_rate)}%</strong></span>
+            <span class="opt-slot">${optionBadge}</span>
           </div>
           <div class="m-btn-group">
             <button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button>
@@ -165,8 +189,8 @@ function createCard(record, index, mode = 'MANAGE') {
 
 function renderSkill() {
   const sorted = [...scores].sort((a, b) => Number(b.skill) - Number(a.skill));
-  const hot = sorted.filter(s => s.type === 'HOT').slice(0, 25);
-  const other = sorted.filter(s => s.type === 'OTHER').slice(0, 25);
+  const hot = sorted.filter(s => s.is_hot).slice(0, 25);
+  const other = sorted.filter(s => !s.is_hot).slice(0, 25);
 
   $('viewSkill').innerHTML = `
     <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
@@ -179,9 +203,7 @@ function renderSkill() {
 
 function renderManage() {
   const data = getFilteredScores().sort((a, b) => Number(b.skill) - Number(a.skill));
-  const target = activeTabName === 'HOT' ? 'viewHotManage' :
-                 activeTabName === 'OTHER' ? 'viewOtherManage' : 'viewAllManage';
-  $(target).innerHTML = data.map((r, i) => createCard(r, i + 1)).join('');
+  $('viewAllManage').innerHTML = data.map((r, i) => createCard(r, i + 1)).join('');
 }
 
 function render() {
@@ -191,11 +213,12 @@ function render() {
   $('txtGrandTotal').textContent = formatSkill(t.total);
   tintHeaderValues(t.hot, t.other, t.total);
 
-  ['viewSkill','viewHotManage','viewOtherManage','viewAllManage'].forEach(id => hide(id));
-  if (activeTabName === 'SKILL') { show('viewSkill'); renderSkill(); }
-  else {
-    show(activeTabName === 'HOT' ? 'viewHotManage' :
-         activeTabName === 'OTHER' ? 'viewOtherManage' : 'viewAllManage');
+  ['viewSkill','viewAllManage'].forEach(id => hide(id));
+  if (activeTabName === 'SKILL') {
+    show('viewSkill');
+    renderSkill();
+  } else {
+    show('viewAllManage');
     renderManage();
   }
 }
@@ -205,7 +228,6 @@ function switchTab(tab) {
   document.querySelectorAll('.p-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   $('domSearch').value = '';
   $('searchArea').classList.toggle('hidden', tab === 'SKILL');
-  $('btnHeaderAdd').classList.toggle('hidden', tab === 'ALL');
   window.scrollTo(0, 0);
   render();
 }
@@ -218,6 +240,8 @@ function openScoreModal(score = null) {
   $('partSelect').value = score?.part || 'MAS-G';
   $('formRate').value = score ? formatRate(score.achievement_rate) : '';
   $('formLevel').value = score ? formatLevel(score.level) : '';
+  $('formFc').value = score?.fc || '';
+  $('formOption').value = score?.play_option || 'NORMAL';
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
   $('songSuggestions').innerHTML = '';
   $('domModal').style.display = 'flex';
@@ -237,8 +261,8 @@ async function suggestSongs() {
   try {
     const rows = await searchSongs(title, part);
     $('songSuggestions').innerHTML = rows.map(r => `
-      <button class="suggestion" data-song-id="${r.id}" data-title="${esc(r.title)}" data-part="${r.part}" data-level="${r.level}">
-        ${esc(r.title)} <span>${r.part} / Lv ${formatLevel(r.level)}</span>
+      <button class="suggestion" data-song-id="${r.id}" data-title="${esc(r.title)}" data-part="${r.part}" data-level="${r.level}" data-is-hot="${r.is_hot ? '1' : '0'}">
+        ${r.is_hot ? '[HOT] ' : ''}${esc(r.title)} <span>${r.part} / Lv ${formatLevel(r.level)}</span>
       </button>`).join('');
   } catch (e) {
     console.error(e);
@@ -265,6 +289,8 @@ async function submitScore() {
   const title = $('formTitle').value.trim();
   const part = $('partSelect').value;
   const rate = $('formRate').value;
+  const fc = $('formFc').value;
+  const playOption = $('formOption').value;
 
   if (!title) throw new Error('曲名を入力してください。');
 
@@ -276,7 +302,9 @@ async function submitScore() {
   await saveScore({
     scoreId: editingScoreId,
     songId: selectedSong.id,
-    achievementRate: rate
+    achievementRate: rate,
+    fc,
+    playOption
   });
 
   closeModal();
@@ -375,7 +403,8 @@ document.addEventListener('click', async e => {
       id: suggestion.dataset.songId,
       title: suggestion.dataset.title,
       part: suggestion.dataset.part,
-      level: Number(suggestion.dataset.level)
+      level: Number(suggestion.dataset.level),
+      is_hot: suggestion.dataset.isHot === '1'
     });
   }
   if (edit) {
