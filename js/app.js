@@ -11,6 +11,7 @@ import {
 } from './scores.js';
 
 let activeTabName = 'SKILL';
+let currentAuthMode = 'login';
 let scores = [];
 let editingScoreId = null;
 let selectedSong = null;
@@ -24,13 +25,24 @@ function show(id) { $(id).classList.remove('hidden'); }
 function hide(id) { $(id).classList.add('hidden'); }
 
 function showAuth(mode = 'login') {
+  currentAuthMode = mode;
+
   hide('appScreen');
   show('authScreen');
-  $('authTitle').textContent = mode === 'login' ? 'ログイン' : '新規登録';
-  $('authSubmit').textContent = mode === 'login' ? 'ログイン' : '登録する';
-  $('authSwitch').textContent = mode === 'login' ? '新規登録はこちら' : 'ログインはこちら';
-  $('authSwitch').dataset.mode = mode === 'login' ? 'register' : 'login';
+
+  const isLogin = mode === 'login';
+  $('authTitle').textContent = isLogin ? 'ログイン' : '新規登録';
+  $('authSubmit').textContent = isLogin ? 'ログイン' : '登録する';
+  $('authSwitch').textContent = isLogin ? '新規登録はこちら' : 'ログインはこちら';
+
+  // data-mode は「次に切り替える画面」だけに使う
+  $('authSwitch').dataset.mode = isLogin ? 'register' : 'login';
+
+  // 新規登録時のパスワードは自動生成なので入力不要
+  $('authPassword').required = isLogin;
+  $('authPassword').disabled = !isLogin;
   $('authPassword').value = '';
+  $('authPassword').placeholder = isLogin ? 'パスワードを入力' : '登録時に自動生成されます';
 }
 
 function showApp(session) {
@@ -282,7 +294,7 @@ function closeMyPage() { $('mypageModal').style.display = 'none'; }
 
 $('authForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const mode = $('authSwitch').dataset.mode === 'register' ? 'register' : 'login';
+  const mode = currentAuthMode;
   const username = $('authUsername').value.trim();
   try {
     $('authSubmit').disabled = true;
@@ -297,11 +309,9 @@ $('authForm').addEventListener('submit', async e => {
       }
 
       alert(`登録完了しました。\n\n登録名: ${username}\n初期パスワード: ${password}\n\nこのパスワードを保存してください。ログイン後、マイページから変更できます。`);
+      showAuth('login');
+      $('authUsername').value = username;
       $('authPassword').value = password;
-      $('authSwitch').dataset.mode = 'login';
-      $('authTitle').textContent = 'ログイン';
-      $('authSubmit').textContent = 'ログイン';
-      $('authSwitch').textContent = '新規登録はこちら';
     } else {
       await login(username, $('authPassword').value);
     }
