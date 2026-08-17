@@ -248,6 +248,81 @@
   border-color:#991b1b;
 }
 
+
+/* === v9 UI refresh === */
+body { background:#0b1220; }
+.p-header { background:#0f172a; }
+.user-header-row { min-height:42px; padding:0 10px; border-bottom:1px solid #1e293b; }
+.user-header-title { font-size:13px; font-weight:900; color:#e2e8f0; }
+.header-user { font-size:12px; font-weight:bold; color:#93c5fd; padding:7px 8px; }
+.admin-entry { border:1px solid #334155; background:#1e293b; color:#cbd5e1; border-radius:6px; padding:6px 9px; font-size:11px; font-weight:bold; margin-left:auto; }
+.score-row { height:58px; }
+.score-lbl { font-size:10px; }
+.score-val { font-size:18px; }
+.p-tabs { padding:5px; gap:5px; background:#0b1220; }
+.p-tab-btn { border-radius:6px; padding:11px 0; }
+.search-bar-container { padding:7px 6px; background:#0b1220; }
+.search-input { min-height:42px; }
+.btn-add-inline { min-height:42px; border-radius:6px; }
+.p-container { padding:6px; }
+
+.mdl-mask, .mypage-modal, .admin-form-mask {
+  align-items:flex-end;
+  backdrop-filter: blur(2px);
+}
+.mdl-sheet, .mypage-sheet, .admin-form-sheet {
+  max-height:92vh;
+  overflow:auto;
+  border-radius:14px 14px 0 0;
+  padding:16px;
+}
+.f-group { margin-bottom:10px; }
+.f-group label { margin-bottom:5px; }
+.f-group input, .f-group select,
+.mypage-sheet input, .admin-form-sheet input, .admin-form-sheet select {
+  min-height:46px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+}
+.btn-block { margin-top:14px; }
+.btn-submit, .btn-cancel { min-height:44px; border-radius:8px; }
+.skill-preview { border-radius:8px; padding:11px; }
+.suggestion-list { border-radius:8px; max-height:220px; }
+.suggestion { padding:11px 9px; }
+
+.form-grid-two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.danger-zone { margin-top:22px; padding-top:14px; border-top:1px solid #e5e7eb; }
+.btn-danger-wide { width:100%; min-height:44px; border:1px solid #fecaca; background:#fef2f2; color:#b91c1c; border-radius:8px; font-weight:900; }
+
+.admin-modal { position:fixed; inset:0; z-index:1200; display:none; background:#0b1220; color:#f8fafc; overflow:auto; }
+.admin-header { position:sticky; top:0; z-index:5; background:#0f172a; padding:10px; border-bottom:1px solid #1e293b; }
+.admin-title-row { display:flex; gap:8px; align-items:center; }
+.admin-title { flex:1; font-size:17px; font-weight:900; }
+.admin-close { border:0; background:#334155; color:#fff; border-radius:7px; padding:8px 11px; font-weight:bold; }
+.admin-tabs { display:flex; gap:6px; margin-top:10px; }
+.admin-tab { flex:1; min-height:40px; border:0; border-radius:7px; background:#1e293b; color:#94a3b8; font-weight:900; }
+.admin-tab.active { background:#2563eb; color:#fff; }
+.admin-toolbar { display:flex; gap:6px; margin-top:8px; }
+.admin-toolbar input { flex:1; min-height:42px; background:#111827; border:1px solid #334155; color:#fff; border-radius:7px; padding:8px; }
+.admin-toolbar button { border:0; border-radius:7px; background:#2563eb; color:#fff; padding:0 12px; font-weight:900; }
+.admin-body { padding:8px; }
+.admin-card { background:#fff; color:#111827; border-radius:8px; padding:10px; margin-bottom:7px; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.admin-card-top { display:flex; align-items:center; gap:6px; }
+.admin-card-title { flex:1; min-width:0; font-weight:900; font-size:13px; word-break:break-all; }
+.admin-card-meta { margin-top:5px; font-size:11px; color:#64748b; display:flex; gap:9px; flex-wrap:wrap; }
+.admin-actions { display:flex; gap:5px; margin-left:auto; }
+.admin-actions button { border:0; border-radius:6px; padding:5px 8px; font-size:10px; font-weight:900; }
+.admin-edit { background:#dbeafe; color:#1d4ed8; }
+.admin-reset { background:#fef3c7; color:#92400e; }
+.admin-delete { background:#fee2e2; color:#b91c1c; }
+.admin-form-mask { position:fixed; inset:0; z-index:1300; display:none; background:rgba(0,0,0,.65); }
+.admin-form-sheet { width:100%; background:#fff; color:#111827; }
+.admin-form-sheet label { display:block; font-size:11px; font-weight:900; color:#475569; margin:8px 0 4px; }
+.hot-switch { display:flex; align-items:center; gap:9px; margin-top:12px; font-size:13px; font-weight:900; }
+.hot-switch input { width:20px !important; min-height:20px !important; }
+.empty-state { padding:22px 10px; text-align:center; color:#64748b; font-size:12px; }
+.section-note { font-size:11px; color:#64748b; line-height:1.5; margin-top:6px; }
+
 </style>
 </head>
 <body>
@@ -257,7 +332,7 @@
     <h1 id="authTitle">ログイン</h1>
     <form id="authForm">
       <label>登録名</label>
-      <input id="authUsername" autocomplete="username" required pattern="[A-Za-z0-9_]{3,32}">
+      <input id="authUsername" autocomplete="username" required pattern="[A-Za-z0-9_]{3,32}" placeholder="半角英数字・_">
       <label>パスワード</label>
       <input id="authPassword" type="password" autocomplete="current-password" required placeholder="パスワードを入力">
       <div id="authPasswordConfirmGroup" class="hidden">
@@ -274,6 +349,7 @@
   <div class="p-header">
     <div class="user-header-row">
       <span class="user-header-title">GD Pocket Board</span>
+      <button id="btnAdmin" class="admin-entry hidden">管理</button>
       <span id="headerUsername" class="header-user"></span>
     </div>
     <div class="score-row">
@@ -283,11 +359,11 @@
     </div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">SKILL</div>
-      <div class="p-tab-btn" data-tab="ALL">ALL</div>
+      <div class="p-tab-btn" data-tab="RECORDS">記録</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
-      <input id="domSearch" class="search-input" placeholder="曲名を検索...">
-      <button id="btnHeaderAdd" class="btn-add-inline">＋ 追加</button>
+      <input id="domSearch" class="search-input" placeholder="登録済みの曲を検索...">
+      <button id="btnHeaderAdd" class="btn-add-inline">＋ 登録</button>
     </div>
   </div>
 
@@ -299,46 +375,56 @@
 
 <div id="domModal" class="mdl-mask">
   <div class="mdl-sheet">
-    <h3 id="domModalTitle" style="font-size:14px;margin-bottom:8px;font-weight:800;">曲の新規追加</h3>
+    <h3 id="domModalTitle" style="font-size:16px;margin-bottom:12px;font-weight:900;">スコア登録</h3>
+
     <div class="f-group">
       <label>曲名</label>
-      <input id="formTitle" autocomplete="off" placeholder="曲名を入力">
+      <input id="formTitle" autocomplete="off" placeholder="曲名を入力して候補から選択">
       <div id="songSuggestions" class="suggestion-list"></div>
     </div>
-    <div class="f-group">
-      <label>Part</label>
-      <select id="partSelect"></select>
+
+    <div class="form-grid-two">
+      <div class="f-group">
+        <label>Part</label>
+        <select id="partSelect"></select>
+      </div>
+      <div class="f-group">
+        <label>Level</label>
+        <input id="formLevel" readonly placeholder="自動">
+      </div>
     </div>
-    <div class="f-group">
-      <label>Level</label>
-      <input id="formLevel" readonly>
-    </div>
+
     <div class="f-group">
       <label>達成率 (%)</label>
-      <input id="formRate" type="number" min="0" max="100" step="0.01" inputmode="decimal">
+      <input id="formRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="例 95.50">
     </div>
-    <div class="f-group">
-      <label>フルコン</label>
-      <select id="formFc">
-        <option value="">なし</option>
-        <option value="FC">FC</option>
-        <option value="EXC">EXC</option>
-      </select>
+
+    <div class="form-grid-two">
+      <div class="f-group">
+        <label>フルコン</label>
+        <select id="formFc">
+          <option value="">なし</option>
+          <option value="FC">FC</option>
+          <option value="EXC">EXC</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>オプション</label>
+        <select id="formOption">
+          <option value="NORMAL">正規</option>
+          <option value="RAN">RAN</option>
+          <option value="SRA">SRA</option>
+          <option value="RAN+">RAN+</option>
+          <option value="SRA+">SRA+</option>
+        </select>
+      </div>
     </div>
-    <div class="f-group">
-      <label>オプション</label>
-      <select id="formOption">
-        <option value="NORMAL">正規</option>
-        <option value="RAN">RAN</option>
-        <option value="SRA">SRA</option>
-        <option value="RAN+">RAN+</option>
-        <option value="SRA+">SRA+</option>
-      </select>
-    </div>
+
     <div class="f-group">
       <label>Skill</label>
       <div id="formSkill" class="skill-preview">-</div>
     </div>
+
     <div class="btn-block">
       <button id="btnSubmitForm" class="btn-submit">保存する</button>
       <button id="btnCancelForm" class="btn-cancel">戻る</button>
@@ -348,20 +434,87 @@
 
 <div id="mypageModal" class="mypage-modal">
   <div class="mypage-sheet">
-    <h3 style="font-size:15px;margin-bottom:10px;">マイページ</h3>
-    <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">登録名</div>
-    <div id="mypageUsername" style="font-weight:bold;margin-bottom:14px;"></div>
-    <label style="display:block;font-size:11px;font-weight:bold;margin-bottom:3px;">新しいパスワード</label>
+    <h3 style="font-size:16px;margin-bottom:12px;">マイページ</h3>
+    <div style="font-size:11px;color:#64748b;">登録名</div>
+    <div id="mypageUsername" style="font-weight:900;font-size:16px;margin:3px 0 16px;"></div>
+
+    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">新しいパスワード</label>
     <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
     <div class="btn-block">
-      <button id="btnChangePassword" class="btn-submit">変更する</button>
+      <button id="btnChangePassword" class="btn-submit">パスワード変更</button>
       <button id="btnLogout" class="btn-cancel">ログアウト</button>
       <button id="btnCloseMypage" class="btn-cancel">戻る</button>
+    </div>
+
+    <div class="danger-zone">
+      <button id="btnDeleteAccount" class="btn-danger-wide">アカウントを削除</button>
+      <div class="section-note">登録したスコアも削除されます。この操作は元に戻せません。</div>
     </div>
   </div>
 </div>
 
+<div id="adminModal" class="admin-modal">
+  <div class="admin-header">
+    <div class="admin-title-row">
+      <div class="admin-title">管理者画面</div>
+      <button id="btnCloseAdmin" class="admin-close">閉じる</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-admin-tab="songs">曲マスター</button>
+      <button class="admin-tab" data-admin-tab="users">ユーザー</button>
+    </div>
+    <div id="adminSongToolbar" class="admin-toolbar">
+      <input id="adminSongSearch" placeholder="曲名を検索...">
+      <button id="btnAdminAddSong">＋追加</button>
+    </div>
+    <div id="adminUserToolbar" class="admin-toolbar hidden">
+      <input id="adminUserSearch" placeholder="登録名を検索...">
+    </div>
+  </div>
+  <div id="adminBody" class="admin-body"></div>
+</div>
 
-<script type="module" src="./js/app.js?v=8"></script>
+<div id="adminSongFormMask" class="admin-form-mask">
+  <div class="admin-form-sheet">
+    <h3 id="adminSongFormTitle" style="font-size:16px;margin-bottom:10px;">曲マスター追加</h3>
+    <label>曲名</label>
+    <input id="adminFormTitle" placeholder="曲名">
+    <div class="form-grid-two">
+      <div>
+        <label>Part</label>
+        <select id="adminFormPart">
+          <option>BSC-G</option><option>BSC-B</option>
+          <option>ADV-G</option><option>ADV-B</option>
+          <option>EXT-G</option><option>EXT-B</option>
+          <option>MAS-G</option><option>MAS-B</option>
+        </select>
+      </div>
+      <div>
+        <label>難易度</label>
+        <input id="adminFormLevel" type="number" step="0.01" inputmode="decimal" placeholder="例 8.20">
+      </div>
+    </div>
+    <label class="hot-switch"><input id="adminFormHot" type="checkbox"> HOT曲として扱う</label>
+    <div class="btn-block">
+      <button id="btnAdminSaveSong" class="btn-submit">保存する</button>
+      <button id="btnAdminCancelSong" class="btn-cancel">戻る</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminPasswordMask" class="admin-form-mask">
+  <div class="admin-form-sheet">
+    <h3 style="font-size:16px;margin-bottom:10px;">ユーザーパスワード変更</h3>
+    <div id="adminPasswordUsername" style="font-weight:900;margin-bottom:10px;"></div>
+    <label>新しいパスワード</label>
+    <input id="adminPasswordValue" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
+    <div class="btn-block">
+      <button id="btnAdminPasswordSave" class="btn-submit">変更する</button>
+      <button id="btnAdminPasswordCancel" class="btn-cancel">戻る</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./js/app.js?v=9"></script>
 </body>
 </html>
