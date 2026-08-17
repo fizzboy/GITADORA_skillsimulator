@@ -337,12 +337,7 @@ $('authForm').addEventListener('submit', async e => {
         throw new Error('Supabase側でメール確認が有効です。Authentication > Providers > Email の Confirm email をOFFにしてください。');
       }
 
-      alert(`登録完了しました。\n\n登録名: ${username}\n初期パスワード: ${password}\n\nこのパスワードを保存してください。ログイン後、マイページから変更できます。`);
-      $('authPassword').value = password;
-      $('authSwitch').dataset.mode = 'login';
-      $('authTitle').textContent = 'ログイン';
-      $('authSubmit').textContent = 'ログイン';
-      $('authSwitch').textContent = '新規登録はこちら';
+      showCredentialModal(username, password);
     } else {
       await login(username, $('authPassword').value);
     }
