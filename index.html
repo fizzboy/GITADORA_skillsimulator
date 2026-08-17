@@ -229,6 +229,25 @@
 .mypage-modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:flex-end; z-index:1100; }
 .mypage-sheet { width:100%; background:#fff; color:#111827; border-radius:8px 8px 0 0; padding:14px; }
 .mypage-sheet input { width:100%; padding:9px; border:1px solid #ccc; border-radius:4px; font-size:16px; }
+
+.hot-tag {
+  display:inline-block;
+  flex-shrink:0;
+  padding:2px 5px;
+  border-radius:3px;
+  font-size:9px;
+  line-height:1.1;
+  font-weight:900;
+  color:#7f1d1d;
+  background:#fef2f2;
+  border:1px solid #fecaca;
+}
+.sk-row .hot-tag {
+  color:#fecaca;
+  background:#450a0a;
+  border-color:#991b1b;
+}
+
 </style>
 </head>
 <body>
@@ -264,8 +283,6 @@
     </div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">SKILL</div>
-      <div class="p-tab-btn" data-tab="HOT">HOT</div>
-      <div class="p-tab-btn" data-tab="OTHER">OTHER</div>
       <div class="p-tab-btn" data-tab="ALL">ALL</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
@@ -276,8 +293,6 @@
 
   <div class="p-container">
     <div id="viewSkill"></div>
-    <div id="viewHotManage" class="list-container hidden"></div>
-    <div id="viewOtherManage" class="list-container hidden"></div>
     <div id="viewAllManage" class="list-container hidden"></div>
   </div>
 </div>
@@ -301,6 +316,24 @@
     <div class="f-group">
       <label>達成率 (%)</label>
       <input id="formRate" type="number" min="0" max="100" step="0.01" inputmode="decimal">
+    </div>
+    <div class="f-group">
+      <label>フルコン</label>
+      <select id="formFc">
+        <option value="">なし</option>
+        <option value="FC">FC</option>
+        <option value="EXC">EXC</option>
+      </select>
+    </div>
+    <div class="f-group">
+      <label>オプション</label>
+      <select id="formOption">
+        <option value="NORMAL">正規</option>
+        <option value="RAN">RAN</option>
+        <option value="SRA">SRA</option>
+        <option value="RAN+">RAN+</option>
+        <option value="SRA+">SRA+</option>
+      </select>
     </div>
     <div class="f-group">
       <label>Skill</label>
@@ -329,6 +362,6 @@
 </div>
 
 
-<script type="module" src="./js/app.js?v=7"></script>
+<script type="module" src="./js/app.js?v=8"></script>
 </body>
 </html>
