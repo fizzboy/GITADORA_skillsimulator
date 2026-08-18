@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_8';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_8';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_8';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_8';
+import { supabase } from './supabase.js?v=14_10';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_10';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_10';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_10';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,7 +118,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_8';
+import * as adminApi from './admin.js?v=14_10';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -905,6 +905,23 @@ $('authForm').addEventListener('submit', async e => {
         throw new Error('確認用パスワードが一致していません。');
       }
 
+      // アカウント名重複チェック
+      const { data: existingAccounts, error: duplicateCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .limit(1);
+
+      if (duplicateCheckError) throw duplicateCheckError;
+
+      if (existingAccounts?.length) {
+        await showSiteDialog(
+          'そのアカウント名は既に登録されています。',
+          '新規登録できません'
+        );
+        return;
+      }
+
       const result = await register(username,password);
       if (result.user && !result.session) {
         throw new Error('Supabase側でメール確認が有効です。Confirm email をOFFにしてください。');
@@ -924,7 +941,7 @@ $('authForm').addEventListener('submit', async e => {
       message.includes('すでに登録されています')
     ) {
       await showSiteDialog(
-        'そのアカウント名は既に登録されています',
+        'そのアカウント名は既に登録されています。',
         '新規登録できません'
       );
     } else {
