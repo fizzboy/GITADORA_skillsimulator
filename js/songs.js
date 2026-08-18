@@ -66,23 +66,34 @@ export async function requestSongMaster({ title, part, proposedLevel }) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
 
+  const payload = {
+    requester_id: userData.user.id,
+    title: cleanTitle,
+    part,
+    proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
+  };
+
   const { data, error } = await supabase
     .from('song_requests')
-    .insert({
-      requester_id: userData.user.id,
-      title: cleanTitle,
-      part,
-      proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
-    })
-    .select('id')
+    .insert(payload)
+    .select('id,title,part,proposed_level,status')
     .single();
 
-  if (error) {
-    if (error.code === '23505') {
-      throw new Error('同じ曲名・Partの登録依頼はすでに送信済みです。');
-    }
-    throw error;
+  if (!error) return data;
+
+  if (error.code === '23505') {
+    const { data: existing, error: findError } = await supabase
+      .from('song_requests')
+      .select('id,title,part,proposed_level,status')
+      .eq('requester_id', userData.user.id)
+      .eq('title', cleanTitle)
+      .eq('part', part)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (findError) throw findError;
+    if (existing) return existing;
   }
 
-  return data;
+  throw error;
 }
