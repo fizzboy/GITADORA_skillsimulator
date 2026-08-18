@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_14';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_14';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_14';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_14';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_14';
-import { getGameVersions } from './versions.js?v=21_14';
+import { supabase } from './supabase.js?v=21_15';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_15';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_15';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_15';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_15';
+import { getGameVersions } from './versions.js?v=21_15';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_14';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_14';
+import * as adminApi from './admin.js?v=21_15';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_15';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1165,14 +1165,12 @@ async function openUserDetail(userId, username) {
     $('userDetailOther').textContent = formatSkill(target.other);
     $('userDetailTotal').textContent = formatSkill(target.total);
 
-    const detailRanks = {
-      userDetailTotal: target.total,
-      userDetailHot: target.hot,
-      userDetailOther: target.other
-    };
-
-    Object.entries(detailRanks).forEach(([id, value]) => {
-      $(id).className = `score-rank-${getTotalSkillRank(value)}`;
+    // ユーザー詳細のTOTAL/HOT/OTHERは、メイン画面と同じく
+    // TOTALスキルのカラーを3項目すべてに適用する。
+    const rankClass = `score-rank-${getTotalSkillRank(target.total)}`;
+    ['userDetailTotal', 'userDetailHot', 'userDetailOther'].forEach(id => {
+      const el = $(id);
+      el.className = `user-detail-skill-value ${rankClass}`;
     });
 
     $('userDetailSkill').innerHTML = `
