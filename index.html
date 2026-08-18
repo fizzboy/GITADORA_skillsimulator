@@ -1907,6 +1907,48 @@ button:disabled {
 .skill-sync-status.success{color:#bbf7d0;border-color:#15803d;}
 .skill-sync-status.error{color:#fecaca;border-color:#b91c1c;}
 
+/* === v19: ユーザー一覧GF/DM両表示・ライバルGF/DM分離 === */
+.user-list-row{
+  grid-template-columns:minmax(0,1fr) 82px 82px 84px 38px !important;
+}
+.user-list-skill{
+  min-width:0;
+  text-align:right;
+}
+.user-list-skill-label{
+  margin-bottom:1px;
+  color:#64748b;
+  font-size:8px;
+  font-weight:900;
+}
+.user-list-skill-value{
+  font-size:12px;
+  font-weight:900;
+}
+.mypage-rival-block + .mypage-rival-block{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #1e293b;
+}
+.rival-gf .mypage-section-title strong{color:#e8336a;}
+.rival-dm .mypage-section-title strong{color:#3caa2a;}
+
+@media(max-width:520px){
+  .user-list-row{
+    grid-template-columns:minmax(0,1fr) 64px 64px 34px !important;
+    grid-template-areas:
+      "name name name fav"
+      "gf dm date fav";
+    row-gap:4px !important;
+  }
+  .user-list-name{grid-area:name;}
+  .user-list-gf{grid-area:gf;text-align:left;}
+  .user-list-dm{grid-area:dm;text-align:left;}
+  .user-list-date{grid-area:date;text-align:right;}
+  .favorite-toggle{grid-area:fav;}
+  .user-list-skill-value{font-size:11px;}
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -1980,8 +2022,10 @@ button:disabled {
       <div class="users-toolbar">
         <input id="userSearch" placeholder="アカウント名を検索...">
         <select id="userSort" aria-label="ユーザー一覧の並び順">
-          <option value="skill_desc">スキルTOTAL：高い順</option>
-          <option value="skill_asc">スキルTOTAL：低い順</option>
+          <option value="gf_desc">GFスキル：高い順</option>
+          <option value="gf_asc">GFスキル：低い順</option>
+          <option value="dm_desc">DMスキル：高い順</option>
+          <option value="dm_asc">DMスキル：低い順</option>
           <option value="name_asc">アカウント名：昇順</option>
           <option value="name_desc">アカウント名：降順</option>
           <option value="date_desc">更新日：新しい順</option>
@@ -2102,8 +2146,14 @@ button:disabled {
     </div>
 
     <div class="mypage-favorites">
-      <div class="mypage-section-title">ライバル登録 <span>最大5件</span></div>
-      <div id="favoriteUserList" class="favorite-user-list"></div>
+      <div class="mypage-rival-block rival-gf">
+        <div class="mypage-section-title"><strong>GF</strong> ライバル登録 <span>最大5件</span></div>
+        <div id="favoriteUserListGF" class="favorite-user-list"></div>
+      </div>
+      <div class="mypage-rival-block rival-dm">
+        <div class="mypage-section-title"><strong>DM</strong> ライバル登録 <span>最大5件</span></div>
+        <div id="favoriteUserListDM" class="favorite-user-list"></div>
+      </div>
     </div>
 
     <div class="mypage-logout-zone">
@@ -2272,6 +2322,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=18_0"></script>
+<script type="module" src="./js/app.js?v=19_0"></script>
 </body>
 </html>

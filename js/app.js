@@ -1,8 +1,8 @@
-import { supabase } from './supabase.js??v=18_0';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=18_0';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=18_0';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=18_0';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=18_0';
+import { supabase } from './supabase.js??v=19_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=19_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=19_0';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=19_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=19_0';
 const {
   isAdmin,
   getAdminSongs,
@@ -293,8 +293,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js??v=18_0';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js??v=18_0';
+import * as adminApi from './admin.js?v=19_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=19_0';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -310,7 +310,7 @@ let adminUsers = [];
 let adminRequests = [];
 let adminEditingSongId = null;
 let publicUsers = [];
-let favoriteUsers = [];
+let favoriteUsers = { GF: [], DM: [] };
 let viewedUserScores = [];
 let currentUserId = null;
 let adminPasswordUserId = null;
@@ -930,38 +930,53 @@ async function loadUsers() {
 }
 
 function renderUsers() {
-  const sort = $('userSort')?.value || 'skill_desc';
+  const sort = $('userSort')?.value || 'gf_desc';
   const users = [...publicUsers].sort((a, b) => {
-    const skillA = Number(a.total_skill) || 0;
-    const skillB = Number(b.total_skill) || 0;
+    const gfA = Number(a.gf_skill) || 0;
+    const gfB = Number(b.gf_skill) || 0;
+    const dmA = Number(a.dm_skill) || 0;
+    const dmB = Number(b.dm_skill) || 0;
     const nameA = String(a.username || '');
     const nameB = String(b.username || '');
     const dateA = a.last_recorded_at ? new Date(a.last_recorded_at).getTime() : 0;
     const dateB = b.last_recorded_at ? new Date(b.last_recorded_at).getTime() : 0;
 
     switch (sort) {
-      case 'skill_asc': return skillA - skillB || nameA.localeCompare(nameB, 'ja');
+      case 'gf_asc': return gfA - gfB || nameA.localeCompare(nameB, 'ja');
+      case 'dm_desc': return dmB - dmA || gfB - gfA || nameA.localeCompare(nameB, 'ja');
+      case 'dm_asc': return dmA - dmB || gfB - gfA || nameA.localeCompare(nameB, 'ja');
       case 'name_asc': return nameA.localeCompare(nameB, 'ja');
       case 'name_desc': return nameB.localeCompare(nameA, 'ja');
-      case 'date_desc': return dateB - dateA || skillB - skillA;
-      case 'date_asc': return dateA - dateB || skillB - skillA;
-      case 'skill_desc':
-      default: return skillB - skillA || nameA.localeCompare(nameB, 'ja');
+      case 'date_desc': return dateB - dateA || gfB - gfA;
+      case 'date_asc': return dateA - dateB || gfB - gfA;
+      case 'gf_desc':
+      default: return gfB - gfA || dmB - dmA || nameA.localeCompare(nameB, 'ja');
     }
   });
 
   $('userList').innerHTML = users.map(user => {
-    const totalClass = `score-rank-${getTotalSkillRank(user.total_skill)}`;
+    const gfClass = `score-rank-${getTotalSkillRank(user.gf_skill)}`;
+    const dmClass = `score-rank-${getTotalSkillRank(user.dm_skill)}`;
+    const rivalLabel = `${activeInstrument}ライバル`;
+
     return `
       <div class="user-list-row" data-user-open="${user.user_id}" data-user-name="${esc(user.username)}">
         <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
-        <div class="user-list-total ${totalClass}">${formatSkill(user.total_skill)}</div>
+        <div class="user-list-skill user-list-gf">
+          <div class="user-list-skill-label">GF</div>
+          <div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div>
+        </div>
+        <div class="user-list-skill user-list-dm">
+          <div class="user-list-skill-label">DM</div>
+          <div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div>
+        </div>
         <div class="user-list-date">${formatDateOnly(user.last_recorded_at)}</div>
         ${user.is_self
           ? '<div></div>'
           : `<button class="favorite-toggle ${user.is_favorite ? 'active' : ''}"
               data-favorite-user="${user.user_id}"
-              title="お気に入り">${user.is_favorite ? '★' : '☆'}</button>`}
+              data-favorite-instrument="${activeInstrument}"
+              title="${rivalLabel}">${user.is_favorite ? '★' : '☆'}</button>`}
       </div>`;
   }).join('') || '<div class="empty-state">該当するユーザーがいません</div>';
 }
@@ -1001,23 +1016,23 @@ function closeUserDetail() {
   viewedUserScores = [];
 }
 
-async function toggleFavorite(userId) {
+async function toggleFavorite(userId, instrument = activeInstrument) {
   const user = publicUsers.find(u => u.user_id === userId);
   if (!user) return;
 
   try {
-    if (user.is_favorite) {
-      await removeFavorite(userId);
+    if (user.is_favorite && instrument === activeInstrument) {
+      await removeFavorite(userId, instrument);
     } else {
-      await addFavorite(userId);
+      await addFavorite(userId, instrument);
     }
     await Promise.all([loadUsers(), loadFavorites()]);
   } catch (e) {
     const message = String(e?.message || e);
     if (message.includes('5件')) {
-      await showSiteDialog('お気に入り登録は5件までです。', 'お気に入り');
+      await showSiteDialog(`${instrument}のライバル登録は5件までです。`, 'ライバル登録');
     } else {
-      await showSiteDialog('お気に入りの更新に失敗しました。', 'エラー');
+      await showSiteDialog('ライバル登録の更新に失敗しました。', 'エラー');
       console.error(e);
     }
   }
@@ -1025,36 +1040,59 @@ async function toggleFavorite(userId) {
 
 async function loadFavorites() {
   try {
-    favoriteUsers = await getMyFavorites();
+    const [gf, dm] = await Promise.all([
+      getMyFavorites('GF'),
+      getMyFavorites('DM')
+    ]);
+    favoriteUsers = { GF: gf, DM: dm };
     renderFavorites();
   } catch (e) {
-    $('favoriteUserList').innerHTML = `<div class="empty-state">お気に入りの取得に失敗しました</div>`;
+    $('favoriteUserListGF').innerHTML = `<div class="empty-state">GFライバルの取得に失敗しました</div>`;
+    $('favoriteUserListDM').innerHTML = `<div class="empty-state">DMライバルの取得に失敗しました</div>`;
     console.error(e);
   }
 }
 
-function renderFavorites() {
-  $('favoriteUserList').innerHTML = favoriteUsers.map((fav, index) => `
+function renderFavoriteList(instrument) {
+  const rows = favoriteUsers[instrument] || [];
+  const target = $(`favoriteUserList${instrument}`);
+
+  target.innerHTML = rows.map((fav, index) => `
     <div class="favorite-user-row" data-favorite-row="${fav.favorite_user_id}">
       <div class="name">${index + 1}. ${esc(fav.username)}</div>
-      <button type="button" data-favorite-up="${fav.favorite_user_id}" ${index === 0 ? 'disabled' : ''}>↑</button>
-      <button type="button" data-favorite-down="${fav.favorite_user_id}" ${index === favoriteUsers.length - 1 ? 'disabled' : ''}>↓</button>
-      <button type="button" class="remove" data-favorite-remove="${fav.favorite_user_id}">削除</button>
+      <button type="button"
+        data-favorite-up="${fav.favorite_user_id}"
+        data-favorite-instrument="${instrument}"
+        ${index === 0 ? 'disabled' : ''}>↑</button>
+      <button type="button"
+        data-favorite-down="${fav.favorite_user_id}"
+        data-favorite-instrument="${instrument}"
+        ${index === rows.length - 1 ? 'disabled' : ''}>↓</button>
+      <button type="button"
+        class="remove"
+        data-favorite-remove="${fav.favorite_user_id}"
+        data-favorite-instrument="${instrument}">削除</button>
     </div>
-  `).join('') || '<div class="section-note">お気に入りユーザーはまだ登録されていません。</div>';
+  `).join('') || `<div class="section-note">${instrument}ライバルはまだ登録されていません。</div>`;
 }
 
-async function moveFavorite(userId, direction) {
-  const index = favoriteUsers.findIndex(f => f.favorite_user_id === userId);
+function renderFavorites() {
+  renderFavoriteList('GF');
+  renderFavoriteList('DM');
+}
+
+async function moveFavorite(userId, direction, instrument) {
+  const rows = favoriteUsers[instrument] || [];
+  const index = rows.findIndex(f => f.favorite_user_id === userId);
   if (index < 0) return;
 
   const next = index + direction;
-  if (next < 0 || next >= favoriteUsers.length) return;
+  if (next < 0 || next >= rows.length) return;
 
-  const ids = favoriteUsers.map(f => f.favorite_user_id);
+  const ids = rows.map(f => f.favorite_user_id);
   [ids[index], ids[next]] = [ids[next], ids[index]];
 
-  await reorderFavorites(ids);
+  await reorderFavorites(ids, instrument);
   await loadFavorites();
 }
 
@@ -1767,7 +1805,7 @@ document.addEventListener('click', async e => {
   if (favoriteToggle) {
     e.preventDefault();
     e.stopPropagation();
-    await toggleFavorite(favoriteToggle.dataset.favoriteUser);
+    await toggleFavorite(favoriteToggle.dataset.favoriteUser, favoriteToggle.dataset.favoriteInstrument || activeInstrument);
     return;
   }
 
@@ -1777,17 +1815,20 @@ document.addEventListener('click', async e => {
   }
 
   if (favoriteUp) {
-    await moveFavorite(favoriteUp.dataset.favoriteUp, -1);
+    await moveFavorite(favoriteUp.dataset.favoriteUp, -1, favoriteUp.dataset.favoriteInstrument || 'GF');
     return;
   }
 
   if (favoriteDown) {
-    await moveFavorite(favoriteDown.dataset.favoriteDown, 1);
+    await moveFavorite(favoriteDown.dataset.favoriteDown, 1, favoriteDown.dataset.favoriteInstrument || 'GF');
     return;
   }
 
   if (favoriteRemove) {
-    await removeFavorite(favoriteRemove.dataset.favoriteRemove);
+    await removeFavorite(
+      favoriteRemove.dataset.favoriteRemove,
+      favoriteRemove.dataset.favoriteInstrument || 'GF'
+    );
     await Promise.all([loadFavorites(), loadUsers()]);
     return;
   }

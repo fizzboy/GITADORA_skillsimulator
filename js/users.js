@@ -26,13 +26,15 @@ export async function getSongRateComparison(songId) {
   return data ?? [];
 }
 
-export async function getMyFavorites() {
-  const { data, error } = await supabase.rpc('get_my_favorites');
+export async function getMyFavorites(instrument = 'GF') {
+  const { data, error } = await supabase.rpc('get_my_favorites', {
+    p_instrument: instrument
+  });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function addFavorite(favoriteUserId) {
+export async function addFavorite(favoriteUserId, instrument = 'GF') {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
 
@@ -40,6 +42,7 @@ export async function addFavorite(favoriteUserId) {
     .from('user_favorites')
     .select('sort_order')
     .eq('user_id', userData.user.id)
+    .eq('instrument', instrument)
     .order('sort_order', { ascending: false })
     .limit(1);
 
@@ -52,13 +55,14 @@ export async function addFavorite(favoriteUserId) {
     .insert({
       user_id: userData.user.id,
       favorite_user_id: favoriteUserId,
+      instrument,
       sort_order: nextOrder
     });
 
   if (error) throw error;
 }
 
-export async function removeFavorite(favoriteUserId) {
+export async function removeFavorite(favoriteUserId, instrument = 'GF') {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
 
@@ -66,12 +70,13 @@ export async function removeFavorite(favoriteUserId) {
     .from('user_favorites')
     .delete()
     .eq('user_id', userData.user.id)
-    .eq('favorite_user_id', favoriteUserId);
+    .eq('favorite_user_id', favoriteUserId)
+    .eq('instrument', instrument);
 
   if (error) throw error;
 }
 
-export async function reorderFavorites(orderedUserIds) {
+export async function reorderFavorites(orderedUserIds, instrument = 'GF') {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
 
@@ -80,7 +85,8 @@ export async function reorderFavorites(orderedUserIds) {
       .from('user_favorites')
       .update({ sort_order: i + 1 })
       .eq('user_id', userData.user.id)
-      .eq('favorite_user_id', orderedUserIds[i]);
+      .eq('favorite_user_id', orderedUserIds[i])
+      .eq('instrument', instrument);
 
     if (error) throw error;
   }
