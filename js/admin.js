@@ -8,18 +8,19 @@ export async function isAdmin() {
 }
 
 export async function getAdminSongs(keyword = '') {
-  let query = supabase
-    .from('songs')
-    .select('id,is_hot,title,part,level')
-    .order('title', { ascending: true })
-    .order('part', { ascending: true })
-    .limit(1000);
-
-  if (keyword.trim()) query = query.ilike('title', `%${keyword.trim()}%`);
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data ?? [];
+  const all = [];
+  const pageSize = 1000;
+  for (let from = 0; ; from += pageSize) {
+    let query = supabase.from('songs').select('id,is_hot,title,part,level')
+      .order('title', { ascending: true }).order('part', { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (keyword.trim()) query = query.ilike('title', `%${keyword.trim()}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    all.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+  }
+  return all;
 }
 
 export async function saveMasterSong({ id = null, isHot = false, title, part, level }) {
@@ -129,10 +130,10 @@ export async function accountAdmin(action, payload = {}) {
 
 
 export const MASTER_PARTS = [
-  'MAS-G','MAS-B',
-  'EXT-G','EXT-B',
-  'ADV-G','ADV-B',
-  'BSC-G','BSC-B'
+  'MAS-G','MAS-B','MAS-D',
+  'EXT-G','EXT-B','EXT-D',
+  'ADV-G','ADV-B','ADV-D',
+  'BSC-G','BSC-B','BSC-D'
 ];
 
 export async function saveMasterSongRow({

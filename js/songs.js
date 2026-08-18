@@ -1,21 +1,20 @@
 import { supabase } from './supabase.js';
 
 // 上から選びやすい順
-export const PARTS = [
-  'MAS-G','MAS-B',
-  'EXT-G','EXT-B',
-  'ADV-G','ADV-B',
-  'BSC-G','BSC-B'
-];
+export const GF_PARTS = ['MAS-G','MAS-B','EXT-G','EXT-B','ADV-G','ADV-B','BSC-G','BSC-B'];
+export const DM_PARTS = ['MAS-D','EXT-D','ADV-D','BSC-D'];
+export const PARTS = [...GF_PARTS, ...DM_PARTS];
+export const partsForInstrument = instrument => instrument === 'DM' ? DM_PARTS : GF_PARTS;
 
-export async function searchSongTitles(keyword = '') {
+export async function searchSongTitles(keyword = '', instrument = 'GF') {
   const clean = String(keyword || '').trim();
   if (!clean) return [];
 
   let query = supabase
     .from('songs')
-    .select('title,is_hot')
+    .select('title,is_hot,part')
     .ilike('title', `%${clean}%`)
+    .in('part', partsForInstrument(instrument))
     .order('title', { ascending: true })
     .limit(200);
 

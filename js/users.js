@@ -1,16 +1,18 @@
 import { supabase } from './supabase.js';
 
-export async function listUserSummaries(keyword = '') {
+export async function listUserSummaries(keyword = '', instrument = 'GF') {
   const { data, error } = await supabase.rpc('list_user_summaries', {
-    p_search: String(keyword || '').trim()
+    p_search: String(keyword || '').trim(),
+    p_instrument: instrument
   });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getUserSkillTargets(userId) {
+export async function getUserSkillTargets(userId, instrument = 'GF') {
   const { data, error } = await supabase.rpc('get_user_skill_targets', {
-    p_user_id: userId
+    p_user_id: userId,
+    p_instrument: instrument
   });
   if (error) throw error;
   return data ?? [];

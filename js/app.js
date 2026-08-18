@@ -1,8 +1,8 @@
-import { supabase } from './supabase.js?v=16_0';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=16_0';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=16_0';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=16_0';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=16_0';
+import { supabase } from './supabase.js?v=17_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=17_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=17_0';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=17_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=17_0';
 const {
   isAdmin,
   getAdminSongs,
@@ -17,7 +17,7 @@ const {
 
 // 曲マスター表の列順。admin.jsが古くても画面自体は起動できるようローカルにも保持。
 const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
-  'MAS-G','MAS-B','EXT-G','EXT-B','ADV-G','ADV-B','BSC-G','BSC-B'
+  'MAS-G','MAS-B','MAS-D','EXT-G','EXT-B','EXT-D','ADV-G','ADV-B','ADV-D','BSC-G','BSC-B','BSC-D'
 ];
 
 // v14.3: 曲マスターの横一括編集はapp.js側にも実装。
@@ -119,10 +119,11 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=16_0';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=16_0';
+import * as adminApi from './admin.js?v=17_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=17_0';
 
 let activeTabName = 'SKILL';
+let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let currentAuthMode = 'login';
 let scores = [];
 let editingScoreId = null;
@@ -220,8 +221,26 @@ function closeSiteDialog() {
   if (resolve) resolve();
 }
 
+function instrumentParts() { return partsForInstrument(activeInstrument); }
+function isCurrentInstrumentPart(part) { return instrumentParts().includes(String(part || '')); }
+function applyInstrumentUI() {
+  document.querySelectorAll('[data-instrument]').forEach(b => b.classList.toggle('active', b.dataset.instrument === activeInstrument));
+  $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
+  if ($('instrumentLabel')) $('instrumentLabel').textContent = activeInstrument;
+}
+async function switchInstrument(instrument) {
+  if (!['GF','DM'].includes(instrument) || instrument === activeInstrument) return;
+  activeInstrument = instrument;
+  localStorage.setItem('gitadora_instrument', instrument);
+  selectedSong = null; editingScoreId = null; viewedUserScores = []; publicUsers = [];
+  applyInstrumentUI();
+  closeModal();
+  render();
+  if (activeTabName === 'USERS') await loadUsers();
+}
+
 async function init() {
-  $('partSelect').innerHTML = PARTS.map(p => `<option value="${p}">${p}</option>`).join('');
+  applyInstrumentUI();
   await initAuthCaptcha();
   const session = await getSession();
   if (session) await showApp(session);
@@ -253,6 +272,7 @@ function getOwnSkillTargetRows() {
   const bestByTitle = new Map();
 
   for (const row of scores) {
+    if (!isCurrentInstrumentPart(row.part)) continue;
     if (row.pending_master) continue;
     if (/\(CLASSIC\)\s*$/i.test(String(row.title || ''))) continue;
 
@@ -448,6 +468,7 @@ function renderManage() {
   const fcFilter = $('recordFcFilter')?.value || '';
 
   const data = scores
+    .filter(r => isCurrentInstrumentPart(r.part))
     .filter(r => !keyword || r.title.toLowerCase().includes(keyword))
     .filter(r => {
       if (typeFilter === 'HOT') return Boolean(r.is_hot);
@@ -515,7 +536,8 @@ function openScoreModal(score = null) {
 
   $('domModalTitle').textContent = score ? '登録情報の編集' : 'スコア登録';
   $('formTitle').value = score?.title || '';
-  $('partSelect').value = score?.part || 'MAS-G';
+  $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
+  $('partSelect').value = score?.part || instrumentParts()[0];
   $('formLevel').value = score ? formatLevel(score.level) : '';
   $('formRate').value = score ? formatRate(score.achievement_rate) : '';
   $('formFc').value = score?.fc || '';
@@ -556,13 +578,13 @@ async function suggestSongs() {
   }
 
   try {
-    const rows = await searchSongTitles(title);
+    const rows = await searchSongTitles(title, activeInstrument);
     $('songSuggestions').innerHTML = rows.map(r => `
       <button class="suggestion"
         data-title="${esc(r.title)}"
         data-is-hot="${r.is_hot ? '1':'0'}">
         <span>${r.is_hot ? '[HOT] ' : ''}${esc(r.title)}</span>
-      </button>`).join('') || '<div class="empty-state">曲マスターに該当する曲名がありません</div>';
+      </button>`).join('') || `<button class="suggestion request-suggestion" data-request-title="${esc(title)}"><span>「${esc(title)}」を曲マスターへ登録依頼</span></button>`;
 
     // 入力中は完全一致しても自動確定しない。
     // 候補をユーザーがタップした時だけ曲名を確定する。
@@ -702,7 +724,7 @@ function formatDateOnly(value) {
 
 async function loadUsers() {
   try {
-    publicUsers = await listUserSummaries($('userSearch')?.value || '');
+    publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument);
     renderUsers();
   } catch (e) {
     $('userList').innerHTML = `<div class="empty-state">ユーザー一覧の取得に失敗しました: ${esc(e.message)}</div>`;
@@ -752,7 +774,7 @@ async function openUserDetail(userId, username) {
   $('userDetailPage').style.display = 'block';
 
   try {
-    viewedUserScores = await getUserSkillTargets(userId);
+    viewedUserScores = await getUserSkillTargets(userId, activeInstrument);
     const target = calcTargetTotals(viewedUserScores);
 
     $('userDetailHot').textContent = formatSkill(target.hot);
@@ -1479,6 +1501,7 @@ $('rateCompareMask').addEventListener('click', e => {
 
 document.addEventListener('click', async e => {
   const suggestion = e.target.closest('.suggestion');
+  const instrumentButton = e.target.closest('[data-instrument]');
   const edit = e.target.closest('[data-edit]');
   const del = e.target.closest('[data-delete]');
   const adminEditSong = e.target.closest('[data-admin-edit-song]');
@@ -1496,6 +1519,8 @@ document.addEventListener('click', async e => {
   const compareCard = e.target.closest('[data-compare-song]');
   const adminSaveMasterRow = e.target.closest('[data-admin-save-master-row]');
   const adminDeleteMasterRow = e.target.closest('[data-admin-delete-master-row]');
+
+  if (instrumentButton) { await switchInstrument(instrumentButton.dataset.instrument); return; }
 
   if (favoriteToggle) {
     e.preventDefault();
@@ -1526,7 +1551,13 @@ document.addEventListener('click', async e => {
   }
 
   if (suggestion) {
-    await selectSongTitle(suggestion.dataset.title);
+    if (suggestion.dataset.requestTitle) {
+      $('formTitle').value = suggestion.dataset.requestTitle;
+      $('songSuggestions').innerHTML = '';
+      await refreshSelectedPart();
+    } else {
+      await selectSongTitle(suggestion.dataset.title);
+    }
   }
 
   if (compareCard && !edit && !del) {
