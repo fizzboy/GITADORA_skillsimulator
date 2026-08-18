@@ -20,7 +20,7 @@ function legacyUsernameToEmail(username) {
 }
 
 async function hashedUsernameToEmail(username) {
-  const clean = normalizeUsername(username).toLowerCase();
+  const clean = normalizeUsername(username);
   const bytes = new TextEncoder().encode(clean);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   const hex = Array.from(new Uint8Array(digest))
@@ -52,7 +52,7 @@ export async function login(username, password) {
     throw new Error('アカウント名を入力してください。');
   }
 
-  // v13以降のアカウント
+  // v15.3以降: 大文字小文字を区別したアカウント
   const hashedEmail = await hashedUsernameToEmail(clean);
   let result = await supabase.auth.signInWithPassword({
     email: hashedEmail,
@@ -60,6 +60,25 @@ export async function login(username, password) {
   });
 
   if (!result.error) return result.data;
+
+  const firstError = result.error;
+
+  // v13〜v15.2で作成した「大文字小文字を区別しないhash」アカウントとの互換性
+  const oldCaseInsensitive = normalizeUsername(clean).toLowerCase();
+  const bytes = new TextEncoder().encode(oldCaseInsensitive);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  const hex = Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  const oldHashedEmail = `u_${hex}@${USERNAME_DOMAIN}`;
+
+  if (oldHashedEmail !== hashedEmail) {
+    result = await supabase.auth.signInWithPassword({
+      email: oldHashedEmail,
+      password
+    });
+    if (!result.error) return result.data;
+  }
 
   // v9以前に作った半角英数字ユーザーとの互換性
   if (/^[A-Za-z0-9_]{3,32}$/.test(clean)) {
@@ -71,7 +90,7 @@ export async function login(username, password) {
     if (!result.error) return result.data;
   }
 
-  throw result.error;
+  throw firstError;
 }
 
 export async function logout() {
