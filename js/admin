@@ -1,3 +1,4 @@
+// GD Pocket Board admin.js v14_2
 import { supabase } from './supabase.js';
 
 export async function isAdmin() {
