@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_5';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_5';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_5';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_5';
+import { supabase } from './supabase.js?v=15_6';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_6';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_6';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_6';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_5';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_5';
+import * as adminApi from './admin.js?v=15_6';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_6';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -381,7 +381,6 @@ function createCard(record, index, mode = 'MANAGE') {
 
     return `
       <div class="sk-row ${rowColor}">
-        <span class="sk-rank">#${index}</span>
         <div class="sk-badge-column">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
           <div class="fc-zone">${fcBadge}</div>
@@ -400,8 +399,7 @@ function createCard(record, index, mode = 'MANAGE') {
 
   return `
     <div class="m-card" ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
-      <span class="sk-rank">#${index}</span>
-      <div class="m-main-area">
+<div class="m-main-area">
         <div class="m-upper-row">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
           <div class="m-title-text">${pendingTag}${hotTag} ${esc(record.title)}</div>
@@ -437,13 +435,28 @@ function renderSkill() {
 
 function renderManage() {
   const keyword = $('domSearch').value.trim().toLowerCase();
+  const typeFilter = $('recordTypeFilter')?.value || '';
+  const fcFilter = $('recordFcFilter')?.value || '';
+
   const data = scores
     .filter(r => !keyword || r.title.toLowerCase().includes(keyword))
+    .filter(r => {
+      if (typeFilter === 'HOT') return Boolean(r.is_hot);
+      if (typeFilter === 'OTHER') return !r.is_hot;
+      return true;
+    })
+    .filter(r => {
+      const fc = r.fc || '';
+      if (fcFilter === 'NONE') return fc === '';
+      if (fcFilter === 'FC') return fc === 'FC';
+      if (fcFilter === 'EXC') return fc === 'EXC';
+      return true;
+    })
     .sort((a,b) => Number(b.skill) - Number(a.skill));
 
   $('viewAllManage').innerHTML =
     data.map((r,i) => createCard(r,i+1)).join('') ||
-    '<div class="empty-state">登録データがありません</div>';
+    '<div class="empty-state">条件に一致する登録データがありません</div>';
 }
 
 function render() {
@@ -502,6 +515,10 @@ function openScoreModal(score = null) {
   $('songSuggestions').innerHTML = '';
   $('btnSubmitForm').textContent = '保存する';
   hide('masterRequestArea');
+  hide('levelCorrectionArea');
+  hide('levelCorrectionForm');
+  $('correctionLevel').value = '';
+  if (selectedSong) show('levelCorrectionArea');
   $('domModal').style.display = 'flex';
 
   if (!score) $('formTitle').focus();
@@ -520,6 +537,8 @@ async function suggestSongs() {
   $('formLevel').value = '';
   $('formLevel').readOnly = true;
   hide('masterRequestArea');
+  hide('levelCorrectionArea');
+  hide('levelCorrectionForm');
   updateSkillPreview();
 
   if (!title) {
@@ -559,6 +578,9 @@ async function refreshSelectedPart() {
   $('formLevel').value = '';
   $('formLevel').readOnly = true;
   hide('masterRequestArea');
+  hide('levelCorrectionArea');
+  hide('levelCorrectionForm');
+  $('correctionLevel').value = '';
 
   if (!title || !part) {
     updateSkillPreview();
@@ -573,6 +595,7 @@ async function refreshSelectedPart() {
       $('formLevel').readOnly = true;
       $('btnSubmitForm').textContent = '保存する';
       hide('masterRequestArea');
+      show('levelCorrectionArea');
     } else {
       setMissingMasterState();
     }
@@ -590,6 +613,8 @@ function setMissingMasterState() {
   $('formLevel').placeholder = '登録依頼する難易度';
   $('btnSubmitForm').textContent = '登録依頼して保存';
   show('masterRequestArea');
+  hide('levelCorrectionArea');
+  hide('levelCorrectionForm');
   updateSkillPreview();
 }
 
@@ -1005,13 +1030,25 @@ async function loadAdminRequests() {
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   try {
     adminRequests = await getPendingSongRequests($('adminRequestSearch').value);
+    for (const req of adminRequests) {
+      if (req.request_type === 'level_correction' && req.current_song_id) {
+        const { data: currentSong } = await supabase
+          .from('songs')
+          .select('level')
+          .eq('id', req.current_song_id)
+          .maybeSingle();
+        req.current_level = currentSong?.level ?? null;
+      }
+    }
     $('adminBody').innerHTML = adminRequests.map(req => `
       <div class="admin-card">
         <div class="admin-card-top">
           <div class="admin-card-title">${esc(req.title)}</div>
+          <span class="pending-badge">${req.request_type === 'level_correction' ? '難易度修正' : '新規曲'}</span>
         </div>
         <div class="admin-card-meta">
           <span>${req.part}</span>
+          ${req.request_type === 'level_correction' ? `<span>現在: ${formatLevel(req.current_level)}</span>` : ''}
           <span>依頼者: ${esc(req.profiles?.username || '-')}</span>
           <span>${new Date(req.created_at).toLocaleString('ja-JP')}</span>
         </div>
@@ -1193,6 +1230,44 @@ document.querySelectorAll('.p-tab-btn').forEach(btn => {
 });
 
 $('domSearch').addEventListener('input', renderManage);
+$('recordTypeFilter').addEventListener('change', renderManage);
+$('recordFcFilter').addEventListener('change', renderManage);
+
+$('btnOpenLevelCorrection').addEventListener('click', () => {
+  $('correctionLevel').value = selectedSong ? formatLevel(selectedSong.level) : '';
+  $('levelCorrectionForm').classList.toggle('hidden');
+});
+
+$('btnSendLevelCorrection').addEventListener('click', async () => {
+  const button = $('btnSendLevelCorrection');
+  if (!selectedSong?.id) {
+    await showSiteDialog('対象譜面を取得できません。', 'エラー');
+    return;
+  }
+
+  const proposedLevel = $('correctionLevel').value;
+  if (!proposedLevel) {
+    await showSiteDialog('正しい難易度を入力してください。', '入力エラー');
+    return;
+  }
+
+  const original = button.textContent;
+  try {
+    button.disabled = true;
+    button.textContent = '送信中';
+    await requestSongLevelCorrection({
+      songId: selectedSong.id,
+      proposedLevel
+    });
+    hide('levelCorrectionForm');
+    await showSiteDialog('難易度修正依頼を送信しました。', '送信完了');
+  } catch (e) {
+    await showSiteDialog(e.message || '難易度修正依頼の送信に失敗しました。', 'エラー');
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+});
 $('btnHeaderAdd').addEventListener('click', () => openScoreModal());
 $('formTitle').addEventListener('input', suggestSongs);
 $('partSelect').addEventListener('change', refreshSelectedPart);
