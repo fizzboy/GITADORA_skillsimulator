@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_2';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_2';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_2';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_2';
+import { supabase } from './supabase.js?v=15_3';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_3';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_3';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_3';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_2';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_2';
+import * as adminApi from './admin.js?v=15_3';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_3';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -786,7 +786,13 @@ async function openRateComparison(songId, title, part) {
     const rows = await getSongRateComparison(songId);
     $('rateCompareBody').innerHTML = rows.map((row, index) => `
       <div class="rate-row ${row.is_self ? 'self' : ''}">
-        <div class="rate-user">#${index + 1} ${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
+        <div class="rate-user">
+          <div>#${index + 1} ${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:4px;">
+            ${getFcBadgeMarkup(row.fc)}
+            ${getOptionBadgeMarkup(row.play_option)}
+          </div>
+        </div>
         <div class="rate-value">${formatRate(row.achievement_rate)}%</div>
         <div class="rate-skill">${formatSkill(row.skill)}</div>
       </div>`
