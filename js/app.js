@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_6';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_6';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_6';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_6';
+import { supabase } from './supabase.js?v=14_7';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_7';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_7';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_7';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,7 +118,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_6';
+import * as adminApi from './admin.js?v=14_7';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -172,7 +172,7 @@ async function showApp(session) {
     session?.user?.user_metadata?.username ||
     session?.user?.email?.split('@')[0] || '';
 
-  // 登録名変更後も常にprofiles側の最新値を表示
+  // アカウント名変更後も常にprofiles側の最新値を表示
   try {
     const { data: profile } = await supabase
       .from('profiles')
@@ -187,6 +187,26 @@ async function showApp(session) {
 
   $('headerUsername').textContent = username;
   await Promise.all([loadScores(), checkAdminAccess()]);
+}
+
+
+let siteDialogResolver = null;
+
+function showSiteDialog(message, title = 'お知らせ') {
+  $('siteDialogTitle').textContent = title;
+  $('siteDialogMessage').textContent = String(message || '');
+  $('siteDialogMask').style.display = 'flex';
+
+  return new Promise(resolve => {
+    siteDialogResolver = resolve;
+  });
+}
+
+function closeSiteDialog() {
+  $('siteDialogMask').style.display = 'none';
+  const resolve = siteDialogResolver;
+  siteDialogResolver = null;
+  if (resolve) resolve();
 }
 
 async function init() {
@@ -610,13 +630,13 @@ async function openMyPage() {
 
 async function changeOwnUsername() {
   const username = $('mypageUsernameInput').value.trim();
-  if (!username) throw new Error('登録名を入力してください。');
+  if (!username) throw new Error('アカウント名を入力してください。');
 
   const data = await accountAdmin('rename_self', { username });
   $('mypageUsernameInput').value = data.username;
   $('headerUsername').textContent = data.username;
   $('authUsername').value = data.username;
-  alert('登録名を変更しました。次回から新しい登録名でログインしてください。');
+  await showSiteDialog('アカウント名を変更しました。\n次回から新しいアカウント名でログインしてください。', '変更完了');
 }
 
 function closeMyPage() {
@@ -878,7 +898,7 @@ $('authForm').addEventListener('submit', async e => {
 
     if (mode === 'register') {
       if (!validateUsername(username)) {
-        throw new Error('登録名は1〜32文字で入力してください。日本語も使用できます。');
+        throw new Error('アカウント名は1〜32文字で入力してください。日本語も使用できます。');
       }
       if (password.length < 8) throw new Error('パスワードは8文字以上で設定してください。');
       if (password !== $('authPasswordConfirm').value) {
@@ -932,7 +952,19 @@ $('btnChangeUsername').addEventListener('click', async () => {
     $('btnChangeUsername').disabled = true;
     await changeOwnUsername();
   } catch (e) {
-    alert('登録名の変更に失敗しました: ' + e.message);
+    const message = e?.message || String(e);
+
+    if (
+      message.includes('既に登録されています') ||
+      message.includes('すでに使用されています') ||
+      message.includes('already') ||
+      message.includes('duplicate')
+    ) {
+      await showSiteDialog('そのアカウント名は既に登録されています', 'アカウント名を変更できません');
+    } else {
+      await showSiteDialog('アカウント名の変更に失敗しました。', 'エラー');
+      console.error('アカウント名変更エラー:', e);
+    }
   } finally {
     $('btnChangeUsername').disabled = false;
   }
@@ -1148,6 +1180,12 @@ document.addEventListener('click', async e => {
   if (adminResetUser) {
     openAdminPassword(adminResetUser.dataset.adminResetUser);
   }
+});
+
+
+$('siteDialogOk').addEventListener('click', closeSiteDialog);
+$('siteDialogMask').addEventListener('click', e => {
+  if (e.target === $('siteDialogMask')) closeSiteDialog();
 });
 
 document.addEventListener('visibilitychange', () => {
