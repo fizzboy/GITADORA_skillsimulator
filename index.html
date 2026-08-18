@@ -2143,6 +2143,124 @@ button:disabled {
   .favorite-toggle{width:30px !important;min-width:30px !important;padding:0 !important;}
 }
 
+/* === v21 FIX1 === */
+/* VERSIONを左上、GF/DMをその右へ */
+.user-header-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  min-height:48px;
+  padding:4px 8px !important;
+}
+.header-mode-controls,
+.header-account-controls{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+}
+.header-version-control{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+}
+.header-version-control .version-select{
+  max-width:220px;
+  min-height:30px;
+  height:30px;
+  padding-top:2px;
+  padding-bottom:2px;
+}
+.header-account-controls{
+  margin-left:auto;
+}
+.version-bar{
+  display:none !important;
+}
+
+/* TOTAL/HOT/OTHERはユーザー一覧と同じスキルカラーの描画幅にする。
+   flexの横幅全体ではなく、文字そのものの幅にgradientを適用する。 */
+.score-val{
+  display:inline-block !important;
+  width:max-content !important;
+  align-self:center !important;
+}
+
+/* ユーザー一覧は常に横一列 */
+.user-list-row{
+  display:grid !important;
+  grid-template-columns:minmax(110px,1fr) 82px 82px 82px 38px !important;
+  grid-template-areas:none !important;
+  align-items:center !important;
+}
+.user-list-name,
+.user-list-gf,
+.user-list-dm,
+.user-list-date,
+.favorite-toggle{
+  grid-area:auto !important;
+}
+
+@media(max-width:520px){
+  .user-header-row{
+    padding:4px !important;
+    gap:4px !important;
+  }
+  .header-mode-controls{gap:4px;}
+  .header-version-control{gap:3px;}
+  .header-version-control .version-bar-label{
+    font-size:7px;
+  }
+  .header-version-control .version-select{
+    width:132px;
+    max-width:132px;
+    min-height:28px;
+    height:28px;
+    padding-left:7px;
+    padding-right:24px;
+    font-size:9px;
+  }
+  .instrument-btn{
+    min-width:40px !important;
+    height:28px !important;
+    font-size:10px !important;
+  }
+  .header-account-controls{gap:4px;}
+  .admin-entry{
+    padding-left:7px !important;
+    padding-right:7px !important;
+  }
+  .header-user{
+    max-width:58px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .user-list-row{
+    grid-template-columns:minmax(84px,1fr) 58px 58px 64px 30px !important;
+    gap:3px !important;
+    padding:8px 5px !important;
+  }
+  .user-list-name{
+    font-size:10.5px !important;
+  }
+  .user-list-skill{
+    min-width:0;
+  }
+  .user-list-skill-value{
+    width:max-content;
+    max-width:100%;
+    margin-left:auto;
+    font-size:10px !important;
+  }
+  .user-list-date{
+    font-size:7px !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2174,18 +2292,22 @@ button:disabled {
 <div id="appScreen" class="hidden">
   <div class="p-header">
     <div class="user-header-row">
-      <div class="instrument-switch" aria-label="ゲーム切替"><button class="instrument-btn active" data-instrument="GF">GF</button><button class="instrument-btn" data-instrument="DM">DM</button></div>
-      <button id="btnAdmin" class="admin-entry hidden">管理</button>
-      <span id="headerUsername" class="header-user"></span>
+      <div class="header-mode-controls">
+        <div class="header-version-control">
+          <span class="version-bar-label">VERSION</span>
+          <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
+        </div>
+        <div class="instrument-switch" aria-label="ゲーム切替"><button class="instrument-btn active" data-instrument="GF">GF</button><button class="instrument-btn" data-instrument="DM">DM</button></div>
+      </div>
+      <div class="header-account-controls">
+        <button id="btnAdmin" class="admin-entry hidden">管理</button>
+        <span id="headerUsername" class="header-user"></span>
+      </div>
     </div>
     <div class="score-row">
       <div class="score-cell border-r"><span class="score-lbl">TOTAL</span><span id="txtGrandTotal" class="score-val">0.00</span></div>
       <div class="score-cell border-r"><span class="score-lbl">HOT</span><span id="txtHotTotal" class="score-val">0.00</span></div>
       <div class="score-cell"><span class="score-lbl">OTHER</span><span id="txtOtherTotal" class="score-val">0.00</span></div>
-    </div>
-    <div class="version-bar">
-      <span class="version-bar-label">VERSION</span>
-      <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
     </div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
@@ -2224,8 +2346,6 @@ button:disabled {
           <option value="gf_asc">GFスキル：低い順</option>
           <option value="dm_desc">DMスキル：高い順</option>
           <option value="dm_asc">DMスキル：低い順</option>
-          <option value="name_asc">アカウント名：昇順</option>
-          <option value="name_desc">アカウント名：降順</option>
           <option value="date_desc">更新日：新しい順</option>
           <option value="date_asc">更新日：古い順</option>
         </select>
@@ -2379,8 +2499,7 @@ button:disabled {
 
     <div class="skill-sync-note">
       <strong>実行前にe-amusementへログインしてください。</strong><br>
-      GitHub Pagesからログイン済みページを直接読み取ることはできないため、
-      e-amusement上で動く「同期ブックマーク」を使います。初回だけ登録すれば、次回以降は同じブックマークを使えます。
+      「同期ブックマーク」を使ってスキル対象を取得します。初回だけ登録すれば、次回以降は同じブックマークを使えます。
     </div>
 
     <div class="skill-sync-step">
@@ -2522,6 +2641,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_0"></script>
+<script type="module" src="./js/app.js?v=21_1"></script>
 </body>
 </html>
