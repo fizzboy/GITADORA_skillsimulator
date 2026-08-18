@@ -1,8 +1,27 @@
-import { supabase } from './supabase.js?v=14_1';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_1';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_1';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_1';
-import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, getPendingSongRequests, approveSongRequest, rejectSongRequest, accountAdmin, MASTER_PARTS, saveMasterSongRow, deleteMasterSongTitle } from './admin.js?v=14_1';
+import { supabase } from './supabase.js?v=14_2';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_2';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_2';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_2';
+const {
+  isAdmin,
+  getAdminSongs,
+  saveMasterSong,
+  deleteMasterSong,
+  getAdminUsers,
+  getPendingSongRequests,
+  approveSongRequest,
+  rejectSongRequest,
+  accountAdmin,
+  saveMasterSongRow,
+  deleteMasterSongTitle
+} = adminApi;
+
+// 曲マスター表の列順。admin.jsが古くても画面自体は起動できるようローカルにも保持。
+const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
+  'MAS-G','MAS-B','EXT-G','EXT-B','ADV-G','ADV-B','BSC-G','BSC-B'
+];
+
+import * as adminApi from './admin.js?v=14_2';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -482,6 +501,15 @@ async function deleteOwnAccount() {
 }
 
 /* ---------- 管理者 ---------- */
+function ensureAdminV14() {
+  if (adminEnabled && (
+    typeof saveMasterSongRow !== 'function' ||
+    typeof deleteMasterSongTitle !== 'function'
+  )) {
+    console.error('admin.js が古いバージョンです。v14_2へ更新してください。');
+  }
+}
+
 async function checkAdminAccess() {
   try {
     adminEnabled = await isAdmin();
@@ -490,6 +518,7 @@ async function checkAdminAccess() {
     adminEnabled = false;
   }
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
+    ensureAdminV14();
 }
 
 async function openAdmin() {
