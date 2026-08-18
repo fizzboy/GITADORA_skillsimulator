@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_4';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_4';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_4';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_4';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_4';
-import { getGameVersions } from './versions.js?v=21_4';
+import { supabase } from './supabase.js?v=21_10';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_10';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_10';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_10';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_10';
+import { getGameVersions } from './versions.js?v=21_10';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_4';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_4';
+import * as adminApi from './admin.js?v=21_10';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_10';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -294,6 +294,7 @@ let currentAuthMode = 'login';
 let scores = [];
 let editingScoreId = null;
 let selectedSong = null;
+let scoreModalScrollY = 0;
 
 let adminEnabled = false;
 let adminTab = 'songs';
@@ -801,13 +802,55 @@ function openScoreModal(score = null) {
   hide('levelCorrectionForm');
   $('correctionLevel').value = '';
   if (selectedSong) show('levelCorrectionArea');
+
+  // iOS Safariではモーダル内のinputにフォーカスすると、
+  // 背景ページ側のスクロール位置まで動くことがある。
+  // 開く前の位置を保存してbodyを固定し、背景を一切動かさない。
+  scoreModalScrollY = window.scrollY || window.pageYOffset || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scoreModalScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+
   $('domModal').style.display = 'flex';
 
-  if (!score) $('formTitle').focus();
+  if (!score) {
+    requestAnimationFrame(() => $('formTitle').focus({ preventScroll: true }));
+  }
 }
 
 function closeModal() {
+  // iOS Safariのキーボード/VisualViewportが閉じる前に
+  // アクティブ要素をblurし、背景スクロールを確実に元へ戻す。
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
   $('domModal').style.display = 'none';
+
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+
+  const restoreY = scoreModalScrollY;
+  window.scrollTo(0, restoreY);
+
+  // Safariはキーボード終了直後の1フレームだけVisualViewportが古い場合があるため
+  // 2フレーム後にも同じ位置を再適用して再描画させる。
+  requestAnimationFrame(() => {
+    window.scrollTo(0, restoreY);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, restoreY);
+      document.documentElement.style.transform = 'translateZ(0)';
+      requestAnimationFrame(() => {
+        document.documentElement.style.transform = '';
+      });
+    });
+  });
+
   editingScoreId = null;
   selectedSong = null;
 }
