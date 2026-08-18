@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GD Pocket Board</title>
+<title>GITADORA Skill Simulator</title>
 <style>
     /* === 1. 共通ベーススタイル === */
     html, body {
@@ -323,6 +323,52 @@ body { background:#0b1220; }
 .empty-state { padding:22px 10px; text-align:center; color:#64748b; font-size:12px; }
 .section-note { font-size:11px; color:#64748b; line-height:1.5; margin-top:6px; }
 
+/* === v13 === */
+.mypage-name-row { display:flex; gap:7px; align-items:center; }
+.mypage-name-row input { flex:1; }
+.btn-name-change {
+  flex:0 0 auto;
+  min-height:46px;
+  border:0;
+  border-radius:8px;
+  padding:0 15px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:900;
+}
+.master-request-area {
+  margin:4px 0 12px;
+  padding:11px;
+  border:1px solid #fbbf24;
+  background:#fffbeb;
+  color:#78350f;
+  border-radius:9px;
+}
+.master-request-title { font-size:12px; font-weight:900; }
+.master-request-note { font-size:11px; line-height:1.5; margin-top:3px; color:#92400e; }
+.btn-request-master {
+  width:100%;
+  min-height:40px;
+  margin-top:8px;
+  border:0;
+  border-radius:7px;
+  background:#d97706;
+  color:white;
+  font-weight:900;
+}
+.request-actions { display:flex; gap:5px; margin-top:8px; }
+.request-actions button {
+  flex:1;
+  min-height:36px;
+  border:0;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:900;
+}
+.request-approve { background:#dcfce7; color:#166534; }
+.request-hot { background:#fee2e2; color:#991b1b; }
+.request-reject { background:#f1f5f9; color:#475569; }
+
 </style>
 </head>
 <body>
@@ -332,7 +378,7 @@ body { background:#0b1220; }
     <h1 id="authTitle">ログイン</h1>
     <form id="authForm">
       <label>登録名</label>
-      <input id="authUsername" autocomplete="username" required pattern="[A-Za-z0-9_]{3,32}" placeholder="半角英数字・_">
+      <input id="authUsername" autocomplete="username" required maxlength="32" placeholder="日本語可・32文字まで">
       <label>パスワード</label>
       <input id="authPassword" type="password" autocomplete="current-password" required placeholder="パスワードを入力">
       <div id="authPasswordConfirmGroup" class="hidden">
@@ -348,7 +394,7 @@ body { background:#0b1220; }
 <div id="appScreen" class="hidden">
   <div class="p-header">
     <div class="user-header-row">
-      <span class="user-header-title">GD Pocket Board</span>
+      <span class="user-header-title">GITADORA Skill Simulator</span>
       <button id="btnAdmin" class="admin-entry hidden">管理</button>
       <span id="headerUsername" class="header-user"></span>
     </div>
@@ -390,8 +436,14 @@ body { background:#0b1220; }
       </div>
       <div class="f-group">
         <label>Level</label>
-        <input id="formLevel" readonly placeholder="自動">
+        <input id="formLevel" readonly type="number" step="0.01" inputmode="decimal" placeholder="自動">
       </div>
+    </div>
+
+    <div id="masterRequestArea" class="master-request-area hidden">
+      <div class="master-request-title">この曲名・Partは曲マスターにありません</div>
+      <div class="master-request-note">難易度を入力して、管理者へ登録依頼を送信できます。</div>
+      <button id="btnRequestMaster" type="button" class="btn-request-master">曲マスター登録を依頼</button>
     </div>
 
     <div class="f-group">
@@ -435,8 +487,12 @@ body { background:#0b1220; }
 <div id="mypageModal" class="mypage-modal">
   <div class="mypage-sheet">
     <h3 style="font-size:16px;margin-bottom:12px;">マイページ</h3>
-    <div style="font-size:11px;color:#64748b;">登録名</div>
-    <div id="mypageUsername" style="font-weight:900;font-size:16px;margin:3px 0 16px;"></div>
+    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">登録名</label>
+    <div class="mypage-name-row">
+      <input id="mypageUsernameInput" maxlength="32" placeholder="日本語可・32文字まで">
+      <button id="btnChangeUsername" type="button" class="btn-name-change">変更</button>
+    </div>
+    <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しい登録名でログインしてください。</div>
 
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">新しいパスワード</label>
     <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
@@ -461,11 +517,15 @@ body { background:#0b1220; }
     </div>
     <div class="admin-tabs">
       <button class="admin-tab active" data-admin-tab="songs">曲マスター</button>
+      <button class="admin-tab" data-admin-tab="requests">登録依頼</button>
       <button class="admin-tab" data-admin-tab="users">ユーザー</button>
     </div>
     <div id="adminSongToolbar" class="admin-toolbar">
       <input id="adminSongSearch" placeholder="曲名を検索...">
       <button id="btnAdminAddSong">＋追加</button>
+    </div>
+    <div id="adminRequestToolbar" class="admin-toolbar hidden">
+      <input id="adminRequestSearch" placeholder="依頼された曲名を検索...">
     </div>
     <div id="adminUserToolbar" class="admin-toolbar hidden">
       <input id="adminUserSearch" placeholder="登録名を検索...">
@@ -483,10 +543,10 @@ body { background:#0b1220; }
       <div>
         <label>Part</label>
         <select id="adminFormPart">
-          <option>BSC-G</option><option>BSC-B</option>
-          <option>ADV-G</option><option>ADV-B</option>
-          <option>EXT-G</option><option>EXT-B</option>
           <option>MAS-G</option><option>MAS-B</option>
+          <option>EXT-G</option><option>EXT-B</option>
+          <option>ADV-G</option><option>ADV-B</option>
+          <option>BSC-G</option><option>BSC-B</option>
         </select>
       </div>
       <div>
@@ -515,6 +575,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=9"></script>
+<script type="module" src="./js/app.js?v=13"></script>
 </body>
 </html>
