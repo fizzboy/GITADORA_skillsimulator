@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_12';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_12';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_12';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_12';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_12';
-import { getGameVersions } from './versions.js?v=21_12';
+import { supabase } from './supabase.js?v=21_14';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_14';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_14';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_14';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_14';
+import { getGameVersions } from './versions.js?v=21_14';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_12';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_12';
+import * as adminApi from './admin.js?v=21_14';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_14';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -665,7 +665,7 @@ function createCard(record, index, mode = 'MANAGE') {
           <div class="fc-zone">${fcBadge}</div>
         </div>
         <div class="sk-text-column">
-          <div class="sk-title">${pendingTag}${hotTag} ${esc(record.title)}</div>
+          <div class="sk-title smart-song-title" data-full-title="${esc(record.title)}">${pendingTag}${hotTag} <span class="song-title-text">${esc(record.title)}</span></div>
           <div class="sk-meta">
             <span class="sk-meta-lv">Lv: <strong>${formatLevel(record.level)}</strong></span>
             <span class="sk-meta-rate">Rate: <strong>${formatRate(record.achievement_rate)}%</strong></span>
@@ -681,7 +681,7 @@ function createCard(record, index, mode = 'MANAGE') {
 <div class="m-main-area">
         <div class="m-upper-row">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
-          <div class="m-title-text">${pendingTag}${hotTag} ${esc(record.title)}</div>
+          <div class="m-title-text smart-song-title" data-full-title="${esc(record.title)}">${pendingTag}${hotTag} <span class="song-title-text">${esc(record.title)}</span></div>
           <div class="m-card-val-box ${boxColor}">${formatSkill(skill)}</div>
         </div>
         <div class="m-lower-row">
@@ -698,6 +698,49 @@ function createCard(record, index, mode = 'MANAGE') {
         </div>
       </div>
     </div>`;
+}
+
+
+function applySmartSongTitleEllipsis(root = document) {
+  const items = root.querySelectorAll('.smart-song-title');
+
+  items.forEach(el => {
+    const textEl = el.querySelector('.song-title-text');
+    const full = el.dataset.fullTitle || '';
+    if (!textEl || !full) return;
+
+    // First render full title. If it fits within 2 lines, do not append an ellipsis.
+    textEl.textContent = full;
+    el.classList.remove('is-truncated');
+
+    // scrollHeight comparison after layout tells us whether content is actually clipped.
+    if (el.scrollHeight <= el.clientHeight + 1) return;
+
+    // Only actually-overflowing titles receive "…".
+    let low = 0;
+    let high = full.length;
+    let best = '';
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const candidate = full.slice(0, mid).trimEnd() + '…';
+      textEl.textContent = candidate;
+
+      if (el.scrollHeight <= el.clientHeight + 1) {
+        best = candidate;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    textEl.textContent = best || '…';
+    el.classList.add('is-truncated');
+  });
+}
+
+function scheduleSmartSongTitleEllipsis(root = document) {
+  requestAnimationFrame(() => applySmartSongTitleEllipsis(root));
 }
 
 function renderSkill() {
@@ -737,6 +780,7 @@ function renderManage() {
   $('viewAllManage').innerHTML =
     data.map((r,i) => createCard(r,i+1)).join('') ||
     '<div class="empty-state">条件に一致する登録データがありません</div>';
+  scheduleSmartSongTitleEllipsis($('viewAllManage'));
 }
 
 function render() {
@@ -1121,9 +1165,14 @@ async function openUserDetail(userId, username) {
     $('userDetailOther').textContent = formatSkill(target.other);
     $('userDetailTotal').textContent = formatSkill(target.total);
 
-    const rankClass = `score-rank-${getTotalSkillRank(target.total)}`;
-    ['userDetailHot','userDetailOther','userDetailTotal'].forEach(id => {
-      $(id).className = rankClass;
+    const detailRanks = {
+      userDetailTotal: target.total,
+      userDetailHot: target.hot,
+      userDetailOther: target.other
+    };
+
+    Object.entries(detailRanks).forEach(([id, value]) => {
+      $(id).className = `score-rank-${getTotalSkillRank(value)}`;
     });
 
     $('userDetailSkill').innerHTML = `
@@ -1133,6 +1182,7 @@ async function openUserDetail(userId, username) {
       <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
         ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
       </div></div>`;
+    scheduleSmartSongTitleEllipsis($('userDetailSkill'));
   } catch (e) {
     $('userDetailSkill').innerHTML = `<div class="empty-state">取得に失敗しました: ${esc(e.message)}</div>`;
   }
@@ -1244,7 +1294,9 @@ async function openRateComparison(songId, title, part) {
   $('rateCompareTitle').textContent = `${title} / ${part}`;
   $('ratePersonalBest').classList.add('hidden');
   $('ratePersonalBest').innerHTML = '';
-  $('rateOptionSummary').innerHTML = '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
+  $('rateOptionSummary').innerHTML = part.endsWith('-D')
+    ? ''
+    : '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
   $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   $('rateCompareMask').style.display = 'flex';
 
@@ -1253,7 +1305,7 @@ async function openRateComparison(songId, title, part) {
     // オプション割合はライバル登録に関係なく全ユーザーを集計。
     const [rows, optionRows, personalBest] = await Promise.all([
       getSongRateComparison(songId),
-      getSongOptionDistribution(songId),
+      part.endsWith('-D') ? Promise.resolve([]) : getSongOptionDistribution(songId),
       getSongPersonalBestHistory(songId)
     ]);
 
@@ -1270,17 +1322,19 @@ async function openRateComparison(songId, title, part) {
 
     const visibleOptions = part.endsWith('-D') ? [] : optionRows.filter(row => Number(row.percentage) > 0);
 
-    $('rateOptionSummary').innerHTML = part.endsWith('-D') ? '' : (visibleOptions.length
-      ? `
-        <div class="option-share-title">全ユーザーのオプション利用割合</div>
-        ${visibleOptions.map(row => `
-          <div class="option-share-item">
-            <span>${esc(getOptionDisplayName(row.play_option))}</span>
-            <strong>${formatOptionPercentage(row.percentage)}%</strong>
-          </div>`
-        ).join('')}
-      `
-      : '');
+    $('rateOptionSummary').innerHTML = part.endsWith('-D')
+      ? ''
+      : (visibleOptions.length
+          ? `
+            <div class="option-share-title">全ユーザーのオプション利用割合</div>
+            ${visibleOptions.map(row => `
+              <div class="option-share-item">
+                <span>${esc(getOptionDisplayName(row.play_option))}</span>
+                <strong>${formatOptionPercentage(row.percentage)}%</strong>
+              </div>`
+            ).join('')}
+          `
+          : '');
 
     $('rateCompareBody').innerHTML = rows.map((row, index) => `
       <div class="rate-row ${row.is_self ? 'self' : ''}">
