@@ -354,7 +354,10 @@ function getPartColorClass(part) {
 }
 
 function getFcBadgeMarkup(fc) {
-  return fc ? `<span class="fc-unified-badge ${fc.toLowerCase()}">${esc(fc)}</span>` : '';
+  const value = String(fc || '').toUpperCase();
+  if (value !== 'FC' && value !== 'EXC') return '';
+  const cls = value === 'EXC' ? 'exc' : 'fc';
+  return `<span class="fc-unified-badge ${cls}">${value}</span>`;
 }
 
 function getOptionBadgeMarkup(option) {
@@ -843,7 +846,7 @@ function getOptionDisplayName(option) {
     case 'SRA': return 'SRA';
     case 'RAN+': return 'RAN+';
     case 'SRA+': return 'SRA+';
-    default: return option || '正規';
+    default: return String(option || '');
   }
 }
 
@@ -873,7 +876,7 @@ async function openRateComparison(songId, title, part) {
         <div class="option-share-title">全ユーザーのオプション利用割合</div>
         ${visibleOptions.map(row => `
           <div class="option-share-item">
-            <span>${getOptionDisplayName(row.play_option)}</span>
+            <span>${esc(getOptionDisplayName(row.play_option))}</span>
             <strong>${formatOptionPercentage(row.percentage)}%</strong>
           </div>`
         ).join('')}
@@ -1080,7 +1083,7 @@ async function loadAdminRequests() {
           <span class="pending-badge">${req.request_type === 'level_correction' ? '難易度修正' : '新規曲'}</span>
         </div>
         <div class="admin-card-meta">
-          <span>${req.part}</span>
+          <span>${esc(req.part)}</span>
           ${req.request_type === 'level_correction' ? `<span>現在: ${formatLevel(req.current_level)}</span>` : ''}
           <span>依頼者: ${esc(req.profiles?.username || '-')}</span>
           <span>${new Date(req.created_at).toLocaleString('ja-JP')}</span>
