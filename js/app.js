@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_2';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_2';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_2';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_2';
+import { supabase } from './supabase.js?v=14_3';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_3';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_3';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_3';
 const {
   isAdmin,
   getAdminSongs,
@@ -11,9 +11,7 @@ const {
   getPendingSongRequests,
   approveSongRequest,
   rejectSongRequest,
-  accountAdmin,
-  saveMasterSongRow,
-  deleteMasterSongTitle
+  accountAdmin
 } = adminApi;
 
 // 曲マスター表の列順。admin.jsが古くても画面自体は起動できるようローカルにも保持。
@@ -21,7 +19,106 @@ const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
   'MAS-G','MAS-B','EXT-G','EXT-B','ADV-G','ADV-B','BSC-G','BSC-B'
 ];
 
-import * as adminApi from './admin.js?v=14_2';
+// v14.3: 曲マスターの横一括編集はapp.js側にも実装。
+// admin.jsのキャッシュや差し替え漏れがあっても保存できるようにする。
+async function saveMasterSongRow({
+  originalTitle = '',
+  title,
+  isHot = false,
+  levels = {}
+}) {
+  const cleanTitle = String(title || '').trim();
+  const oldTitle = String(originalTitle || '').trim();
+
+  if (!cleanTitle) throw new Error('曲名を入力してください。');
+
+  const filledParts = MASTER_PARTS.filter(
+    part => String(levels[part] ?? '').trim() !== ''
+  );
+
+  if (!filledParts.length) {
+    throw new Error('少なくとも1つの難易度を入力してください。');
+  }
+
+  // 曲名変更
+  if (oldTitle && oldTitle !== cleanTitle) {
+    const { error: renameError } = await supabase
+      .from('songs')
+      .update({ title: cleanTitle })
+      .eq('title', oldTitle);
+
+    if (renameError) throw renameError;
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from('songs')
+    .select('id,part')
+    .eq('title', cleanTitle);
+
+  if (existingError) throw existingError;
+
+  const existingByPart = new Map(
+    (existing ?? []).map(row => [row.part, row])
+  );
+
+  for (const part of MASTER_PARTS) {
+    const raw = String(levels[part] ?? '').trim();
+    const current = existingByPart.get(part);
+
+    if (!raw) {
+      if (current) {
+        const { error } = await supabase
+          .from('songs')
+          .delete()
+          .eq('id', current.id);
+
+        if (error) throw error;
+      }
+      continue;
+    }
+
+    const level = Number(raw);
+
+    if (!Number.isFinite(level) || level <= 0 || level > 99.99) {
+      throw new Error(`${part} の難易度が不正です。`);
+    }
+
+    const { error } = await supabase
+      .from('songs')
+      .upsert({
+        is_hot: Boolean(isHot),
+        title: cleanTitle,
+        part,
+        level: Math.floor((level + Number.EPSILON) * 100) / 100
+      }, {
+        onConflict: 'title,part'
+      });
+
+    if (error) throw error;
+  }
+
+  // HOTは曲単位で統一
+  const { error: hotError } = await supabase
+    .from('songs')
+    .update({ is_hot: Boolean(isHot) })
+    .eq('title', cleanTitle);
+
+  if (hotError) throw hotError;
+}
+
+async function deleteMasterSongTitle(title) {
+  const cleanTitle = String(title || '').trim();
+  if (!cleanTitle) return;
+
+  const { error } = await supabase
+    .from('songs')
+    .delete()
+    .eq('title', cleanTitle);
+
+  if (error) throw error;
+}
+
+import * as adminApi from './admin.js?v=14_3';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -501,15 +598,6 @@ async function deleteOwnAccount() {
 }
 
 /* ---------- 管理者 ---------- */
-function ensureAdminV14() {
-  if (adminEnabled && (
-    typeof saveMasterSongRow !== 'function' ||
-    typeof deleteMasterSongTitle !== 'function'
-  )) {
-    console.error('admin.js が古いバージョンです。v14_2へ更新してください。');
-  }
-}
-
 async function checkAdminAccess() {
   try {
     adminEnabled = await isAdmin();
@@ -518,7 +606,6 @@ async function checkAdminAccess() {
     adminEnabled = false;
   }
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
-    ensureAdminV14();
 }
 
 async function openAdmin() {
