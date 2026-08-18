@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_10';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_10';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_10';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_10';
+import { supabase } from './supabase.js?v=15';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,7 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_10';
+import * as adminApi from './admin.js?v=15';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -132,6 +133,10 @@ let adminSongs = [];
 let adminUsers = [];
 let adminRequests = [];
 let adminEditingSongId = null;
+let publicUsers = [];
+let favoriteUsers = [];
+let viewedUserScores = [];
+let currentUserId = null;
 let adminPasswordUserId = null;
 
 const $ = id => document.getElementById(id);
@@ -167,6 +172,7 @@ function showAuth(mode = 'login') {
 async function showApp(session) {
   hide('authScreen');
   show('appScreen');
+  currentUserId = session?.user?.id || null;
 
   let username =
     session?.user?.user_metadata?.username ||
@@ -236,20 +242,37 @@ async function loadScores() {
   }
 }
 
+
+function getOwnSkillTargetRows() {
+  const bestByTitle = new Map();
+
+  for (const row of scores) {
+    if (row.pending_master) continue;
+    if (/\(CLASSIC\)\s*$/i.test(String(row.title || ''))) continue;
+
+    const current = bestByTitle.get(row.title);
+    if (!current || Number(row.skill) > Number(current.skill)) {
+      bestByTitle.set(row.title, row);
+    }
+  }
+
+  return Array.from(bestByTitle.values())
+    .sort((a, b) => Number(b.skill) - Number(a.skill));
+}
+
+function calcTargetTotals(targetRows) {
+  const sorted = [...targetRows].sort((a, b) => Number(b.skill) - Number(a.skill));
+  const hotRows = sorted.filter(r => r.is_hot).slice(0, 25);
+  const otherRows = sorted.filter(r => !r.is_hot).slice(0, 25);
+
+  const hot = hotRows.reduce((sum, row) => sum + Number(row.skill), 0);
+  const other = otherRows.reduce((sum, row) => sum + Number(row.skill), 0);
+
+  return { hot, other, total: hot + other, hotRows, otherRows };
+}
+
 function totals() {
-  const hotTop25 = scores
-    .filter(s => s.is_hot)
-    .sort((a,b) => Number(b.skill) - Number(a.skill))
-    .slice(0,25);
-
-  const otherTop25 = scores
-    .filter(s => !s.is_hot)
-    .sort((a,b) => Number(b.skill) - Number(a.skill))
-    .slice(0,25);
-
-  const hot = hotTop25.reduce((sum, s) => sum + Number(s.skill), 0);
-  const other = otherTop25.reduce((sum, s) => sum + Number(s.skill), 0);
-  return { hot, other, total: hot + other };
+  return calcTargetTotals(getOwnSkillTargetRows());
 }
 
 
@@ -371,12 +394,12 @@ function createCard(record, index, mode = 'MANAGE') {
             <span class="opt-slot">${optionBadge}</span>
           </div>
         </div>
-        <div class="sk-val-box">${formatSkill(skill)}</div>
+        <div class="sk-val-box ${boxColor}">${formatSkill(skill)}</div>
       </div>`;
   }
 
   return `
-    <div class="m-card">
+    <div class="m-card" ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
       <span class="sk-rank">#${index}</span>
       <div class="m-main-area">
         <div class="m-upper-row">
@@ -401,16 +424,14 @@ function createCard(record, index, mode = 'MANAGE') {
 }
 
 function renderSkill() {
-  const sorted = [...scores].sort((a,b) => Number(b.skill) - Number(a.skill));
-  const hot = sorted.filter(s => s.is_hot).slice(0,25);
-  const other = sorted.filter(s => !s.is_hot).slice(0,25);
+  const target = calcTargetTotals(getOwnSkillTargetRows());
 
   $('viewSkill').innerHTML = `
     <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
-      ${hot.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
+      ${target.hotRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
     </div></div>
     <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
-      ${other.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
+      ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">まだ登録がありません</div>'}
     </div></div>`;
 }
 
@@ -434,13 +455,17 @@ function render() {
 
   hide('viewSkill');
   hide('viewAllManage');
+  hide('viewUsers');
 
   if (activeTabName === 'SKILL') {
     show('viewSkill');
     renderSkill();
-  } else {
+  } else if (activeTabName === 'RECORDS') {
     show('viewAllManage');
     renderManage();
+  } else {
+    show('viewUsers');
+    loadUsers();
   }
 }
 
@@ -449,8 +474,9 @@ function switchTab(tab) {
   document.querySelectorAll('.p-tab-btn').forEach(
     b => b.classList.toggle('active', b.dataset.tab === tab)
   );
+
   $('domSearch').value = '';
-  $('searchArea').classList.toggle('hidden', tab === 'SKILL');
+  $('searchArea').classList.toggle('hidden', tab !== 'RECORDS');
   window.scrollTo(0,0);
   render();
 }
@@ -621,11 +647,165 @@ async function submitScore() {
 }
 
 /* ---------- マイページ ---------- */
+
+function formatDateOnly(value) {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+}
+
+async function loadUsers() {
+  try {
+    publicUsers = await listUserSummaries($('userSearch')?.value || '');
+    renderUsers();
+  } catch (e) {
+    $('userList').innerHTML = `<div class="empty-state">ユーザー一覧の取得に失敗しました: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderUsers() {
+  $('userList').innerHTML = publicUsers.map(user => {
+    const totalClass = `score-rank-${getTotalSkillRank(user.total_skill)}`;
+    return `
+      <div class="user-list-row" data-user-open="${user.user_id}" data-user-name="${esc(user.username)}">
+        <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
+        <div class="user-list-total ${totalClass}">${formatSkill(user.total_skill)}</div>
+        <div class="user-list-date">${formatDateOnly(user.last_recorded_at)}</div>
+        ${user.is_self
+          ? '<div></div>'
+          : `<button class="favorite-toggle ${user.is_favorite ? 'active' : ''}"
+              data-favorite-user="${user.user_id}"
+              title="お気に入り">${user.is_favorite ? '★' : '☆'}</button>`}
+      </div>`;
+  }).join('') || '<div class="empty-state">該当するユーザーがいません</div>';
+}
+
+async function openUserDetail(userId, username) {
+  $('userDetailName').textContent = username;
+  $('userDetailSkill').innerHTML = '<div class="empty-state">読み込み中...</div>';
+  $('userDetailPage').style.display = 'block';
+
+  try {
+    viewedUserScores = await getUserSkillTargets(userId);
+    const target = calcTargetTotals(viewedUserScores);
+
+    $('userDetailHot').textContent = formatSkill(target.hot);
+    $('userDetailOther').textContent = formatSkill(target.other);
+    $('userDetailTotal').textContent = formatSkill(target.total);
+
+    const rankClass = `score-rank-${getTotalSkillRank(target.total)}`;
+    ['userDetailHot','userDetailOther','userDetailTotal'].forEach(id => {
+      $(id).className = rankClass;
+    });
+
+    $('userDetailSkill').innerHTML = `
+      <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
+        ${target.hotRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
+      </div></div>
+      <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
+        ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
+      </div></div>`;
+  } catch (e) {
+    $('userDetailSkill').innerHTML = `<div class="empty-state">取得に失敗しました: ${esc(e.message)}</div>`;
+  }
+}
+
+function closeUserDetail() {
+  $('userDetailPage').style.display = 'none';
+  viewedUserScores = [];
+}
+
+async function toggleFavorite(userId) {
+  const user = publicUsers.find(u => u.user_id === userId);
+  if (!user) return;
+
+  try {
+    if (user.is_favorite) {
+      await removeFavorite(userId);
+    } else {
+      await addFavorite(userId);
+    }
+    await Promise.all([loadUsers(), loadFavorites()]);
+  } catch (e) {
+    const message = String(e?.message || e);
+    if (message.includes('5件')) {
+      await showSiteDialog('お気に入り登録は5件までです。', 'お気に入り');
+    } else {
+      await showSiteDialog('お気に入りの更新に失敗しました。', 'エラー');
+      console.error(e);
+    }
+  }
+}
+
+async function loadFavorites() {
+  try {
+    favoriteUsers = await getMyFavorites();
+    renderFavorites();
+  } catch (e) {
+    $('favoriteUserList').innerHTML = `<div class="empty-state">お気に入りの取得に失敗しました</div>`;
+    console.error(e);
+  }
+}
+
+function renderFavorites() {
+  $('favoriteUserList').innerHTML = favoriteUsers.map((fav, index) => `
+    <div class="favorite-user-row" data-favorite-row="${fav.favorite_user_id}">
+      <div class="name">${index + 1}. ${esc(fav.username)}</div>
+      <button type="button" data-favorite-up="${fav.favorite_user_id}" ${index === 0 ? 'disabled' : ''}>↑</button>
+      <button type="button" data-favorite-down="${fav.favorite_user_id}" ${index === favoriteUsers.length - 1 ? 'disabled' : ''}>↓</button>
+      <button type="button" class="remove" data-favorite-remove="${fav.favorite_user_id}">削除</button>
+    </div>
+  `).join('') || '<div class="section-note">お気に入りユーザーはまだ登録されていません。</div>';
+}
+
+async function moveFavorite(userId, direction) {
+  const index = favoriteUsers.findIndex(f => f.favorite_user_id === userId);
+  if (index < 0) return;
+
+  const next = index + direction;
+  if (next < 0 || next >= favoriteUsers.length) return;
+
+  const ids = favoriteUsers.map(f => f.favorite_user_id);
+  [ids[index], ids[next]] = [ids[next], ids[index]];
+
+  await reorderFavorites(ids);
+  await loadFavorites();
+}
+
+async function openRateComparison(songId, title, part) {
+  $('rateCompareTitle').textContent = `${title} / ${part}`;
+  $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
+  $('rateCompareMask').style.display = 'flex';
+
+  try {
+    const rows = await getSongRateComparison(songId);
+    $('rateCompareBody').innerHTML = rows.map((row, index) => `
+      <div class="rate-row ${row.is_self ? 'self' : ''}">
+        <div class="rate-user">#${index + 1} ${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
+        <div class="rate-value">${formatRate(row.achievement_rate)}%</div>
+        <div class="rate-skill">${formatSkill(row.skill)}</div>
+      </div>`
+    ).join('') || '<div class="empty-state">比較できる記録がありません</div>';
+  } catch (e) {
+    $('rateCompareBody').innerHTML = `<div class="empty-state">比較データの取得に失敗しました: ${esc(e.message)}</div>`;
+  }
+}
+
+function closeRateComparison() {
+  $('rateCompareMask').style.display = 'none';
+}
+
 async function openMyPage() {
   const { data } = await supabase.auth.getUser();
   $('mypageUsernameInput').value = data.user?.user_metadata?.username || $('headerUsername').textContent || '';
   $('newPassword').value = '';
   $('mypageModal').style.display = 'flex';
+  await loadFavorites();
 }
 
 async function changeOwnUsername() {
@@ -1083,6 +1263,19 @@ $('btnAdminPasswordSave').addEventListener('click', async () => {
   }
 });
 
+
+let userSearchTimer = null;
+$('userSearch').addEventListener('input', () => {
+  clearTimeout(userSearchTimer);
+  userSearchTimer = setTimeout(loadUsers, 250);
+});
+
+$('btnCloseUserDetail').addEventListener('click', closeUserDetail);
+$('btnCloseRateCompare').addEventListener('click', closeRateComparison);
+$('rateCompareMask').addEventListener('click', e => {
+  if (e.target === $('rateCompareMask')) closeRateComparison();
+});
+
 document.addEventListener('click', async e => {
   const suggestion = e.target.closest('.suggestion');
   const edit = e.target.closest('[data-edit]');
@@ -1094,11 +1287,54 @@ document.addEventListener('click', async e => {
   const adminApproveRequest = e.target.closest('[data-admin-approve-request]');
   const adminHotRequest = e.target.closest('[data-admin-hot-request]');
   const adminRejectRequest = e.target.closest('[data-admin-reject-request]');
+  const userOpen = e.target.closest('[data-user-open]');
+  const favoriteToggle = e.target.closest('[data-favorite-user]');
+  const favoriteUp = e.target.closest('[data-favorite-up]');
+  const favoriteDown = e.target.closest('[data-favorite-down]');
+  const favoriteRemove = e.target.closest('[data-favorite-remove]');
+  const compareCard = e.target.closest('[data-compare-song]');
   const adminSaveMasterRow = e.target.closest('[data-admin-save-master-row]');
   const adminDeleteMasterRow = e.target.closest('[data-admin-delete-master-row]');
 
+  if (favoriteToggle) {
+    e.preventDefault();
+    e.stopPropagation();
+    await toggleFavorite(favoriteToggle.dataset.favoriteUser);
+    return;
+  }
+
+  if (userOpen && !favoriteToggle) {
+    await openUserDetail(userOpen.dataset.userOpen, userOpen.dataset.userName);
+    return;
+  }
+
+  if (favoriteUp) {
+    await moveFavorite(favoriteUp.dataset.favoriteUp, -1);
+    return;
+  }
+
+  if (favoriteDown) {
+    await moveFavorite(favoriteDown.dataset.favoriteDown, 1);
+    return;
+  }
+
+  if (favoriteRemove) {
+    await removeFavorite(favoriteRemove.dataset.favoriteRemove);
+    await Promise.all([loadFavorites(), loadUsers()]);
+    return;
+  }
+
   if (suggestion) {
     await selectSongTitle(suggestion.dataset.title);
+  }
+
+  if (compareCard && !edit && !del) {
+    await openRateComparison(
+      compareCard.dataset.compareSong,
+      compareCard.dataset.compareTitle,
+      compareCard.dataset.comparePart
+    );
+    return;
   }
 
   if (edit) {
