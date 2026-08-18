@@ -1,8 +1,8 @@
-import { supabase } from './supabase.js?v=17_0';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=17_0';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=17_0';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=17_0';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=17_0';
+import { supabase } from './supabase.js??v=17_2';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=17_2';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=17_2';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=17_2';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=17_2';
 const {
   isAdmin,
   getAdminSongs,
@@ -119,8 +119,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=17_0';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=17_0';
+import * as adminApi from './admin.js??v=17_2';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js??v=17_2';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -579,12 +579,29 @@ async function suggestSongs() {
 
   try {
     const rows = await searchSongTitles(title, activeInstrument);
-    $('songSuggestions').innerHTML = rows.map(r => `
+
+    // サジェスト候補が存在していても、現在入力中の「曲名 + Part」が
+    // 曲マスターに完全一致しない場合は登録依頼への導線を必ず表示する。
+    // 例: 「as」と入力して Ascetic 等が候補に出ても「as」の登録依頼が可能。
+    const currentPart = $('partSelect').value;
+    const exactCurrentSong = currentPart
+      ? await getSongByTitleAndPart(title, currentPart)
+      : null;
+
+    const suggestionHtml = rows.map(r => `
       <button class="suggestion"
         data-title="${esc(r.title)}"
         data-is-hot="${r.is_hot ? '1':'0'}">
         <span>${r.is_hot ? '[HOT] ' : ''}${esc(r.title)}</span>
-      </button>`).join('') || `<button class="suggestion request-suggestion" data-request-title="${esc(title)}"><span>「${esc(title)}」を曲マスターへ登録依頼</span></button>`;
+      </button>`).join('');
+
+    const requestHtml = exactCurrentSong ? '' : `
+      <button class="suggestion request-suggestion"
+        data-request-title="${esc(title)}">
+        <span>＋「${esc(title)}」を曲マスターへ登録依頼</span>
+      </button>`;
+
+    $('songSuggestions').innerHTML = suggestionHtml + requestHtml;
 
     // 入力中は完全一致しても自動確定しない。
     // 候補をユーザーがタップした時だけ曲名を確定する。
