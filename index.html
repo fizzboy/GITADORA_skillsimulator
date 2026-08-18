@@ -1949,6 +1949,35 @@ button:disabled {
   .user-list-skill-value{font-size:11px;}
 }
 
+/* === v19 FIX1: 管理画面 曲マスター列順・難易度列幅 === */
+#adminMasterTable{
+  width:100%;
+  table-layout:fixed;
+}
+#adminMasterTable th:first-child,
+#adminMasterTable td:first-child{
+  width:46px;
+}
+#adminMasterTable th:nth-child(2),
+#adminMasterTable td:nth-child(2){
+  width:300px;
+}
+#adminMasterTable th:nth-child(n+3):nth-child(-n+14),
+#adminMasterTable td:nth-child(n+3):nth-child(-n+14){
+  width:76px;
+}
+#adminMasterTable th:last-child,
+#adminMasterTable td:last-child{
+  width:112px;
+}
+#adminMasterTable td:nth-child(n+3):nth-child(-n+14) input{
+  width:100%;
+  min-width:0;
+  padding-left:7px;
+  padding-right:7px;
+  box-sizing:border-box;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2322,6 +2351,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=19_0"></script>
+<script type="module" src="./js/app.js?v=19_1"></script>
 </body>
 </html>
