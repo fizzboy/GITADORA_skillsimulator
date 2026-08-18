@@ -2459,6 +2459,115 @@ body.dm-mode #scoreExtraFields{
   margin-bottom:8px !important;
 }
 
+/* === v21 FIX9: プルダウン矢印視認性 / 曲登録フォーム見切れ修正 === */
+
+/* すべてのselectは背景色をダーク系に統一し、▽だけ白く見せる */
+select {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  color-scheme: dark !important;
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #ffffff 50%),
+    linear-gradient(135deg, #ffffff 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50% !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-repeat: no-repeat !important;
+  padding-right: 30px !important;
+}
+
+/* FIX8の白背景指定を上書き */
+#userSort,
+#recordTypeFilter,
+#recordFcFilter,
+#partSelect,
+#formFc,
+#formOption,
+#versionSelect,
+.admin-form-sheet select,
+.mdl-sheet select {
+  background-color: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+/* スコア登録は圧縮しつつ、文字が見切れない高さを確保 */
+#domModal .f-group input:not(#formTitle),
+#domModal .f-group select,
+#domModal .skill-preview {
+  min-height: 42px !important;
+  height: 42px !important;
+  line-height: 1.25 !important;
+  font-size: 13px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+/* 曲名入力は少しだけ高め。サジェストは従来サイズを維持 */
+#domModal #formTitle {
+  min-height: 42px !important;
+  height: 42px !important;
+  font-size: 13px !important;
+}
+
+#domModal #songSuggestions .suggestion {
+  min-height: unset !important;
+  height: auto !important;
+  font-size: 12px !important;
+  padding: 11px 9px !important;
+}
+
+/* Part / FC / Option の文字が上下で切れないように調整 */
+#domModal #partSelect,
+#domModal #formFc,
+#domModal #formOption {
+  min-height: 42px !important;
+  height: 42px !important;
+  line-height: normal !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: block !important;
+}
+
+/* Levelは読み取り専用でも同じ高さ */
+#domModal #formLevel {
+  min-height: 42px !important;
+  height: 42px !important;
+}
+
+/* 縦幅は余白で圧縮 */
+#domModal .f-group {
+  margin-bottom: 8px !important;
+}
+
+#domModal .f-group label {
+  margin-bottom: 3px !important;
+  font-size: 11px !important;
+}
+
+#domModal .form-grid-two {
+  gap: 8px !important;
+}
+
+#domModal .skill-preview {
+  min-height: 42px !important;
+}
+
+#domModal .btn-block {
+  margin-top: 10px !important;
+}
+
+#domModal .btn-submit,
+#domModal .btn-cancel {
+  min-height: 40px !important;
+  height: 40px !important;
+  font-size: 12px !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2610,7 +2719,6 @@ body.dm-mode #scoreExtraFields{
           <option value="">なし</option>
           <option value="FC">FC</option>
         </select>
-        <div class="section-note" style="margin-top:4px;">達成率100.00%は自動でEXCになります。</div>
       </div>
       <div id="optionFieldGroup" class="f-group">
         <label>オプション</label>
