@@ -824,6 +824,159 @@ body { background:#0b1220; }
   }
 }
 
+/* === v14.11 スコア登録モーダル書式統一 === */
+.mdl-mask {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  background: rgba(2, 6, 23, .72) !important;
+  backdrop-filter: blur(3px);
+}
+
+.mdl-sheet {
+  width: 100% !important;
+  max-width: 480px !important;
+  max-height: calc(100dvh - 32px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding: 18px !important;
+  border: 1px solid #334155 !important;
+  border-radius: 14px !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .48) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mdl-sheet #domModalTitle {
+  margin: 0 0 14px !important;
+  color: #f8fafc !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+}
+
+.mdl-sheet .f-group {
+  margin-bottom: 12px !important;
+}
+
+.mdl-sheet .f-group label {
+  display: block;
+  margin: 0 0 5px !important;
+  color: #cbd5e1 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.mdl-sheet .f-group input,
+.mdl-sheet .f-group select {
+  width: 100%;
+  min-height: 46px !important;
+  padding: 9px 11px !important;
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  outline: none;
+  background: #111827 !important;
+  color: #f8fafc !important;
+  font-size: 16px !important;
+}
+
+.mdl-sheet .f-group input::placeholder {
+  color: #64748b !important;
+}
+
+.mdl-sheet .f-group input:focus,
+.mdl-sheet .f-group select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, .18);
+}
+
+.mdl-sheet #formLevel[readonly] {
+  background: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+.mdl-sheet .skill-preview {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #334155;
+  border-radius: 8px !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+}
+
+.mdl-sheet .form-grid-two {
+  gap: 10px !important;
+}
+
+.mdl-sheet .btn-block {
+  gap: 8px !important;
+  margin-top: 16px !important;
+}
+
+.mdl-sheet .btn-submit,
+.mdl-sheet .btn-cancel {
+  min-height: 46px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+}
+
+.mdl-sheet .btn-submit {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.mdl-sheet .btn-cancel {
+  background: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.mdl-sheet .suggestion-list {
+  margin-top: 5px;
+  overflow: hidden;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+}
+
+.mdl-sheet .suggestion {
+  border-bottom: 1px solid #1e293b !important;
+  background: #111827 !important;
+  color: #f8fafc !important;
+}
+
+.mdl-sheet .suggestion:hover {
+  background: #1e293b !important;
+}
+
+.mdl-sheet .master-request-area {
+  border-color: #92400e !important;
+  background: #451a03 !important;
+  color: #fef3c7 !important;
+}
+
+.mdl-sheet .master-request-title,
+.mdl-sheet .master-request-note {
+  color: #fef3c7 !important;
+}
+
+@media (max-width: 600px) {
+  .mdl-mask {
+    padding: 12px !important;
+  }
+
+  .mdl-sheet {
+    max-width: 460px !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1043,6 +1196,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=14_10"></script>
+<script type="module" src="./js/app.js?v=14_11"></script>
 </body>
 </html>
