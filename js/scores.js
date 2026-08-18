@@ -9,10 +9,11 @@ export const formatLevel = value => Number(value).toFixed(2);
 export const formatRate = value => Number(value).toFixed(2);
 export const formatSkill = value => Number(value).toFixed(2);
 
-export async function getMyScores() {
+export async function getMyScores(versionId = null) {
   const { data, error } = await supabase
     .from('my_score_details')
     .select('*')
+    .eq('version_id', versionId)
     .order('skill', { ascending: false });
 
   if (error) throw error;

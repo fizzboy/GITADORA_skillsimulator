@@ -23,14 +23,15 @@ export async function getAdminSongs(keyword = '') {
   return all;
 }
 
-export async function getAdminSongMasterPage(keyword = '', page = 0, pageSize = 100) {
+export async function getAdminSongMasterPage(keyword = '', page = 0, pageSize = 100, versionId = null) {
   const safePage = Math.max(0, Number(page) || 0);
   const safeSize = Math.min(200, Math.max(25, Number(pageSize) || 100));
 
   const { data, error } = await supabase.rpc('admin_list_song_master', {
     p_search: String(keyword || '').trim(),
     p_limit: safeSize,
-    p_offset: safePage * safeSize
+    p_offset: safePage * safeSize,
+    p_version_id: versionId
   });
 
   if (error) throw error;
@@ -50,7 +51,7 @@ export async function getAdminSongMasterPage(keyword = '', page = 0, pageSize = 
   };
 }
 
-export async function saveMasterSong({ id = null, isHot = false, title, part, level }) {
+export async function saveMasterSong({ id = null, isHot = false, title, part, level, versionId = null }) {
   const cleanTitle = String(title || '').trim();
   const numericLevel = Number(level);
 
@@ -62,6 +63,7 @@ export async function saveMasterSong({ id = null, isHot = false, title, part, le
     is_hot: Boolean(isHot),
     title: cleanTitle,
     part,
+    version_id: versionId,
     level: Math.round((numericLevel + Number.EPSILON) * 100) / 100
   };
 
@@ -77,7 +79,8 @@ export async function saveMasterSong({ id = null, isHot = false, title, part, le
   const { error: hotError } = await supabase
     .from('songs')
     .update({ is_hot: Boolean(isHot) })
-    .eq('title', cleanTitle);
+    .eq('title', cleanTitle)
+    .eq('version_id', versionId);
 
   if (hotError) throw hotError;
 }
@@ -101,7 +104,7 @@ export async function getAdminUsers(keyword = '') {
   return data ?? [];
 }
 
-export async function getPendingSongRequests(keyword = '') {
+export async function getPendingSongRequests(keyword = '', versionId = null) {
   let query = supabase
     .from('song_requests')
     .select(`
@@ -115,6 +118,7 @@ export async function getPendingSongRequests(keyword = '') {
       profiles!song_requests_requester_id_fkey(username)
     `)
     .eq('status', 'pending')
+    .eq('version_id', versionId)
     .order('created_at', { ascending: true })
     .limit(1000);
 

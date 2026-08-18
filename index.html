@@ -2021,6 +2021,128 @@ button:disabled {
   -moz-appearance:textfield;
 }
 
+/* === v21: version / user-list / confirm modal === */
+.version-bar{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:6px 8px;
+  border-top:1px solid #273449;
+  border-bottom:1px solid #273449;
+  background:#0b1220;
+}
+.version-bar-label{
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.version-select{
+  width:auto;
+  max-width:min(320px,74vw);
+  min-height:32px;
+  padding:4px 30px 4px 10px;
+  border:1px solid #334155;
+  border-radius:7px;
+  background:#111827;
+  color:#e2e8f0;
+  font-size:11px;
+  font-weight:900;
+}
+
+.user-list-row{
+  display:grid !important;
+  grid-template-columns:minmax(110px,1fr) 82px 82px 82px 38px !important;
+  grid-template-areas:none !important;
+  gap:6px !important;
+  align-items:center !important;
+  min-height:58px;
+}
+.user-list-name,
+.user-list-gf,
+.user-list-dm,
+.user-list-date,
+.favorite-toggle{
+  grid-area:auto !important;
+}
+.user-list-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.user-list-skill{
+  text-align:right !important;
+}
+.user-list-skill-label{
+  margin-bottom:2px;
+  color:#64748b;
+  font-size:8px;
+  font-weight:900;
+}
+.user-list-skill-value{
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.user-list-date{
+  text-align:right !important;
+  font-size:9px !important;
+  white-space:nowrap;
+}
+
+.rate-personal-best{
+  margin:10px 0;
+  padding:10px 12px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#111827;
+}
+.rate-personal-best-label{
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+}
+.rate-personal-best-value{
+  margin-top:2px;
+  color:#f8fafc;
+  font-size:14px;
+  font-weight:900;
+}
+.rate-personal-best-version{
+  margin-top:2px;
+  color:#94a3b8;
+  font-size:9px;
+  font-weight:800;
+}
+
+.site-dialog-cancel{
+  flex:1;
+  min-height:42px;
+  border:1px solid #475569;
+  border-radius:8px;
+  background:#1e293b;
+  color:#cbd5e1;
+  font-weight:900;
+}
+.site-dialog-actions:has(.site-dialog-cancel:not(.hidden)) .site-dialog-ok{
+  flex:1;
+  background:#b91c1c;
+}
+
+@media(max-width:520px){
+  .user-list-row{
+    grid-template-columns:minmax(92px,1fr) 62px 62px 66px 32px !important;
+    gap:4px !important;
+    padding:8px 6px !important;
+  }
+  .user-list-name{font-size:11px !important;}
+  .user-list-skill-value{font-size:10.5px !important;}
+  .user-list-date{font-size:7.5px !important;}
+  .favorite-toggle{width:30px !important;min-width:30px !important;padding:0 !important;}
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2060,6 +2182,10 @@ button:disabled {
       <div class="score-cell border-r"><span class="score-lbl">TOTAL</span><span id="txtGrandTotal" class="score-val">0.00</span></div>
       <div class="score-cell border-r"><span class="score-lbl">HOT</span><span id="txtHotTotal" class="score-val">0.00</span></div>
       <div class="score-cell"><span class="score-lbl">OTHER</span><span id="txtOtherTotal" class="score-val">0.00</span></div>
+    </div>
+    <div class="version-bar">
+      <span class="version-bar-label">VERSION</span>
+      <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
     </div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
@@ -2312,6 +2438,7 @@ button:disabled {
       </div>
       <button id="btnCloseRateCompare" type="button">×</button>
     </div>
+    <div id="ratePersonalBest" class="rate-personal-best hidden"></div>
     <div id="rateOptionSummary" class="rate-option-summary"></div>
     <div id="rateCompareBody" class="rate-compare-body"></div>
   </div>
@@ -2389,11 +2516,12 @@ button:disabled {
     <div id="siteDialogTitle" class="site-dialog-head">お知らせ</div>
     <div id="siteDialogMessage" class="site-dialog-message"></div>
     <div class="site-dialog-actions">
+      <button id="siteDialogCancel" class="site-dialog-cancel hidden" type="button">キャンセル</button>
       <button id="siteDialogOk" class="site-dialog-ok" type="button">OK</button>
     </div>
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=20_0"></script>
+<script type="module" src="./js/app.js?v=21_0"></script>
 </body>
 </html>

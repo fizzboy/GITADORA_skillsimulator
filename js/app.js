@@ -1,8 +1,9 @@
-import { supabase } from './supabase.js??v=20_0';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=20_0';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=20_0';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=20_0';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=20_0';
+import { supabase } from './supabase.js?v=21_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_0';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_0';
+import { getGameVersions } from './versions.js?v=21_0';
 const {
   isAdmin,
   getAdminSongs,
@@ -22,7 +23,12 @@ const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
 ];
 
 const EAMUSEMENT_ORIGIN = 'https://p.eagate.573.jp';
-const EAMUSEMENT_SYNC_ENTRY = 'https://p.eagate.573.jp/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=1';
+function getEamusementSlug() {
+  return activeVersion?.eamusement_slug || 'gitadora_galaxywave_delta';
+}
+function getEamusementSyncEntry() {
+  return `https://p.eagate.573.jp/game/gfdm/${getEamusementSlug()}/p/playdata/skill.html?gtype=gf&stype=1`;
+}
 let skillSyncInProgress = false;
 
 function setSkillSyncStatus(message, state = '') {
@@ -36,14 +42,16 @@ function buildSkillSyncBookmarklet() {
   const returnOrigin = location.origin;
   const returnUrl = location.origin + location.pathname + location.search;
 
+  const slug = getEamusementSlug();
   const code = `(async()=>{try{
 const AO=${JSON.stringify(returnOrigin)},RU=${JSON.stringify(returnUrl)};
 if(location.hostname!=='p.eagate.573.jp'){alert('e-amusementのページで実行してください。');return;}
+const S=${JSON.stringify(getEamusementSlug())};
 const P=[
-['GF','HOT','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=1'],
-['GF','OTHER','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=0'],
-['DM','HOT','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=dm&stype=1'],
-['DM','OTHER','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=dm&stype=0']
+['GF','HOT','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=gf&stype=1'],
+['GF','OTHER','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=gf&stype=0'],
+['DM','HOT','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=dm&stype=1'],
+['DM','OTHER','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=dm&stype=0']
 ];
 const MP={GUITAR:'G',BASS:'B',DRUM:'D',DRUMS:'D'},MD={BASIC:'BSC',ADVANCED:'ADV',EXTREME:'EXT',MASTER:'MAS'};
 const A=[],C={};
@@ -129,7 +137,8 @@ async function importSkillSyncRecords(payload) {
     // v20: 100件をブラウザから1件ずつ保存せず、DB側RPCで一括処理。
     // ネットワーク往復を大幅に減らし、FC/オプションは既存値を維持する。
     const { data, error } = await supabase.rpc('sync_skill_records', {
-      p_records: rows
+      p_records: rows,
+      p_version_id: activeVersionId
     });
 
     if (error) throw error;
@@ -195,7 +204,8 @@ async function saveMasterSongRow({
     const { error: renameError } = await supabase
       .from('songs')
       .update({ title: cleanTitle })
-      .eq('title', oldTitle);
+      .eq('title', oldTitle)
+      .eq('version_id', activeVersionId);
 
     if (renameError) throw renameError;
   }
@@ -203,7 +213,8 @@ async function saveMasterSongRow({
   const { data: existing, error: existingError } = await supabase
     .from('songs')
     .select('id,part')
-    .eq('title', cleanTitle);
+    .eq('title', cleanTitle)
+    .eq('version_id', activeVersionId);
 
   if (existingError) throw existingError;
 
@@ -239,9 +250,10 @@ async function saveMasterSongRow({
         is_hot: Boolean(isHot),
         title: cleanTitle,
         part,
+        version_id: activeVersionId,
         level: Math.round((level + Number.EPSILON) * 100) / 100
       }, {
-        onConflict: 'title,part'
+        onConflict: 'version_id,title,part'
       });
 
     if (error) throw error;
@@ -251,7 +263,8 @@ async function saveMasterSongRow({
   const { error: hotError } = await supabase
     .from('songs')
     .update({ is_hot: Boolean(isHot) })
-    .eq('title', cleanTitle);
+    .eq('title', cleanTitle)
+    .eq('version_id', activeVersionId);
 
   if (hotError) throw hotError;
 }
@@ -263,16 +276,20 @@ async function deleteMasterSongTitle(title) {
   const { error } = await supabase
     .from('songs')
     .delete()
-    .eq('title', cleanTitle);
+    .eq('title', cleanTitle)
+    .eq('version_id', activeVersionId);
 
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=20_0';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=20_0';
+import * as adminApi from './admin.js?v=21_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_0';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
+let gameVersions = [];
+let activeVersionId = localStorage.getItem('gitadora_version_id') || null;
+let activeVersion = null;
 let currentAuthMode = 'login';
 let scores = [];
 let editingScoreId = null;
@@ -349,15 +366,20 @@ async function showApp(session) {
   }
 
   $('headerUsername').textContent = username;
+  await loadGameVersionOptions();
   await Promise.all([loadScores(), checkAdminAccess()]);
 }
 
 
 let siteDialogResolver = null;
+let siteDialogConfirmMode = false;
 
 function showSiteDialog(message, title = 'お知らせ') {
+  siteDialogConfirmMode = false;
   $('siteDialogTitle').textContent = title;
   $('siteDialogMessage').textContent = String(message || '');
+  $('siteDialogOk').textContent = 'OK';
+  $('siteDialogCancel').classList.add('hidden');
   $('siteDialogMask').style.display = 'flex';
 
   return new Promise(resolve => {
@@ -365,11 +387,70 @@ function showSiteDialog(message, title = 'お知らせ') {
   });
 }
 
-function closeSiteDialog() {
+function showSiteConfirm(message, title = '確認', confirmText = '削除する') {
+  siteDialogConfirmMode = true;
+  $('siteDialogTitle').textContent = title;
+  $('siteDialogMessage').textContent = String(message || '');
+  $('siteDialogOk').textContent = confirmText;
+  $('siteDialogCancel').classList.remove('hidden');
+  $('siteDialogMask').style.display = 'flex';
+
+  return new Promise(resolve => {
+    siteDialogResolver = resolve;
+  });
+}
+
+function closeSiteDialog(result = true) {
   $('siteDialogMask').style.display = 'none';
+  $('siteDialogCancel').classList.add('hidden');
   const resolve = siteDialogResolver;
   siteDialogResolver = null;
-  if (resolve) resolve();
+  siteDialogConfirmMode = false;
+  if (resolve) resolve(result);
+}
+
+
+async function loadGameVersionOptions() {
+  gameVersions = await getGameVersions();
+
+  if (!gameVersions.length) {
+    throw new Error('GITADORAバージョン情報がありません。');
+  }
+
+  const stored = gameVersions.find(v => v.id === activeVersionId);
+  activeVersion = stored || gameVersions.find(v => v.is_current) || gameVersions[0];
+  activeVersionId = activeVersion.id;
+  localStorage.setItem('gitadora_version_id', activeVersionId);
+
+  $('versionSelect').innerHTML = gameVersions
+    .map(v => `<option value="${v.id}">${esc(v.name)}</option>`)
+    .join('');
+  $('versionSelect').value = activeVersionId;
+}
+
+async function switchGameVersion(versionId) {
+  const next = gameVersions.find(v => v.id === versionId);
+  if (!next || next.id === activeVersionId) return;
+
+  activeVersion = next;
+  activeVersionId = next.id;
+  localStorage.setItem('gitadora_version_id', activeVersionId);
+
+  selectedSong = null;
+  editingScoreId = null;
+  viewedUserScores = [];
+  publicUsers = [];
+
+  closeModal();
+  closeRateComparison();
+  closeUserDetail();
+
+  await loadScores();
+  if (activeTabName === 'USERS') await loadUsers();
+  if (adminEnabled && adminTab === 'songs' && $('adminModal').style.display !== 'none') {
+    adminSongPage = 0;
+    await loadAdminSongs();
+  }
 }
 
 function instrumentParts() { return partsForInstrument(activeInstrument); }
@@ -418,7 +499,7 @@ async function init() {
 
 async function loadScores() {
   try {
-    scores = await getMyScores();
+    scores = await getMyScores(activeVersionId);
     render();
   } catch (e) {
     console.error(e);
@@ -737,14 +818,14 @@ async function suggestSongs() {
   }
 
   try {
-    const rows = await searchSongTitles(title, activeInstrument);
+    const rows = await searchSongTitles(title, activeInstrument, activeVersionId);
 
     // サジェスト候補が存在していても、現在入力中の「曲名 + Part」が
     // 曲マスターに完全一致しない場合は登録依頼への導線を必ず表示する。
     // 例: 「as」と入力して Ascetic 等が候補に出ても「as」の登録依頼が可能。
     const currentPart = $('partSelect').value;
     const exactCurrentSong = currentPart
-      ? await getSongByTitleAndPart(title, currentPart)
+      ? await getSongByTitleAndPart(title, currentPart, activeVersionId)
       : null;
 
     const suggestionHtml = rows.map(r => `
@@ -802,7 +883,7 @@ async function refreshSelectedPart() {
   }
 
   try {
-    const song = await getSongByTitleAndPart(title, part);
+    const song = await getSongByTitleAndPart(title, part, activeVersionId);
     if (song) {
       selectedSong = song;
       $('formLevel').value = formatLevel(song.level);
@@ -852,7 +933,7 @@ async function submitScore() {
   if (rate === '') throw new Error('達成率を入力してください。');
 
   if (!selectedSong || selectedSong.title !== title || selectedSong.part !== part) {
-    selectedSong = await getSongByTitleAndPart(title, part);
+    selectedSong = await getSongByTitleAndPart(title, part, activeVersionId);
   }
 
   let songId = selectedSong?.id || null;
@@ -866,7 +947,8 @@ async function submitScore() {
     const request = await requestSongMaster({
       title,
       part,
-      proposedLevel: level
+      proposedLevel: level,
+      versionId: activeVersionId
     });
 
     requestId = request.id;
@@ -900,7 +982,7 @@ function formatDateOnly(value) {
 
 async function loadUsers() {
   try {
-    publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument);
+    publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument, activeVersionId);
     renderUsers();
   } catch (e) {
     $('userList').innerHTML = `<div class="empty-state">ユーザー一覧の取得に失敗しました: ${esc(e.message)}</div>`;
@@ -964,7 +1046,7 @@ async function openUserDetail(userId, username) {
   $('userDetailPage').style.display = 'block';
 
   try {
-    viewedUserScores = await getUserSkillTargets(userId, activeInstrument);
+    viewedUserScores = await getUserSkillTargets(userId, activeInstrument, activeVersionId);
     const target = calcTargetTotals(viewedUserScores);
 
     $('userDetailHot').textContent = formatSkill(target.hot);
@@ -1092,6 +1174,8 @@ function formatOptionPercentage(value) {
 
 async function openRateComparison(songId, title, part) {
   $('rateCompareTitle').textContent = `${title} / ${part}`;
+  $('ratePersonalBest').classList.add('hidden');
+  $('ratePersonalBest').innerHTML = '';
   $('rateOptionSummary').innerHTML = '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
   $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   $('rateCompareMask').style.display = 'flex';
@@ -1099,10 +1183,22 @@ async function openRateComparison(songId, title, part) {
   try {
     // Rate比較は自分+自分が登録したライバルのみ。
     // オプション割合はライバル登録に関係なく全ユーザーを集計。
-    const [rows, optionRows] = await Promise.all([
+    const [rows, optionRows, personalBest] = await Promise.all([
       getSongRateComparison(songId),
-      getSongOptionDistribution(songId)
+      getSongOptionDistribution(songId),
+      getSongPersonalBestHistory(songId)
     ]);
+
+    if (personalBest) {
+      $('ratePersonalBest').classList.remove('hidden');
+      $('ratePersonalBest').innerHTML = `
+        <div class="rate-personal-best-label">自己ベスト</div>
+        <div class="rate-personal-best-value">${formatRate(personalBest.achievement_rate)}%</div>
+        <div class="rate-personal-best-version">${esc(personalBest.version_name)}</div>`;
+    } else {
+      $('ratePersonalBest').classList.add('hidden');
+      $('ratePersonalBest').innerHTML = '';
+    }
 
     const visibleOptions = optionRows.filter(row => Number(row.percentage) > 0);
 
@@ -1231,7 +1327,8 @@ async function loadAdminSongs() {
     const result = await getAdminSongMasterPage(
       keyword,
       adminSongPage,
-      ADMIN_SONG_PAGE_SIZE
+      ADMIN_SONG_PAGE_SIZE,
+      activeVersionId
     );
 
     const rows = result.rows;
@@ -1318,7 +1415,7 @@ async function loadAdminRequests() {
   $('adminBody').classList.remove('admin-body-table');
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   try {
-    adminRequests = await getPendingSongRequests($('adminRequestSearch').value);
+    adminRequests = await getPendingSongRequests($('adminRequestSearch').value, activeVersionId);
     for (const req of adminRequests) {
       if (req.request_type === 'level_correction' && req.current_song_id) {
         const { data: currentSong } = await supabase
@@ -1408,7 +1505,8 @@ async function submitAdminSong() {
     isHot: $('adminFormHot').checked,
     title: $('adminFormTitle').value,
     part: $('adminFormPart').value,
-    level: $('adminFormLevel').value
+    level: $('adminFormLevel').value,
+    versionId: activeVersionId
   });
   closeAdminSongForm();
   await loadAdminSongs();
@@ -1626,7 +1724,7 @@ $('btnCopySkillSync').addEventListener('click', async () => {
 $('btnOpenEamusement').addEventListener('click', () => {
   const bookmarklet = buildSkillSyncBookmarklet();
   $('skillSyncBookmarklet').href = bookmarklet;
-  const popup = window.open(EAMUSEMENT_SYNC_ENTRY, '_blank');
+  const popup = window.open(getEamusementSyncEntry(), '_blank');
   if (!popup) {
     setSkillSyncStatus('ポップアップがブロックされました。ブラウザのポップアップ許可を確認してください。', 'error');
     return;
@@ -1768,6 +1866,7 @@ $('userSearch').addEventListener('input', () => {
 });
 
 $('userSort').addEventListener('change', renderUsers);
+$('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
 
 $('btnCloseUserDetail').addEventListener('click', closeUserDetail);
 $('btnCloseRateCompare').addEventListener('click', closeRateComparison);
@@ -1854,12 +1953,18 @@ document.addEventListener('click', async e => {
   }
 
   if (del) {
-    if (!confirm('この登録データを削除しますか？')) return;
+    const ok = await showSiteConfirm(
+      'この登録データを削除しますか？\nこの操作は元に戻せません。',
+      '登録データの削除',
+      '削除する'
+    );
+    if (!ok) return;
+
     try {
       await deleteScore(del.dataset.delete);
       await loadScores();
     } catch (e) {
-      alert('削除に失敗しました: ' + e.message);
+      await showSiteDialog('削除に失敗しました: ' + e.message, 'エラー');
     }
   }
 
@@ -1971,9 +2076,10 @@ document.addEventListener('click', async e => {
 });
 
 
-$('siteDialogOk').addEventListener('click', closeSiteDialog);
+$('siteDialogOk').addEventListener('click', () => closeSiteDialog(true));
+$('siteDialogCancel').addEventListener('click', () => closeSiteDialog(false));
 $('siteDialogMask').addEventListener('click', e => {
-  if (e.target === $('siteDialogMask')) closeSiteDialog();
+  if (e.target === $('siteDialogMask')) closeSiteDialog(siteDialogConfirmMode ? false : true);
 });
 
 document.addEventListener('visibilitychange', () => {

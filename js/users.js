@@ -1,18 +1,20 @@
 import { supabase } from './supabase.js';
 
-export async function listUserSummaries(keyword = '', instrument = 'GF') {
+export async function listUserSummaries(keyword = '', instrument = 'GF', versionId = null) {
   const { data, error } = await supabase.rpc('list_user_summaries', {
     p_search: String(keyword || '').trim(),
-    p_instrument: instrument
+    p_instrument: instrument,
+    p_version_id: versionId
   });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getUserSkillTargets(userId, instrument = 'GF') {
+export async function getUserSkillTargets(userId, instrument = 'GF', versionId = null) {
   const { data, error } = await supabase.rpc('get_user_skill_targets', {
     p_user_id: userId,
-    p_instrument: instrument
+    p_instrument: instrument,
+    p_version_id: versionId
   });
   if (error) throw error;
   return data ?? [];
@@ -24,6 +26,14 @@ export async function getSongRateComparison(songId) {
   });
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getSongPersonalBestHistory(songId) {
+  const { data, error } = await supabase.rpc('get_song_personal_best_history', {
+    p_song_id: songId
+  });
+  if (error) throw error;
+  return data?.[0] ?? null;
 }
 
 export async function getMyFavorites(instrument = 'GF') {

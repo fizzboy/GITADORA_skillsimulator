@@ -6,7 +6,7 @@ export const DM_PARTS = ['MAS-D','EXT-D','ADV-D','BSC-D'];
 export const PARTS = [...GF_PARTS, ...DM_PARTS];
 export const partsForInstrument = instrument => instrument === 'DM' ? DM_PARTS : GF_PARTS;
 
-export async function searchSongTitles(keyword = '', instrument = 'GF') {
+export async function searchSongTitles(keyword = '', instrument = 'GF', versionId = null) {
   const clean = String(keyword || '').trim();
   if (!clean) return [];
 
@@ -15,6 +15,7 @@ export async function searchSongTitles(keyword = '', instrument = 'GF') {
     .select('title,is_hot,part')
     .ilike('title', `%${clean}%`)
     .in('part', partsForInstrument(instrument))
+    .eq('version_id', versionId)
     .order('title', { ascending: true })
     .limit(200);
 
@@ -37,7 +38,7 @@ export async function searchSongTitles(keyword = '', instrument = 'GF') {
   return Array.from(map.values()).slice(0, 30);
 }
 
-export async function getSongByTitleAndPart(title, part) {
+export async function getSongByTitleAndPart(title, part, versionId = null) {
   const cleanTitle = String(title || '').trim();
   if (!cleanTitle || !part) return null;
 
@@ -46,13 +47,14 @@ export async function getSongByTitleAndPart(title, part) {
     .select('id,is_hot,title,part,level')
     .eq('title', cleanTitle)
     .eq('part', part)
+    .eq('version_id', versionId)
     .maybeSingle();
 
   if (error) throw error;
   return data;
 }
 
-export async function requestSongMaster({ title, part, proposedLevel }) {
+export async function requestSongMaster({ title, part, proposedLevel, versionId }) {
   const cleanTitle = String(title || '').trim();
   const numericLevel = Number(proposedLevel);
 
@@ -69,6 +71,7 @@ export async function requestSongMaster({ title, part, proposedLevel }) {
     requester_id: userData.user.id,
     title: cleanTitle,
     part,
+    version_id: versionId,
     proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
   };
 
@@ -87,6 +90,7 @@ export async function requestSongMaster({ title, part, proposedLevel }) {
       .eq('requester_id', userData.user.id)
       .eq('title', cleanTitle)
       .eq('part', part)
+      .eq('version_id', versionId)
       .eq('status', 'pending')
       .maybeSingle();
 
