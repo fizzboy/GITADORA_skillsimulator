@@ -977,6 +977,268 @@ body { background:#0b1220; }
   }
 }
 
+/* === v15 === */
+.p-tabs .p-tab-btn { min-width: 0; }
+
+.users-toolbar {
+  position: sticky;
+  top: 128px;
+  z-index: 4;
+  padding: 8px 3px;
+  background: #030712;
+}
+.users-toolbar input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #111827;
+  color: #f8fafc;
+  font-size: 14px;
+}
+.user-list-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px 92px 38px;
+  gap: 7px;
+  align-items: center;
+  min-height: 60px;
+  margin-bottom: 6px;
+  padding: 9px 8px;
+  border: 1px solid #273449;
+  border-radius: 8px;
+  background: #111827;
+  color: #f8fafc;
+  cursor: pointer;
+}
+.user-list-name {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-list-total {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 900;
+}
+.user-list-date {
+  color: #94a3b8;
+  text-align: right;
+  font-size: 10px;
+}
+.favorite-toggle {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: #1e293b;
+  color: #64748b;
+  font-size: 20px;
+  cursor: pointer;
+}
+.favorite-toggle.active { color: #facc15; }
+
+.user-detail-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: none;
+  overflow-y: auto;
+  background: #030712;
+  color: #f8fafc;
+}
+.user-detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #1f2937;
+  background: #0f172a;
+}
+.user-detail-back {
+  border: 0;
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-weight: 900;
+}
+.user-detail-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #263244;
+  background: #0f172a;
+}
+.user-detail-summary > div {
+  padding: 10px 4px;
+  border-right: 1px solid #263244;
+  text-align: center;
+}
+.user-detail-summary > div:last-child { border-right: 0; }
+.user-detail-summary span {
+  display: block;
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 900;
+}
+.user-detail-summary strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 17px;
+}
+.user-detail-body { padding: 8px 3px 28px; }
+
+.rate-compare-dialog {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100dvh - 36px);
+  overflow: hidden;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+}
+.rate-compare-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid #334155;
+}
+.rate-compare-head > div { flex: 1; min-width: 0; }
+.rate-compare-label { color: #60a5fa; font-size: 11px; font-weight: 900; }
+.rate-compare-title {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rate-compare-head button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: #1e293b;
+  color: #fff;
+  font-size: 20px;
+}
+.rate-compare-body {
+  max-height: calc(100dvh - 130px);
+  overflow-y: auto;
+  padding: 8px;
+}
+.rate-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px 70px;
+  gap: 7px;
+  align-items: center;
+  padding: 9px 8px;
+  border-bottom: 1px solid #1f2937;
+}
+.rate-row.self { background: rgba(37,99,235,.12); }
+.rate-user {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rate-value { text-align: right; font-size: 13px; font-weight: 900; }
+.rate-skill { color: #94a3b8; text-align: right; font-size: 10px; }
+
+.mypage-favorites {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #334155;
+}
+.mypage-section-title {
+  margin-bottom: 8px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+}
+.mypage-section-title span {
+  margin-left: 4px;
+  color: #64748b;
+  font-size: 10px;
+}
+.favorite-user-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 36px 36px 42px;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 7px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #111827;
+}
+.favorite-user-row .name {
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.favorite-user-row button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-weight: 900;
+}
+.favorite-user-row .remove { color: #fca5a5; }
+
+.m-card[data-compare-song] { cursor: pointer; }
+
+/* スキル対象の右側数値も曲別Skillカラーを適用 */
+.sk-val-box.skill-box-white,
+.sk-val-box.skill-box-orange,
+.sk-val-box.skill-box-orange-grad,
+.sk-val-box.skill-box-yellow,
+.sk-val-box.skill-box-yellow-grad,
+.sk-val-box.skill-box-green,
+.sk-val-box.skill-box-green-grad,
+.sk-val-box.skill-box-blue,
+.sk-val-box.skill-box-blue-grad,
+.sk-val-box.skill-box-purple,
+.sk-val-box.skill-box-purple-grad,
+.sk-val-box.skill-box-red,
+.sk-val-box.skill-box-red-grad,
+.sk-val-box.skill-box-bronze,
+.sk-val-box.skill-box-silver,
+.sk-val-box.skill-box-gold,
+.sk-val-box.skill-box-rainbow,
+.sk-val-box.skill-box-deep-rainbow {
+  border: 0 !important;
+}
+
+@media (max-width: 520px) {
+  .user-list-row {
+    grid-template-columns: minmax(0, 1fr) 78px 76px 34px;
+    gap: 5px;
+  }
+  .user-list-date { font-size: 9px; }
+}
+
 </style>
 </head>
 <body>
@@ -1012,8 +1274,9 @@ body { background:#0b1220; }
       <div class="score-cell"><span class="score-lbl">OTHER</span><span id="txtOtherTotal" class="score-val">0.00</span></div>
     </div>
     <div class="p-tabs">
-      <div class="p-tab-btn active" data-tab="SKILL">SKILL</div>
-      <div class="p-tab-btn" data-tab="RECORDS">記録</div>
+      <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
+      <div class="p-tab-btn" data-tab="RECORDS">登録済み</div>
+      <div class="p-tab-btn" data-tab="USERS">ユーザー一覧</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
       <input id="domSearch" class="search-input" placeholder="登録済みの曲を検索...">
@@ -1024,6 +1287,12 @@ body { background:#0b1220; }
   <div class="p-container">
     <div id="viewSkill"></div>
     <div id="viewAllManage" class="list-container hidden"></div>
+    <div id="viewUsers" class="hidden">
+      <div class="users-toolbar">
+        <input id="userSearch" placeholder="アカウント名を検索...">
+      </div>
+      <div id="userList"></div>
+    </div>
   </div>
 </div>
 
@@ -1112,10 +1381,42 @@ body { background:#0b1220; }
       <button id="btnCloseMypage" class="btn-cancel">戻る</button>
     </div>
 
+    <div class="mypage-favorites">
+      <div class="mypage-section-title">お気に入りユーザー <span>最大5件</span></div>
+      <div id="favoriteUserList" class="favorite-user-list"></div>
+    </div>
+
     <div class="danger-zone">
       <button id="btnDeleteAccount" class="btn-danger-wide">アカウントを削除</button>
       <div class="section-note">登録したスコアも削除されます。この操作は元に戻せません。</div>
     </div>
+  </div>
+</div>
+
+
+<div id="userDetailPage" class="user-detail-page">
+  <div class="user-detail-header">
+    <button id="btnCloseUserDetail" type="button" class="user-detail-back">← 戻る</button>
+    <div id="userDetailName" class="user-detail-name"></div>
+  </div>
+  <div class="user-detail-summary">
+    <div><span>TOTAL</span><strong id="userDetailTotal">0.00</strong></div>
+    <div><span>HOT</span><strong id="userDetailHot">0.00</strong></div>
+    <div><span>OTHER</span><strong id="userDetailOther">0.00</strong></div>
+  </div>
+  <div id="userDetailSkill" class="user-detail-body"></div>
+</div>
+
+<div id="rateCompareMask" class="site-dialog-mask">
+  <div class="rate-compare-dialog">
+    <div class="rate-compare-head">
+      <div>
+        <div class="rate-compare-label">Rate比較</div>
+        <div id="rateCompareTitle" class="rate-compare-title"></div>
+      </div>
+      <button id="btnCloseRateCompare" type="button">×</button>
+    </div>
+    <div id="rateCompareBody" class="rate-compare-body"></div>
   </div>
 </div>
 
@@ -1196,6 +1497,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=14_11"></script>
+<script type="module" src="./js/app.js?v=15"></script>
 </body>
 </html>
