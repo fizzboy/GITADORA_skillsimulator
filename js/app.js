@@ -401,6 +401,7 @@ function applyInstrumentUI() {
   document.querySelectorAll('[data-instrument]').forEach(b => b.classList.toggle('active', b.dataset.instrument === activeInstrument));
   $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
   if ($('instrumentLabel')) $('instrumentLabel').textContent = activeInstrument;
+  if ($('userSort')) $('userSort').value = activeInstrument === 'DM' ? 'dm_desc' : 'gf_desc';
 }
 async function switchInstrument(instrument) {
   if (!['GF','DM'].includes(instrument) || instrument === activeInstrument) return;
@@ -962,14 +963,13 @@ function renderUsers() {
     return `
       <div class="user-list-row" data-user-open="${user.user_id}" data-user-name="${esc(user.username)}">
         <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
-        <div class="user-list-skill user-list-gf">
-          <div class="user-list-skill-label">GF</div>
-          <div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div>
-        </div>
-        <div class="user-list-skill user-list-dm">
-          <div class="user-list-skill-label">DM</div>
-          <div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div>
-        </div>
+        ${activeInstrument === 'DM' ? `
+          <div class="user-list-skill user-list-dm"><div class="user-list-skill-label">DM</div><div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div></div>
+          <div class="user-list-skill user-list-gf"><div class="user-list-skill-label">GF</div><div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div></div>
+        ` : `
+          <div class="user-list-skill user-list-gf"><div class="user-list-skill-label">GF</div><div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div></div>
+          <div class="user-list-skill user-list-dm"><div class="user-list-skill-label">DM</div><div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div></div>
+        `}
         <div class="user-list-date">${formatDateOnly(user.last_recorded_at)}</div>
         ${user.is_self
           ? '<div></div>'
