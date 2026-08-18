@@ -83,3 +83,12 @@ export async function reorderFavorites(orderedUserIds) {
     if (error) throw error;
   }
 }
+
+
+export async function getSongOptionDistribution(songId) {
+  const { data, error } = await supabase.rpc('get_song_option_distribution', {
+    p_song_id: songId
+  });
+  if (error) throw error;
+  return data ?? [];
+}
