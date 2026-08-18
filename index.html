@@ -1736,6 +1736,24 @@ button:disabled {
 
 .instrument-switch{display:flex;gap:4px;align-items:center}.instrument-btn{min-width:54px;height:30px;border:1px solid #475569;border-radius:7px;background:#111827;color:#94a3b8;font-weight:900;cursor:pointer}.instrument-btn.active{background:#2563eb;color:#fff;border-color:#60a5fa;box-shadow:0 0 0 1px rgba(96,165,250,.25)}
 .request-suggestion{color:#93c5fd!important;font-weight:900!important}
+/* === v17 FIX2: サジェスト表示中でも曲マスター登録依頼可能 === */
+.mdl-sheet .suggestion-list .request-suggestion,
+.mdl-sheet #songSuggestions .request-suggestion {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  border-top: 1px solid #2563eb !important;
+  border-bottom: 0 !important;
+  background: #172554 !important;
+  color: #bfdbfe !important;
+  font-weight: 900 !important;
+}
+
+.mdl-sheet .suggestion-list .request-suggestion:hover,
+.mdl-sheet #songSuggestions .request-suggestion:hover {
+  background: #1e3a8a !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
