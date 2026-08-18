@@ -369,6 +369,97 @@ body { background:#0b1220; }
 .request-hot { background:#fee2e2; color:#991b1b; }
 .request-reject { background:#f1f5f9; color:#475569; }
 
+/* === v14 管理者曲マスター表 === */
+.admin-body.admin-body-table { padding:0; overflow:auto; }
+.master-sheet-wrap {
+  width:100%;
+  overflow:auto;
+  background:#fff;
+}
+.master-sheet {
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:1120px;
+  width:100%;
+  color:#111827;
+  font-size:11px;
+}
+.master-sheet th,
+.master-sheet td {
+  border-right:1px solid #d1d5db;
+  border-bottom:1px solid #d1d5db;
+  padding:5px;
+  background:#fff;
+  white-space:nowrap;
+}
+.master-sheet th {
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:#e2e8f0;
+  font-weight:900;
+  text-align:center;
+}
+.master-sheet th:first-child,
+.master-sheet td:first-child {
+  position:sticky;
+  left:0;
+  z-index:2;
+}
+.master-sheet th:first-child { z-index:4; }
+.master-hot-cell { width:54px; text-align:center; }
+.master-title-cell { min-width:240px; width:240px; }
+.master-level-cell { width:78px; text-align:center; }
+.master-action-cell { width:110px; text-align:center; }
+.master-sheet input[type="text"],
+.master-sheet input[type="number"] {
+  width:100%;
+  min-height:34px;
+  border:1px solid #cbd5e1;
+  border-radius:5px;
+  padding:5px 7px;
+  background:#fff;
+  color:#111827;
+  font-size:12px;
+}
+.master-sheet input[type="number"] { text-align:center; }
+.master-row-actions {
+  display:flex;
+  gap:4px;
+  justify-content:center;
+}
+.master-row-actions button {
+  border:0;
+  border-radius:5px;
+  padding:6px 8px;
+  font-size:10px;
+  font-weight:900;
+}
+.master-row-save { background:#dbeafe; color:#1d4ed8; }
+.master-row-delete { background:#fee2e2; color:#b91c1c; }
+
+.request-level-edit {
+  width:100px;
+  min-height:38px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  padding:6px 8px;
+  font-size:14px;
+  font-weight:800;
+}
+.pending-badge {
+  display:inline-block;
+  padding:2px 5px;
+  border-radius:4px;
+  background:#fef3c7;
+  color:#92400e;
+  border:1px solid #fcd34d;
+  font-size:9px;
+  font-weight:900;
+  vertical-align:middle;
+  margin-right:4px;
+}
+
 </style>
 </head>
 <body>
@@ -442,8 +533,10 @@ body { background:#0b1220; }
 
     <div id="masterRequestArea" class="master-request-area hidden">
       <div class="master-request-title">この曲名・Partは曲マスターにありません</div>
-      <div class="master-request-note">難易度を入力して、管理者へ登録依頼を送信できます。</div>
-      <button id="btnRequestMaster" type="button" class="btn-request-master">曲マスター登録を依頼</button>
+      <div class="master-request-note">
+        難易度を入力して保存すると、スコアを保存すると同時に管理者へ曲マスター登録依頼を送信します。
+        承認時に難易度が修正された場合、保存済みスコアも自動で修正後の難易度に切り替わります。
+      </div>
     </div>
 
     <div class="f-group">
@@ -522,7 +615,7 @@ body { background:#0b1220; }
     </div>
     <div id="adminSongToolbar" class="admin-toolbar">
       <input id="adminSongSearch" placeholder="曲名を検索...">
-      <button id="btnAdminAddSong">＋追加</button>
+      <button id="btnAdminAddSong">＋新規曲</button>
     </div>
     <div id="adminRequestToolbar" class="admin-toolbar hidden">
       <input id="adminRequestSearch" placeholder="依頼された曲名を検索...">
@@ -575,6 +668,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=13"></script>
+<script type="module" src="./js/app.js?v=14"></script>
 </body>
 </html>
