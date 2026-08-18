@@ -33,17 +33,24 @@ export async function saveMasterSong({ id = null, isHot = false, title, part, le
     is_hot: Boolean(isHot),
     title: cleanTitle,
     part,
-    level: Math.round(numericLevel * 100) / 100
+    level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
   };
 
   if (id) {
     const { error } = await supabase.from('songs').update(payload).eq('id', id);
     if (error) throw error;
-    return;
+  } else {
+    const { error } = await supabase.from('songs').insert(payload);
+    if (error) throw error;
   }
 
-  const { error } = await supabase.from('songs').insert(payload);
-  if (error) throw error;
+  // HOTは曲単位で扱うため、同名曲の全譜面へ反映
+  const { error: hotError } = await supabase
+    .from('songs')
+    .update({ is_hot: Boolean(isHot) })
+    .eq('title', cleanTitle);
+
+  if (hotError) throw hotError;
 }
 
 export async function deleteMasterSong(id) {
@@ -63,6 +70,47 @@ export async function getAdminUsers(keyword = '') {
   const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getPendingSongRequests(keyword = '') {
+  let query = supabase
+    .from('song_requests')
+    .select(`
+      id,
+      requester_id,
+      title,
+      part,
+      proposed_level,
+      status,
+      created_at,
+      profiles!song_requests_requester_id_fkey(username)
+    `)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true })
+    .limit(1000);
+
+  if (keyword.trim()) query = query.ilike('title', `%${keyword.trim()}%`);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function approveSongRequest(requestId, isHot = false) {
+  const { data, error } = await supabase.rpc('approve_song_request', {
+    p_request_id: requestId,
+    p_is_hot: Boolean(isHot)
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function rejectSongRequest(requestId) {
+  const { data, error } = await supabase.rpc('reject_song_request', {
+    p_request_id: requestId
+  });
+  if (error) throw error;
+  return data;
 }
 
 export async function accountAdmin(action, payload = {}) {
