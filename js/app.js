@@ -1,8 +1,8 @@
-import { supabase } from './supabase.js';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js';
-import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, getPendingSongRequests, approveSongRequest, rejectSongRequest, accountAdmin, MASTER_PARTS, saveMasterSongRow, deleteMasterSongTitle } from './admin.js';
+import { supabase } from './supabase.js?v=14_1';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_1';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_1';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_1';
+import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, getPendingSongRequests, approveSongRequest, rejectSongRequest, accountAdmin, MASTER_PARTS, saveMasterSongRow, deleteMasterSongTitle } from './admin.js?v=14_1';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
