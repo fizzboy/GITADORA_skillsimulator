@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_1';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_1';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_1';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_1';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_1';
-import { getGameVersions } from './versions.js?v=21_1';
+import { supabase } from './supabase.js?v=21_3';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_3';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_3';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_3';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_3';
+import { getGameVersions } from './versions.js?v=21_3';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_1';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_1';
+import * as adminApi from './admin.js?v=21_3';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_3';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1192,9 +1192,9 @@ async function openRateComparison(songId, title, part) {
     if (personalBest) {
       $('ratePersonalBest').classList.remove('hidden');
       $('ratePersonalBest').innerHTML = `
-        <div class="rate-personal-best-label">自己ベスト</div>
-        <div class="rate-personal-best-value">${formatRate(personalBest.achievement_rate)}%</div>
-        <div class="rate-personal-best-version">${esc(personalBest.version_name)}</div>`;
+        <span class="rate-personal-best-label">自己ベスト</span>
+        <strong class="rate-personal-best-value">${formatRate(personalBest.achievement_rate)}%</strong>
+        <span class="rate-personal-best-version">（${esc(personalBest.version_name)}）</span>`;
     } else {
       $('ratePersonalBest').classList.add('hidden');
       $('ratePersonalBest').innerHTML = '';
