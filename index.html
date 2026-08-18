@@ -2568,6 +2568,39 @@ select {
   font-size: 12px !important;
 }
 
+/* === v21 FIX11: iPhone Safari モーダル復帰バグ対策 === */
+body.score-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none;
+}
+
+body.score-modal-open #domModal {
+  touch-action: pan-y;
+}
+
+/* モーダルを独立したviewportレイヤーとして描画 */
+#domModal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  contain: layout paint style;
+}
+
+/* Safari再描画用。一瞬だけレイアウト再計算を強制する */
+html.ios-viewport-repair {
+  min-height: calc(100% + 1px);
+}
+
+/* iOSで閉じた直後に一覧上部へ不要な空白が残らないよう固定 */
+#viewAllManage,
+#viewSkill,
+#viewUsers {
+  min-height: 0 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2947,6 +2980,6 @@ select {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_4"></script>
+<script type="module" src="./js/app.js?v=21_11"></script>
 </body>
 </html>
