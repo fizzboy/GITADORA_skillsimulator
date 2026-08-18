@@ -1239,6 +1239,185 @@ body { background:#0b1220; }
   .user-list-date { font-size: 9px; }
 }
 
+/* === v15.1 UI統一 === */
+
+/* ① マイページ: 下部固定ではなく中央モーダル */
+#mypageModal.mypage-modal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  background: rgba(2, 6, 23, .72) !important;
+  backdrop-filter: blur(3px);
+}
+
+#mypageModal .mypage-sheet {
+  width: 100% !important;
+  max-width: 480px !important;
+  max-height: calc(100dvh - 32px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding: 18px !important;
+  border: 1px solid #334155 !important;
+  border-radius: 14px !important;
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,.48) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+#mypageModal .mypage-sheet h3 {
+  color: #f8fafc !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+}
+
+#mypageModal .mypage-sheet label {
+  color: #cbd5e1 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+#mypageModal .mypage-sheet input {
+  min-height: 46px !important;
+  padding: 9px 11px !important;
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  color: #f8fafc !important;
+  font-size: 16px !important;
+}
+
+#mypageModal .mypage-sheet input::placeholder {
+  color: #64748b !important;
+}
+
+#mypageModal .section-note {
+  color: #94a3b8 !important;
+}
+
+#mypageModal .btn-name-change,
+#mypageModal .btn-submit {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+
+#mypageModal .btn-cancel {
+  background: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+#mypageModal .mypage-favorites {
+  border-top-color: #334155 !important;
+}
+
+#mypageModal .mypage-section-title {
+  color: #f8fafc !important;
+}
+
+#mypageModal .mypage-section-title span {
+  color: #94a3b8 !important;
+}
+
+#mypageModal .favorite-user-row {
+  border-color: #334155 !important;
+  background: #111827 !important;
+}
+
+#mypageModal .favorite-user-row .name {
+  color: #f8fafc !important;
+}
+
+#mypageModal .danger-zone {
+  border-top-color: #334155 !important;
+}
+
+#mypageModal .danger-zone button {
+  border-color: #7f1d1d !important;
+  background: #2a1115 !important;
+  color: #fca5a5 !important;
+}
+
+/* ③ スコア登録: input / select の高さ統一、矢印を見やすく */
+.mdl-sheet .f-group input,
+.mdl-sheet .f-group select {
+  box-sizing: border-box !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 12px !important;
+  line-height: 48px !important;
+}
+
+.mdl-sheet .f-group select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  padding-right: 42px !important;
+  background-color: #111827 !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #e2e8f0 50%),
+    linear-gradient(135deg, #e2e8f0 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 20px,
+    calc(100% - 12px) 20px !important;
+  background-size: 6px 6px, 6px 6px !important;
+  background-repeat: no-repeat !important;
+  color: #f8fafc !important;
+}
+
+.mdl-sheet #formLevel[readonly] {
+  height: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+}
+
+/* ④ 登録一覧もスキル対象と同じダーク基調 */
+#viewAllManage {
+  background: #030712 !important;
+}
+
+#viewAllManage .m-card {
+  border-color: #334155 !important;
+  background: #111827 !important;
+  color: #f8fafc !important;
+}
+
+#viewAllManage .m-title-text {
+  color: #f8fafc !important;
+}
+
+#viewAllManage .m-txt-lv,
+#viewAllManage .m-txt-rate,
+#viewAllManage .m-flow-container {
+  color: #cbd5e1 !important;
+}
+
+#viewAllManage .m-txt-lv strong,
+#viewAllManage .m-txt-rate strong {
+  color: #f8fafc !important;
+}
+
+#viewAllManage .m-actions button {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+#viewAllManage .m-actions .btn-delete,
+#viewAllManage .m-actions [data-del] {
+  color: #fca5a5 !important;
+}
+
+@media (max-width: 600px) {
+  #mypageModal.mypage-modal {
+    padding: 12px !important;
+  }
+
+  #mypageModal .mypage-sheet {
+    max-width: 460px !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1275,7 +1454,7 @@ body { background:#0b1220; }
     </div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
-      <div class="p-tab-btn" data-tab="RECORDS">登録済み</div>
+      <div class="p-tab-btn" data-tab="RECORDS">登録</div>
       <div class="p-tab-btn" data-tab="USERS">ユーザー一覧</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
@@ -1382,7 +1561,7 @@ body { background:#0b1220; }
     </div>
 
     <div class="mypage-favorites">
-      <div class="mypage-section-title">お気に入りユーザー <span>最大5件</span></div>
+      <div class="mypage-section-title">ライバル登録 <span>最大5件</span></div>
       <div id="favoriteUserList" class="favorite-user-list"></div>
     </div>
 
@@ -1497,6 +1676,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15"></script>
+<script type="module" src="./js/app.js?v=15_1"></script>
 </body>
 </html>
