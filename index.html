@@ -2353,6 +2353,112 @@ body.dm-mode #scoreExtraFields{
   grid-template-columns:1fr !important;
 }
 
+/* === v21 FIX8: プルダウン視認性 / 曲登録コンパクト化 === */
+
+/* ソート・フィルタのselectを曲登録と同じ白系へ */
+#userSort,
+#recordTypeFilter,
+#recordFcFilter,
+#partSelect,
+#formFc,
+#formOption,
+#versionSelect {
+  background-color:#f8fafc !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+
+/* selectの矢印も見やすくする */
+#userSort,
+#recordTypeFilter,
+#recordFcFilter,
+#partSelect,
+#formFc,
+#formOption,
+#versionSelect {
+  color-scheme: light;
+}
+
+/* 曲登録モーダル全体をコンパクト化 */
+#domModal .modal-sheet,
+#domModal .modal-content,
+#domModal .form-sheet {
+  font-size:11px !important;
+}
+
+#domModal label {
+  font-size:10px !important;
+  margin-bottom:3px !important;
+}
+
+#domModal .f-group {
+  margin-bottom:7px !important;
+}
+
+#domModal input:not(#formTitle),
+#domModal select,
+#domModal .skill-preview {
+  min-height:36px !important;
+  height:36px !important;
+  font-size:11px !important;
+  padding-top:5px !important;
+  padding-bottom:5px !important;
+}
+
+#domModal #formTitle {
+  font-size:12px !important;
+  min-height:38px !important;
+  height:38px !important;
+}
+
+/* サジェストは現状サイズを維持 */
+#domModal #songSuggestions .suggestion {
+  font-size:inherit !important;
+  min-height:inherit !important;
+  padding-top:inherit !important;
+  padding-bottom:inherit !important;
+}
+
+#domModal .form-grid-two {
+  gap:7px !important;
+}
+
+#domModal .level-correction-area,
+#domModal .master-request-area {
+  margin-top:6px !important;
+  margin-bottom:7px !important;
+  padding:8px !important;
+}
+
+#domModal .level-correction-title,
+#domModal .master-request-area strong {
+  font-size:10px !important;
+}
+
+#domModal .level-correction-note,
+#domModal .section-note {
+  font-size:9px !important;
+  line-height:1.35 !important;
+}
+
+#domModal .btn-block {
+  margin-top:8px !important;
+  gap:7px !important;
+}
+
+#domModal .btn-block button {
+  min-height:38px !important;
+  height:38px !important;
+  font-size:11px !important;
+}
+
+#domModal .modal-title,
+#domModal h2,
+#domModal h3 {
+  font-size:15px !important;
+  margin-bottom:8px !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
