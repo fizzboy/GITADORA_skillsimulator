@@ -70,9 +70,30 @@ export async function saveScore({
   };
 
   if (songId) {
+    // 同一曲名でもPartごとにsongs.idは別。
+    // 同じsong_idだけ更新し、別Partは別レコードとして追加する。
+    const { data: existing, error: existingError } = await supabase
+      .from('user_scores')
+      .select('id')
+      .eq('user_id', userData.user.id)
+      .eq('song_id', songId)
+      .maybeSingle();
+
+    if (existingError) throw existingError;
+
+    if (existing?.id) {
+      const { error } = await supabase
+        .from('user_scores')
+        .update(payload)
+        .eq('id', existing.id);
+
+      if (error) throw error;
+      return;
+    }
+
     const { error } = await supabase
       .from('user_scores')
-      .upsert(row, { onConflict: 'user_id,song_id' });
+      .insert(row);
 
     if (error) throw error;
     return;
