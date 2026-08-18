@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js';
 import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js';
-import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, getPendingSongRequests, approveSongRequest, rejectSongRequest, accountAdmin } from './admin.js';
+import { isAdmin, getAdminSongs, saveMasterSong, deleteMasterSong, getAdminUsers, getPendingSongRequests, approveSongRequest, rejectSongRequest, accountAdmin, MASTER_PARTS, saveMasterSongRow, deleteMasterSongTitle } from './admin.js';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -160,6 +160,7 @@ function createCard(record, index, mode = 'MANAGE') {
   const fcBadge = getFcBadgeMarkup(record.fc);
   const optionBadge = getOptionBadgeMarkup(record.play_option);
   const hotTag = getHotTagMarkup(record.is_hot);
+  const pendingTag = record.pending_master ? '<span class="pending-badge">申請中</span>' : '';
 
   let boxColor = '';
   if (skill >= 180) boxColor = 'm-box-deep-rainbow';
@@ -180,7 +181,7 @@ function createCard(record, index, mode = 'MANAGE') {
           <div class="fc-zone">${fcBadge}</div>
         </div>
         <div class="sk-text-column">
-          <div class="sk-title">${hotTag} ${esc(record.title)}</div>
+          <div class="sk-title">${pendingTag}${hotTag} ${esc(record.title)}</div>
           <div class="sk-meta">
             <span class="sk-meta-lv">Lv: <strong>${formatLevel(record.level)}</strong></span>
             <span class="sk-meta-rate">Rate: <strong>${formatRate(record.achievement_rate)}%</strong></span>
@@ -197,7 +198,7 @@ function createCard(record, index, mode = 'MANAGE') {
       <div class="m-main-area">
         <div class="m-upper-row">
           <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
-          <div class="m-title-text">${hotTag} ${esc(record.title)}</div>
+          <div class="m-title-text">${pendingTag}${hotTag} ${esc(record.title)}</div>
           <div class="m-card-val-box ${boxColor}">${formatSkill(skill)}</div>
         </div>
         <div class="m-lower-row">
@@ -273,7 +274,7 @@ function switchTab(tab) {
 
 function openScoreModal(score = null) {
   editingScoreId = score?.score_id || null;
-  selectedSong = score ? {
+  selectedSong = score?.song_id ? {
     id: score.song_id,
     title: score.title,
     part: score.part,
@@ -290,8 +291,7 @@ function openScoreModal(score = null) {
   $('formOption').value = score?.play_option || 'NORMAL';
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
   $('songSuggestions').innerHTML = '';
-  $('btnRequestMaster').disabled = false;
-  $('btnRequestMaster').textContent = '曲マスター登録を依頼';
+  $('btnSubmitForm').textContent = '保存する';
   hide('masterRequestArea');
   $('domModal').style.display = 'flex';
 
@@ -362,6 +362,7 @@ async function refreshSelectedPart() {
       selectedSong = song;
       $('formLevel').value = formatLevel(song.level);
       $('formLevel').readOnly = true;
+      $('btnSubmitForm').textContent = '保存する';
       hide('masterRequestArea');
     } else {
       setMissingMasterState();
@@ -378,24 +379,9 @@ function setMissingMasterState() {
   selectedSong = null;
   $('formLevel').readOnly = false;
   $('formLevel').placeholder = '登録依頼する難易度';
+  $('btnSubmitForm').textContent = '登録依頼して保存';
   show('masterRequestArea');
   updateSkillPreview();
-}
-
-async function submitMasterRequest() {
-  const title = $('formTitle').value.trim();
-  const part = $('partSelect').value;
-  const level = $('formLevel').value;
-
-  await requestSongMaster({
-    title,
-    part,
-    proposedLevel: level
-  });
-
-  $('btnRequestMaster').disabled = true;
-  $('btnRequestMaster').textContent = '登録依頼を送信しました';
-  alert('曲マスターの登録依頼を送信しました。管理者の承認後にスコア登録できます。');
 }
 
 function updateSkillPreview() {
@@ -418,16 +404,30 @@ async function submitScore() {
   if (rate === '') throw new Error('達成率を入力してください。');
 
   if (!selectedSong || selectedSong.title !== title || selectedSong.part !== part) {
-    selectedSong = await getSongByTitleAndPart(title,part);
+    selectedSong = await getSongByTitleAndPart(title, part);
   }
 
-  if (!selectedSong) {
-    throw new Error('この曲名・Partはまだ曲マスターにありません。先に登録依頼を送信してください。');
+  let songId = selectedSong?.id || null;
+  let requestId = null;
+
+  // マスター未登録なら、申請とスコア保存を同時に行う
+  if (!songId) {
+    const level = $('formLevel').value;
+    if (!level) throw new Error('登録依頼する難易度を入力してください。');
+
+    const request = await requestSongMaster({
+      title,
+      part,
+      proposedLevel: level
+    });
+
+    requestId = request.id;
   }
 
   await saveScore({
     scoreId: editingScoreId,
-    songId: selectedSong.id,
+    songId,
+    requestId,
     achievementRate: rate,
     fc: $('formFc').value,
     playOption: $('formOption').value
@@ -519,30 +519,81 @@ async function switchAdminTab(tab) {
 }
 
 async function loadAdminSongs() {
+  $('adminBody').classList.add('admin-body-table');
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
+
   try {
     adminSongs = await getAdminSongs($('adminSongSearch').value);
-    $('adminBody').innerHTML = adminSongs.map(song => `
-      <div class="admin-card">
-        <div class="admin-card-top">
-          ${song.is_hot ? '<span class="hot-tag">HOT</span>' : ''}
-          <div class="admin-card-title">${esc(song.title)}</div>
-          <div class="admin-actions">
-            <button class="admin-edit" data-admin-edit-song="${song.id}">編集</button>
-            <button class="admin-delete" data-admin-delete-song="${song.id}">削除</button>
-          </div>
-        </div>
-        <div class="admin-card-meta">
-          <span>${song.part}</span>
-          <span>Lv ${formatLevel(song.level)}</span>
-        </div>
-      </div>`).join('') || '<div class="empty-state">該当する曲がありません</div>';
+
+    const grouped = new Map();
+
+    for (const row of adminSongs) {
+      if (!grouped.has(row.title)) {
+        grouped.set(row.title, {
+          title: row.title,
+          is_hot: Boolean(row.is_hot),
+          levels: {}
+        });
+      }
+
+      const item = grouped.get(row.title);
+      item.is_hot = item.is_hot || Boolean(row.is_hot);
+      item.levels[row.part] = row.level;
+    }
+
+    const rows = Array.from(grouped.values());
+
+    $('adminBody').innerHTML = `
+      <div class="master-sheet-wrap">
+        <table class="master-sheet">
+          <thead>
+            <tr>
+              <th class="master-hot-cell">HOT</th>
+              <th class="master-title-cell">曲名</th>
+              ${MASTER_PARTS.map(part => `<th class="master-level-cell">${part}</th>`).join('')}
+              <th class="master-action-cell">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row, index) => `
+              <tr data-master-row="${index}" data-original-title="${esc(row.title)}">
+                <td class="master-hot-cell">
+                  <input type="checkbox" data-master-hot ${row.is_hot ? 'checked' : ''}>
+                </td>
+                <td class="master-title-cell">
+                  <input type="text" data-master-title value="${esc(row.title)}">
+                </td>
+                ${MASTER_PARTS.map(part => `
+                  <td class="master-level-cell">
+                    <input
+                      type="number"
+                      step="0.01"
+                      inputmode="decimal"
+                      data-master-level="${part}"
+                      value="${row.levels[part] != null ? formatLevel(row.levels[part]) : ''}"
+                      placeholder="-">
+                  </td>`).join('')}
+                <td class="master-action-cell">
+                  <div class="master-row-actions">
+                    <button class="master-row-save" data-admin-save-master-row="${index}">保存</button>
+                    <button class="master-row-delete" data-admin-delete-master-row="${index}">削除</button>
+                  </div>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    if (!rows.length) {
+      $('adminBody').innerHTML = '<div class="empty-state">該当する曲がありません</div>';
+    }
   } catch (e) {
     $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
   }
 }
 
 async function loadAdminRequests() {
+  $('adminBody').classList.remove('admin-body-table');
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   try {
     adminRequests = await getPendingSongRequests($('adminRequestSearch').value);
@@ -553,13 +604,24 @@ async function loadAdminRequests() {
         </div>
         <div class="admin-card-meta">
           <span>${req.part}</span>
-          <span>Lv ${formatLevel(req.proposed_level)}</span>
           <span>依頼者: ${esc(req.profiles?.username || '-')}</span>
           <span>${new Date(req.created_at).toLocaleString('ja-JP')}</span>
         </div>
+        <div style="margin-top:8px;">
+          <label style="display:block;font-size:10px;font-weight:900;color:#64748b;margin-bottom:3px;">
+            承認する難易度（修正可）
+          </label>
+          <input
+            id="requestLevel_${req.id}"
+            class="request-level-edit"
+            type="number"
+            step="0.01"
+            inputmode="decimal"
+            value="${formatLevel(req.proposed_level)}">
+        </div>
         <div class="request-actions">
-          <button class="request-approve" data-admin-approve-request="${req.id}">承認</button>
-          <button class="request-hot" data-admin-hot-request="${req.id}">HOT承認</button>
+          <button class="request-approve" data-admin-approve-request="${req.id}">修正して承認</button>
+          <button class="request-hot" data-admin-hot-request="${req.id}">HOTで承認</button>
           <button class="request-reject" data-admin-reject-request="${req.id}">却下</button>
         </div>
       </div>`).join('') || '<div class="empty-state">未処理の登録依頼はありません</div>';
@@ -569,6 +631,7 @@ async function loadAdminRequests() {
 }
 
 async function loadAdminUsers() {
+  $('adminBody').classList.remove('admin-body-table');
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   try {
     adminUsers = await getAdminUsers($('adminUserSearch').value);
@@ -686,13 +749,6 @@ $('formTitle').addEventListener('input', suggestSongs);
 $('partSelect').addEventListener('change', refreshSelectedPart);
 $('formLevel').addEventListener('input', updateSkillPreview);
 $('formRate').addEventListener('input', updateSkillPreview);
-$('btnRequestMaster').addEventListener('click', async () => {
-  try {
-    await submitMasterRequest();
-  } catch (e) {
-    alert('登録依頼に失敗しました: ' + e.message);
-  }
-});
 $('btnSubmitForm').addEventListener('click', async () => {
   try {
     $('btnSubmitForm').disabled = true;
@@ -802,6 +858,8 @@ document.addEventListener('click', async e => {
   const adminApproveRequest = e.target.closest('[data-admin-approve-request]');
   const adminHotRequest = e.target.closest('[data-admin-hot-request]');
   const adminRejectRequest = e.target.closest('[data-admin-reject-request]');
+  const adminSaveMasterRow = e.target.closest('[data-admin-save-master-row]');
+  const adminDeleteMasterRow = e.target.closest('[data-admin-delete-master-row]');
 
   if (suggestion) {
     await selectSongTitle(suggestion.dataset.title);
@@ -819,6 +877,45 @@ document.addEventListener('click', async e => {
       await loadScores();
     } catch (e) {
       alert('削除に失敗しました: ' + e.message);
+    }
+  }
+
+  if (adminSaveMasterRow) {
+    const tr = adminSaveMasterRow.closest('tr[data-master-row]');
+    if (!tr) return;
+
+    const levels = {};
+    MASTER_PARTS.forEach(part => {
+      levels[part] = tr.querySelector(`[data-master-level="${part}"]`)?.value ?? '';
+    });
+
+    try {
+      adminSaveMasterRow.disabled = true;
+      await saveMasterSongRow({
+        originalTitle: tr.dataset.originalTitle,
+        title: tr.querySelector('[data-master-title]').value,
+        isHot: tr.querySelector('[data-master-hot]').checked,
+        levels
+      });
+      await loadAdminSongs();
+    } catch (e) {
+      alert('曲マスター保存に失敗しました: ' + e.message);
+    } finally {
+      adminSaveMasterRow.disabled = false;
+    }
+  }
+
+  if (adminDeleteMasterRow) {
+    const tr = adminDeleteMasterRow.closest('tr[data-master-row]');
+    if (!tr) return;
+    const title = tr.dataset.originalTitle;
+    if (!confirm(`「${title}」の全Partを曲マスターから削除しますか？\n登録済みユーザー記録も影響を受けるため注意してください。`)) return;
+
+    try {
+      await deleteMasterSongTitle(title);
+      await loadAdminSongs();
+    } catch (e) {
+      alert('曲マスター削除に失敗しました: ' + e.message);
     }
   }
 
@@ -842,7 +939,9 @@ document.addEventListener('click', async e => {
   if (adminApproveRequest) {
     if (!confirm('この登録依頼をOTHERとして承認しますか？')) return;
     try {
-      await approveSongRequest(adminApproveRequest.dataset.adminApproveRequest, false);
+      const requestId = adminApproveRequest.dataset.adminApproveRequest;
+      const level = $(`requestLevel_${requestId}`).value;
+      await approveSongRequest(requestId, level, false);
       await loadAdminRequests();
     } catch (e) {
       alert('承認に失敗しました: ' + e.message);
@@ -852,7 +951,9 @@ document.addEventListener('click', async e => {
   if (adminHotRequest) {
     if (!confirm('この登録依頼をHOT曲として承認しますか？')) return;
     try {
-      await approveSongRequest(adminHotRequest.dataset.adminHotRequest, true);
+      const requestId = adminHotRequest.dataset.adminHotRequest;
+      const level = $(`requestLevel_${requestId}`).value;
+      await approveSongRequest(requestId, level, true);
       await loadAdminRequests();
     } catch (e) {
       alert('HOT承認に失敗しました: ' + e.message);
@@ -883,6 +984,18 @@ document.addEventListener('click', async e => {
 
   if (adminResetUser) {
     openAdminPassword(adminResetUser.dataset.adminResetUser);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && !$('appScreen').classList.contains('hidden')) {
+    loadScores().catch(console.error);
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (!$('appScreen').classList.contains('hidden')) {
+    loadScores().catch(console.error);
   }
 });
 
