@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 4rvrEc9rsi2cpgY7uPqiuNgZoPam0uzOEec9YaUydOncyuXYe5bgkpmYZmTWRXy
+\restrict k4ZV2YpKeLRzz38fxrAXA9BHLXX30IpvPFGJpISUzL60agaxHiTn4k35dFDpDkI
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11
@@ -1031,8 +1031,240 @@ CREATE POLICY user_scores_update_own ON public.user_scores FOR UPDATE TO authent
 
 
 --
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
+--
+
+GRANT USAGE ON SCHEMA public TO postgres;
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+
+
+--
+-- Name: FUNCTION approve_song_request(p_request_id uuid, p_level numeric, p_is_hot boolean); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.approve_song_request(p_request_id uuid, p_level numeric, p_is_hot boolean) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.approve_song_request(p_request_id uuid, p_level numeric, p_is_hot boolean) TO authenticated;
+GRANT ALL ON FUNCTION public.approve_song_request(p_request_id uuid, p_level numeric, p_is_hot boolean) TO service_role;
+
+
+--
+-- Name: FUNCTION enforce_favorite_limit(); Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON FUNCTION public.enforce_favorite_limit() TO anon;
+GRANT ALL ON FUNCTION public.enforce_favorite_limit() TO authenticated;
+GRANT ALL ON FUNCTION public.enforce_favorite_limit() TO service_role;
+
+
+--
+-- Name: FUNCTION get_my_favorites(); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.get_my_favorites() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_my_favorites() TO authenticated;
+GRANT ALL ON FUNCTION public.get_my_favorites() TO service_role;
+
+
+--
+-- Name: FUNCTION get_song_option_distribution(p_song_id uuid); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.get_song_option_distribution(p_song_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_song_option_distribution(p_song_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_song_option_distribution(p_song_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION get_song_rate_comparison(p_song_id uuid); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.get_song_rate_comparison(p_song_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_song_rate_comparison(p_song_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_song_rate_comparison(p_song_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_skill_targets(p_user_id uuid); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.get_user_skill_targets(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_user_skill_targets(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_skill_targets(p_user_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON FUNCTION public.handle_new_user() TO anon;
+GRANT ALL ON FUNCTION public.handle_new_user() TO authenticated;
+GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
+
+
+--
+-- Name: FUNCTION is_admin(); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.is_admin() TO authenticated;
+GRANT ALL ON FUNCTION public.is_admin() TO service_role;
+
+
+--
+-- Name: FUNCTION list_user_summaries(p_search text); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.list_user_summaries(p_search text) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.list_user_summaries(p_search text) TO authenticated;
+GRANT ALL ON FUNCTION public.list_user_summaries(p_search text) TO service_role;
+
+
+--
+-- Name: FUNCTION reject_song_request(p_request_id uuid); Type: ACL; Schema: public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION public.reject_song_request(p_request_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.reject_song_request(p_request_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.reject_song_request(p_request_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION touch_updated_at(); Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON FUNCTION public.touch_updated_at() TO anon;
+GRANT ALL ON FUNCTION public.touch_updated_at() TO authenticated;
+GRANT ALL ON FUNCTION public.touch_updated_at() TO service_role;
+
+
+--
+-- Name: TABLE admin_users; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.admin_users TO anon;
+GRANT ALL ON TABLE public.admin_users TO authenticated;
+GRANT ALL ON TABLE public.admin_users TO service_role;
+
+
+--
+-- Name: TABLE song_requests; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.song_requests TO anon;
+GRANT ALL ON TABLE public.song_requests TO authenticated;
+GRANT ALL ON TABLE public.song_requests TO service_role;
+
+
+--
+-- Name: TABLE songs; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.songs TO anon;
+GRANT ALL ON TABLE public.songs TO authenticated;
+GRANT ALL ON TABLE public.songs TO service_role;
+
+
+--
+-- Name: TABLE user_scores; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.user_scores TO anon;
+GRANT ALL ON TABLE public.user_scores TO authenticated;
+GRANT ALL ON TABLE public.user_scores TO service_role;
+
+
+--
+-- Name: TABLE my_score_details; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.my_score_details TO anon;
+GRANT ALL ON TABLE public.my_score_details TO authenticated;
+GRANT ALL ON TABLE public.my_score_details TO service_role;
+
+
+--
+-- Name: TABLE profiles; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.profiles TO anon;
+GRANT ALL ON TABLE public.profiles TO authenticated;
+GRANT ALL ON TABLE public.profiles TO service_role;
+
+
+--
+-- Name: TABLE user_favorites; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT ALL ON TABLE public.user_favorites TO anon;
+GRANT ALL ON TABLE public.user_favorites TO authenticated;
+GRANT ALL ON TABLE public.user_favorites TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+
+
+--
+-- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: -
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 4rvrEc9rsi2cpgY7uPqiuNgZoPam0uzOEec9YaUydOncyuXYe5bgkpmYZmTWRXy
+\unrestrict k4ZV2YpKeLRzz38fxrAXA9BHLXX30IpvPFGJpISUzL60agaxHiTn4k35dFDpDkI
 
