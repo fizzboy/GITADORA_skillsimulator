@@ -1978,6 +1978,49 @@ button:disabled {
   box-sizing:border-box;
 }
 
+/* === v20: 曲マスター軽量化 === */
+.admin-master-summary,
+.admin-master-pager{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  min-height:34px;
+  color:#64748b;
+  font-size:11px;
+  font-weight:900;
+}
+.admin-master-summary{
+  justify-content:flex-end;
+  padding:0 10px 6px;
+}
+.admin-master-pager{
+  padding:10px 0 14px;
+}
+.admin-master-pager button{
+  min-width:84px;
+  min-height:34px;
+  border:1px solid #334155;
+  border-radius:7px;
+  background:#1e293b;
+  color:#e2e8f0;
+  font-weight:900;
+}
+.admin-master-pager button:disabled{
+  opacity:.35;
+}
+#adminMasterTable .master-level-cell{
+  width:68px !important;
+}
+#adminMasterTable input[data-master-level]{
+  width:100% !important;
+  min-width:0 !important;
+  padding:5px 6px !important;
+  text-align:center;
+  appearance:none;
+  -moz-appearance:textfield;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2316,7 +2359,7 @@ button:disabled {
       </div>
       <div>
         <label>難易度</label>
-        <input id="adminFormLevel" type="number" step="0.01" inputmode="decimal" placeholder="例 8.20">
+        <input id="adminFormLevel" type="text" inputmode="decimal" autocomplete="off" placeholder="例 8.20">
       </div>
     </div>
     <label class="hot-switch"><input id="adminFormHot" type="checkbox"> HOT曲として扱う</label>
@@ -2351,6 +2394,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=19_2"></script>
+<script type="module" src="./js/app.js?v=20_0"></script>
 </body>
 </html>

@@ -1,11 +1,12 @@
-import { supabase } from './supabase.js??v=19_0';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=19_0';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=19_0';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=19_0';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=19_0';
+import { supabase } from './supabase.js??v=20_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=20_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=20_0';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=20_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=20_0';
 const {
   isAdmin,
   getAdminSongs,
+  getAdminSongMasterPage,
   saveMasterSong,
   deleteMasterSong,
   getAdminUsers,
@@ -87,14 +88,12 @@ function captureSkillSyncHash() {
 
 async function importSkillSyncRecords(payload) {
   if (skillSyncInProgress) return;
+
   const records = Array.isArray(payload?.records) ? payload.records : [];
   if (!records.length) {
     setSkillSyncStatus('同期データを取得できませんでした。e-amusementへのログイン状態を確認してください。', 'error');
     return;
   }
-
-  skillSyncInProgress = true;
-  $('skillSyncMask').style.display = 'flex';
 
   const unique = new Map();
   for (const row of records) {
@@ -107,63 +106,38 @@ async function importSkillSyncRecords(payload) {
     if (!Number.isFinite(rate) || rate < 0 || rate > 100) continue;
     if (!Number.isFinite(level) || level <= 0 || level > 99.99) continue;
 
-    unique.set(`${title}\u0000${part}`, { title, part, rate, level });
+    unique.set(`${title}\u0000${part}`, {
+      title,
+      part,
+      rate: Math.floor((rate + Number.EPSILON) * 100) / 100,
+      level: Math.floor((level + Number.EPSILON) * 100) / 100
+    });
   }
 
   const rows = [...unique.values()];
-  const existingByKey = new Map(
-    scores.map(s => [`${String(s.title || '').trim()}\u0000${s.part}`, s])
-  );
+  if (!rows.length) {
+    setSkillSyncStatus('有効な同期データがありませんでした。', 'error');
+    return;
+  }
 
-  let saved = 0;
-  let requested = 0;
-  const errors = [];
+  skillSyncInProgress = true;
+  $('skillSyncMask').style.display = 'flex';
 
   try {
-    setSkillSyncStatus(`同期中 0 / ${rows.length}`, 'running');
+    setSkillSyncStatus(`同期中… ${rows.length}件を一括処理しています`, 'running');
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    // v20: 100件をブラウザから1件ずつ保存せず、DB側RPCで一括処理。
+    // ネットワーク往復を大幅に減らし、FC/オプションは既存値を維持する。
+    const { data, error } = await supabase.rpc('sync_skill_records', {
+      p_records: rows
+    });
 
-      try {
-        const song = await getSongByTitleAndPart(row.title, row.part);
-        const existing = existingByKey.get(`${row.title}\u0000${row.part}`);
+    if (error) throw error;
 
-        if (song) {
-          await saveScore({
-            scoreId: existing?.score_id || null,
-            songId: song.id,
-            achievementRate: row.rate,
-            fc: existing?.fc || '',
-            playOption: existing?.play_option || 'NORMAL'
-          });
-          saved++;
-        } else {
-          const request = await requestSongMaster({
-            title: row.title,
-            part: row.part,
-            proposedLevel: row.level
-          });
-
-          await saveScore({
-            scoreId: existing?.score_id || null,
-            requestId: request.id,
-            achievementRate: row.rate,
-            fc: existing?.fc || '',
-            playOption: existing?.play_option || 'NORMAL'
-          });
-
-          requested++;
-        }
-      } catch (e) {
-        errors.push(`${row.title} / ${row.part}: ${e?.message || e}`);
-      }
-
-      setSkillSyncStatus(
-        `同期中 ${i + 1} / ${rows.length}\n登録: ${saved}件　登録依頼: ${requested}件　エラー: ${errors.length}件`,
-        'running'
-      );
-    }
+    const result = Array.isArray(data) ? data[0] : data;
+    const saved = Number(result?.saved_count) || 0;
+    const requested = Number(result?.requested_count) || 0;
+    const skipped = Number(result?.skipped_count) || 0;
 
     await loadScores();
 
@@ -172,11 +146,12 @@ async function importSkillSyncRecords(payload) {
       : `${rows.length}件`;
 
     setSkillSyncStatus(
-      `同期完了\n取得: ${countText}\n登録・更新: ${saved}件　登録依頼: ${requested}件${errors.length ? `　エラー: ${errors.length}件` : ''}`,
-      errors.length ? 'error' : 'success'
+      `同期完了\n取得: ${countText}\n登録・更新: ${saved}件　登録依頼: ${requested}件${skipped ? `　スキップ: ${skipped}件` : ''}`,
+      'success'
     );
-
-    if (errors.length) console.warn('Skill sync errors:', errors);
+  } catch (e) {
+    console.error(e);
+    setSkillSyncStatus(`同期に失敗しました: ${e?.message || e}`, 'error');
   } finally {
     skillSyncInProgress = false;
   }
@@ -293,8 +268,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=19_1';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=19_0';
+import * as adminApi from './admin.js?v=20_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=20_0';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -307,6 +282,8 @@ let adminEnabled = false;
 let adminTab = 'songs';
 let adminSongs = [];
 let adminUsers = [];
+let adminSongPage = 0;
+const ADMIN_SONG_PAGE_SIZE = 100;
 let adminRequests = [];
 let adminEditingSongId = null;
 let publicUsers = [];
@@ -1250,29 +1227,29 @@ async function loadAdminSongs() {
   $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
 
   try {
-    adminSongs = await getAdminSongs($('adminSongSearch').value);
+    const keyword = $('adminSongSearch').value;
+    const result = await getAdminSongMasterPage(
+      keyword,
+      adminSongPage,
+      ADMIN_SONG_PAGE_SIZE
+    );
 
-    const grouped = new Map();
+    const rows = result.rows;
+    const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 
-    for (const row of adminSongs) {
-      if (!grouped.has(row.title)) {
-        grouped.set(row.title, {
-          title: row.title,
-          is_hot: Boolean(row.is_hot),
-          levels: {}
-        });
-      }
-
-      const item = grouped.get(row.title);
-      item.is_hot = item.is_hot || Boolean(row.is_hot);
-      item.levels[row.part] = row.level;
+    // 検索結果が減って現在ページが範囲外になった場合は先頭へ戻す
+    if (adminSongPage >= totalPages && adminSongPage > 0) {
+      adminSongPage = 0;
+      return loadAdminSongs();
     }
 
-    const rows = Array.from(grouped.values());
-
     $('adminBody').innerHTML = `
+      <div class="admin-master-summary">
+        <span>${result.total.toLocaleString('ja-JP')}曲</span>
+        <span>${adminSongPage + 1} / ${totalPages}ページ</span>
+      </div>
       <div class="master-sheet-wrap">
-        <table class="master-sheet">
+        <table class="master-sheet" id="adminMasterTable">
           <thead>
             <tr>
               <th class="master-hot-cell">HOT</th>
@@ -1293,11 +1270,11 @@ async function loadAdminSongs() {
                 ${MASTER_PARTS.map(part => `
                   <td class="master-level-cell">
                     <input
-                      type="number"
-                      step="0.01"
+                      type="text"
                       inputmode="decimal"
+                      autocomplete="off"
                       data-master-level="${part}"
-                      value="${row.levels[part] != null ? formatLevel(row.levels[part]) : ''}"
+                      value="${row.levels?.[part] != null ? formatLevel(row.levels[part]) : ''}"
                       placeholder="-">
                   </td>`).join('')}
                 <td class="master-action-cell">
@@ -1309,11 +1286,29 @@ async function loadAdminSongs() {
               </tr>`).join('')}
           </tbody>
         </table>
+      </div>
+      <div class="admin-master-pager">
+        <button id="btnAdminMasterPrev" type="button" ${adminSongPage <= 0 ? 'disabled' : ''}>← 前へ</button>
+        <span>${adminSongPage + 1} / ${totalPages}</span>
+        <button id="btnAdminMasterNext" type="button" ${adminSongPage + 1 >= totalPages ? 'disabled' : ''}>次へ →</button>
       </div>`;
 
     if (!rows.length) {
       $('adminBody').innerHTML = '<div class="empty-state">該当する曲がありません</div>';
+      return;
     }
+
+    $('btnAdminMasterPrev')?.addEventListener('click', async () => {
+      if (adminSongPage <= 0) return;
+      adminSongPage--;
+      await loadAdminSongs();
+    });
+
+    $('btnAdminMasterNext')?.addEventListener('click', async () => {
+      if (adminSongPage + 1 >= totalPages) return;
+      adminSongPage++;
+      await loadAdminSongs();
+    });
   } catch (e) {
     $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
   }
@@ -1353,9 +1348,9 @@ async function loadAdminRequests() {
           <input
             id="requestLevel_${req.id}"
             class="request-level-edit"
-            type="number"
-            step="0.01"
+            type="text"
             inputmode="decimal"
+            autocomplete="off"
             value="${formatLevel(req.proposed_level)}">
         </div>
         <div class="request-actions">
@@ -1726,6 +1721,7 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 let adminSongSearchTimer = null;
 $('adminSongSearch').addEventListener('input', () => {
   clearTimeout(adminSongSearchTimer);
+  adminSongPage = 0;
   adminSongSearchTimer = setTimeout(loadAdminSongs,250);
 });
 let adminRequestSearchTimer = null;

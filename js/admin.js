@@ -23,6 +23,33 @@ export async function getAdminSongs(keyword = '') {
   return all;
 }
 
+export async function getAdminSongMasterPage(keyword = '', page = 0, pageSize = 100) {
+  const safePage = Math.max(0, Number(page) || 0);
+  const safeSize = Math.min(200, Math.max(25, Number(pageSize) || 100));
+
+  const { data, error } = await supabase.rpc('admin_list_song_master', {
+    p_search: String(keyword || '').trim(),
+    p_limit: safeSize,
+    p_offset: safePage * safeSize
+  });
+
+  if (error) throw error;
+
+  const rows = (data ?? []).map(row => ({
+    title: row.title,
+    is_hot: Boolean(row.is_hot),
+    levels: row.levels ?? {},
+    total_count: Number(row.total_count) || 0
+  }));
+
+  return {
+    rows,
+    total: rows[0]?.total_count ?? 0,
+    page: safePage,
+    pageSize: safeSize
+  };
+}
+
 export async function saveMasterSong({ id = null, isHot = false, title, part, level }) {
   const cleanTitle = String(title || '').trim();
   const numericLevel = Number(level);
