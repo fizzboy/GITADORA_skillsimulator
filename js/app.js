@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_1';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_1';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_1';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_1';
+import { supabase } from './supabase.js?v=15_2';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_2';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_2';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_2';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_1';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_1';
+import * as adminApi from './admin.js?v=15_2';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_2';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -1154,13 +1154,29 @@ $('partSelect').addEventListener('change', refreshSelectedPart);
 $('formLevel').addEventListener('input', updateSkillPreview);
 $('formRate').addEventListener('input', updateSkillPreview);
 $('btnSubmitForm').addEventListener('click', async () => {
+  const button = $('btnSubmitForm');
+  const originalText = button.textContent;
+
   try {
-    $('btnSubmitForm').disabled = true;
+    button.disabled = true;
+    button.textContent = '保存中';
+
     await submitScore();
   } catch (e) {
     alert('保存に失敗しました: ' + e.message);
   } finally {
-    $('btnSubmitForm').disabled = false;
+    button.disabled = false;
+
+    // モーダルがまだ開いている場合だけ元の表示へ戻す
+    if ($('domModal').style.display !== 'none') {
+      if (selectedSong) {
+        button.textContent = '保存する';
+      } else {
+        button.textContent = originalText.includes('登録依頼')
+          ? '登録依頼して保存'
+          : '保存する';
+      }
+    }
   }
 });
 $('btnCancelForm').addEventListener('click', closeModal);
@@ -1169,8 +1185,13 @@ $('headerUsername').addEventListener('click', openMyPage);
 $('btnCloseMypage').addEventListener('click', closeMyPage);
 $('btnDeleteAccount').addEventListener('click', deleteOwnAccount);
 $('btnChangeUsername').addEventListener('click', async () => {
+  const button = $('btnChangeUsername');
+  const originalText = button.textContent;
+
   try {
-    $('btnChangeUsername').disabled = true;
+    button.disabled = true;
+    button.textContent = '変更中';
+
     await changeOwnUsername();
   } catch (e) {
     const message = e?.message || String(e);
@@ -1181,13 +1202,17 @@ $('btnChangeUsername').addEventListener('click', async () => {
       message.includes('already') ||
       message.includes('duplicate')
     ) {
-      await showSiteDialog('そのアカウント名は既に登録されています', 'アカウント名を変更できません');
+      await showSiteDialog(
+        'そのアカウント名は既に登録されています。',
+        'アカウント名を変更できません'
+      );
     } else {
       await showSiteDialog('アカウント名の変更に失敗しました。', 'エラー');
       console.error('アカウント名変更エラー:', e);
     }
   } finally {
-    $('btnChangeUsername').disabled = false;
+    button.disabled = false;
+    button.textContent = originalText;
   }
 });
 
@@ -1204,14 +1229,28 @@ $('btnLogout').addEventListener('click', async () => {
 });
 
 $('btnChangePassword').addEventListener('click', async () => {
-  const password = $('newPassword').value;
-  if (password.length < 8) return alert('パスワードは8文字以上にしてください。');
+  const button = $('btnChangePassword');
+  const originalText = button.textContent;
+
   try {
+    const password = $('newPassword').value;
+
+    if (password.length < 8) {
+      throw new Error('パスワードは8文字以上で入力してください。');
+    }
+
+    button.disabled = true;
+    button.textContent = '変更中';
+
     await changePassword(password);
-    alert('パスワードを変更しました。');
-    closeMyPage();
+    $('newPassword').value = '';
+
+    await showSiteDialog('パスワードを変更しました。', '変更完了');
   } catch (e) {
-    alert('変更に失敗しました: ' + e.message);
+    await showSiteDialog(e.message || 'パスワード変更に失敗しました。', 'エラー');
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
   }
 });
 
