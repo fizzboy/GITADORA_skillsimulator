@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_10';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_10';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_10';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_10';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_10';
-import { getGameVersions } from './versions.js?v=21_10';
+import { supabase } from './supabase.js?v=21_11';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_11';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_11';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_11';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_11';
+import { getGameVersions } from './versions.js?v=21_11';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_10';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_10';
+import * as adminApi from './admin.js?v=21_11';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_11';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -807,6 +807,7 @@ function openScoreModal(score = null) {
   // 背景ページ側のスクロール位置まで動くことがある。
   // 開く前の位置を保存してbodyを固定し、背景を一切動かさない。
   scoreModalScrollY = window.scrollY || window.pageYOffset || 0;
+  document.body.classList.add('score-modal-open');
   document.body.style.position = 'fixed';
   document.body.style.top = `-${scoreModalScrollY}px`;
   document.body.style.left = '0';
@@ -821,13 +822,15 @@ function openScoreModal(score = null) {
 }
 
 function closeModal() {
-  // iOS Safariのキーボード/VisualViewportが閉じる前に
-  // アクティブ要素をblurし、背景スクロールを確実に元へ戻す。
+  // iOS Safariではキーボードを閉じた直後にVisualViewportと
+  // ページレイアウトの再計算がずれることがあるため、
+  // blur → body固定解除 → 再描画 → scroll復元の順で処理する。
   if (document.activeElement instanceof HTMLElement) {
     document.activeElement.blur();
   }
 
   $('domModal').style.display = 'none';
+  document.body.classList.remove('score-modal-open');
 
   document.body.style.position = '';
   document.body.style.top = '';
@@ -836,23 +839,30 @@ function closeModal() {
   document.body.style.width = '';
 
   const restoreY = scoreModalScrollY;
-  window.scrollTo(0, restoreY);
-
-  // Safariはキーボード終了直後の1フレームだけVisualViewportが古い場合があるため
-  // 2フレーム後にも同じ位置を再適用して再描画させる。
-  requestAnimationFrame(() => {
-    window.scrollTo(0, restoreY);
-    requestAnimationFrame(() => {
-      window.scrollTo(0, restoreY);
-      document.documentElement.style.transform = 'translateZ(0)';
-      requestAnimationFrame(() => {
-        document.documentElement.style.transform = '';
-      });
-    });
-  });
 
   editingScoreId = null;
   selectedSong = null;
+
+  // 登録一覧を一度再描画して、Safariに残った不正なレイアウトキャッシュを破棄。
+  render();
+
+  const repairViewport = () => {
+    // 一時的に再フローを強制
+    document.documentElement.classList.add('ios-viewport-repair');
+    void document.documentElement.offsetHeight;
+    document.documentElement.classList.remove('ios-viewport-repair');
+
+    window.scrollTo({ top: restoreY, left: 0, behavior: 'auto' });
+  };
+
+  repairViewport();
+  requestAnimationFrame(() => {
+    repairViewport();
+    requestAnimationFrame(repairViewport);
+  });
+
+  // キーボードが完全に閉じた後にも最終補正
+  setTimeout(repairViewport, 120);
 }
 
 async function suggestSongs() {
