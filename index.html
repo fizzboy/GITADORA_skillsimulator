@@ -1516,6 +1516,42 @@ button:disabled {
   border: 1px solid #be123c !important;
 }
 
+/* === v15.5 オプション利用割合 === */
+.rate-option-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #334155;
+  background: #111827;
+}
+
+.rate-option-summary:empty {
+  display: none;
+}
+
+.option-share-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.option-share-item strong {
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.option-share-title {
+  width: 100%;
+  margin-bottom: 1px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+}
+
 </style>
 </head>
 <body>
@@ -1693,6 +1729,7 @@ button:disabled {
       </div>
       <button id="btnCloseRateCompare" type="button">×</button>
     </div>
+    <div id="rateOptionSummary" class="rate-option-summary"></div>
     <div id="rateCompareBody" class="rate-compare-body"></div>
   </div>
 </div>
@@ -1774,6 +1811,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_4"></script>
+<script type="module" src="./js/app.js?v=15_5"></script>
 </body>
 </html>
