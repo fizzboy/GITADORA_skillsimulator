@@ -1461,6 +1461,61 @@ button:disabled {
   opacity: .72 !important;
 }
 
+/* === v15.4 Rate比較バッジ === */
+.rate-user {
+  min-width: 0;
+  white-space: normal !important;
+}
+
+.rate-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 18px;
+  margin-top: 5px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* 通常カードではFCは列幅いっぱいだが、Rate比較では固定サイズにする */
+.rate-badges .fc-unified-badge {
+  width: 48px !important;
+  min-width: 48px !important;
+  padding: 2px 5px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box;
+}
+
+.rate-badges .opt-badge {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 48px !important;
+  padding: 2px 7px !important;
+  box-sizing: border-box;
+}
+
+/* m-card用の白背景指定をRate比較に引き継がない */
+.rate-badges .opt-ran {
+  color: #86efac !important;
+  background: transparent !important;
+  border: 1px solid #15803d !important;
+}
+.rate-badges .opt-sra {
+  color: #ffedd5 !important;
+  background: transparent !important;
+  border: 1px solid #c2410c !important;
+}
+.rate-badges .opt-ran-plus {
+  color: #67e8f9 !important;
+  background: transparent !important;
+  border: 1px solid #0369a1 !important;
+}
+.rate-badges .opt-sra-plus {
+  color: #fecdd3 !important;
+  background: transparent !important;
+  border: 1px solid #be123c !important;
+}
+
 </style>
 </head>
 <body>
@@ -1719,6 +1774,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_2"></script>
+<script type="module" src="./js/app.js?v=15_4"></script>
 </body>
 </html>
