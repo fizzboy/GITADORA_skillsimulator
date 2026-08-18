@@ -83,6 +83,8 @@ export async function getPendingSongRequests(keyword = '') {
       part,
       proposed_level,
       status,
+      request_type,
+      current_song_id,
       created_at,
       profiles!song_requests_requester_id_fkey(username)
     `)
