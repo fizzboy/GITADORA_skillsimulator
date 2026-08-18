@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { getCaptchaToken, resetCaptcha } from './captcha.js';
 
 const USERNAME_DOMAIN = 'users.gd-pocket-board.local';
 
@@ -36,11 +37,13 @@ export async function register(username, password) {
   }
 
   const email = await hashedUsernameToEmail(clean);
+  const captchaToken = await getCaptchaToken();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { username: clean } }
+    options: { data: { username: clean, captchaToken } }
   });
+  await resetCaptcha();
 
   if (error) throw error;
   return data;
@@ -54,12 +57,17 @@ export async function login(username, password) {
 
   // v15.3以降: 大文字小文字を区別したアカウント
   const hashedEmail = await hashedUsernameToEmail(clean);
+  let captchaToken = await getCaptchaToken();
   let result = await supabase.auth.signInWithPassword({
     email: hashedEmail,
-    password
+    password,
+    options: { captchaToken }
   });
 
-  if (!result.error) return result.data;
+  if (!result.error) {
+    await resetCaptcha();
+    return result.data;
+  }
 
   const firstError = result.error;
 
@@ -73,23 +81,34 @@ export async function login(username, password) {
   const oldHashedEmail = `u_${hex}@${USERNAME_DOMAIN}`;
 
   if (oldHashedEmail !== hashedEmail) {
+    captchaToken = await getCaptchaToken({ fresh: true });
     result = await supabase.auth.signInWithPassword({
       email: oldHashedEmail,
-      password
+      password,
+      options: { captchaToken }
     });
-    if (!result.error) return result.data;
+    if (!result.error) {
+    await resetCaptcha();
+    return result.data;
+  }
   }
 
   // v9以前に作った半角英数字ユーザーとの互換性
   if (/^[A-Za-z0-9_]{3,32}$/.test(clean)) {
     const legacyEmail = legacyUsernameToEmail(clean);
+    captchaToken = await getCaptchaToken({ fresh: true });
     result = await supabase.auth.signInWithPassword({
       email: legacyEmail,
-      password
+      password,
+      options: { captchaToken }
     });
-    if (!result.error) return result.data;
+    if (!result.error) {
+    await resetCaptcha();
+    return result.data;
+  }
   }
 
+  await resetCaptcha();
   throw firstError;
 }
 

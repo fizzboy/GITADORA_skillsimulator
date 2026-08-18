@@ -1,5 +1,5 @@
-import { supabase } from './supabase.js?v=15_8';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_8';
+import { supabase } from './supabase.js?v=15_9';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_9';
 import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_8';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_8';
 const {

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GITADORA Skill Simulator</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <style>
     /* === 1. 共通ベーススタイル === */
     html, body {
@@ -218,6 +219,7 @@
 .auth-card label { display:block; font-size:12px; font-weight:bold; color:#9ca3af; margin:10px 0 4px; }
 .auth-card input { width:100%; padding:10px; border:1px solid #4b5563; border-radius:4px; background:#111827; color:#fff; font-size:16px; }
 .auth-card button { width:100%; margin-top:14px; padding:10px; border:0; border-radius:4px; background:#2563eb; color:#fff; font-weight:bold; }
+.turnstile-wrap { width:100%; margin-top:14px; min-height:65px; }
 .auth-switch { margin-top:12px; text-align:center; color:#60a5fa; font-size:13px; cursor:pointer; }
 .header-user { margin-left:auto; font-size:11px; color:#93c5fd; cursor:pointer; padding:5px 8px; }
 .user-header-row { display:flex; align-items:center; padding:0 6px; min-height:30px; background:#111827; }
@@ -1724,6 +1726,7 @@ button:disabled {
         <label>パスワード（確認）</label>
         <input id="authPasswordConfirm" type="password" autocomplete="new-password" placeholder="もう一度入力">
       </div>
+      <div id="turnstileContainer" class="turnstile-wrap"></div>
       <button id="authSubmit" type="submit">ログイン</button>
     </form>
     <div id="authSwitch" class="auth-switch" data-mode="register">新規登録はこちら</div>
@@ -2011,6 +2014,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_8"></script>
+<script type="module" src="./js/app.js?v=15_9"></script>
 </body>
 </html>
