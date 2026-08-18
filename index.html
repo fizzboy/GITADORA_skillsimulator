@@ -1734,7 +1734,31 @@ button:disabled {
 .auth-captcha-status.error { color: #fca5a5; }
 
 
-.instrument-switch{display:flex;gap:4px;align-items:center}.instrument-btn{min-width:54px;height:30px;border:1px solid #475569;border-radius:7px;background:#111827;color:#94a3b8;font-weight:900;cursor:pointer}.instrument-btn.active{background:#2563eb;color:#fff;border-color:#60a5fa;box-shadow:0 0 0 1px rgba(96,165,250,.25)}
+.instrument-switch{display:flex;gap:4px;align-items:center}
+.instrument-btn{
+  min-width:54px;
+  height:30px;
+  border:1px solid transparent;
+  border-radius:7px;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+  opacity:.46;
+  transition:opacity .15s ease,transform .15s ease,box-shadow .15s ease;
+}
+.instrument-btn[data-instrument="GF"]{
+  background:#e8336a;
+  border-color:#e8336a;
+}
+.instrument-btn[data-instrument="DM"]{
+  background:#3caa2a;
+  border-color:#3caa2a;
+}
+.instrument-btn.active{
+  opacity:1;
+  transform:translateY(-1px);
+  box-shadow:0 0 0 2px rgba(255,255,255,.18);
+}
 .request-suggestion{color:#93c5fd!important;font-weight:900!important}
 /* === v17 FIX2: サジェスト表示中でも曲マスター登録依頼可能 === */
 .mdl-sheet .suggestion-list .request-suggestion,
@@ -1753,6 +1777,135 @@ button:disabled {
 .mdl-sheet #songSuggestions .request-suggestion:hover {
   background: #1e3a8a !important;
 }
+
+/* === v18: GF/DMカラー + e-amusementスキル同期 === */
+.mypage-sync-section{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid #334155;
+}
+.btn-skill-sync{
+  width:100%;
+  min-height:44px;
+  margin-top:8px;
+  border:1px solid #2563eb;
+  border-radius:8px;
+  background:#1d4ed8;
+  color:#fff;
+  font-weight:900;
+}
+.skill-sync-dialog{
+  width:min(520px,calc(100vw - 24px));
+  max-height:calc(100dvh - 28px);
+  overflow-y:auto;
+  padding:18px;
+  border:1px solid #334155;
+  border-radius:14px;
+  background:#0f172a;
+  color:#f8fafc;
+  box-shadow:0 20px 55px rgba(0,0,0,.52);
+}
+.skill-sync-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.skill-sync-head h3{
+  margin:2px 0 0;
+  font-size:18px;
+}
+.skill-sync-kicker{
+  color:#60a5fa;
+  font-size:10px;
+  font-weight:900;
+}
+.skill-sync-close{
+  border:0;
+  background:transparent;
+  color:#cbd5e1;
+  font-size:24px;
+  line-height:1;
+}
+.skill-sync-note{
+  padding:11px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#111827;
+  color:#cbd5e1;
+  font-size:11px;
+  line-height:1.65;
+}
+.skill-sync-step{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  gap:9px;
+  margin-top:12px;
+  padding:10px 0;
+  border-bottom:1px solid #1e293b;
+}
+.skill-sync-step-no{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  border-radius:999px;
+  background:#2563eb;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+.skill-sync-actions{
+  display:flex;
+  gap:7px;
+  margin-top:8px;
+}
+.skill-sync-bookmarklet,
+#btnCopySkillSync,
+.btn-open-eamusement{
+  min-height:38px;
+  padding:0 12px;
+  border-radius:7px;
+  font-size:11px;
+  font-weight:900;
+}
+.skill-sync-bookmarklet{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #e8336a;
+  background:#e8336a;
+  color:#fff;
+  text-decoration:none;
+}
+#btnCopySkillSync{
+  border:1px solid #475569;
+  background:#1e293b;
+  color:#e2e8f0;
+}
+.btn-open-eamusement{
+  width:100%;
+  margin-top:8px;
+  border:1px solid #3caa2a;
+  background:#3caa2a;
+  color:#fff;
+}
+.skill-sync-status{
+  margin-top:12px;
+  padding:10px 11px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#020617;
+  color:#94a3b8;
+  font-size:11px;
+  font-weight:800;
+  white-space:pre-line;
+}
+.skill-sync-status.running{color:#bfdbfe;border-color:#1d4ed8;}
+.skill-sync-status.success{color:#bbf7d0;border-color:#15803d;}
+.skill-sync-status.error{color:#fecaca;border-color:#b91c1c;}
 
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
@@ -1942,6 +2095,12 @@ button:disabled {
       <button id="btnChangePassword" type="button" class="btn-name-change">変更</button>
     </div>
 
+    <div class="mypage-sync-section">
+      <div class="mypage-section-title">スキル対象同期</div>
+      <div class="section-note">実行前にe-amusementにログインしてください。</div>
+      <button id="btnOpenSkillSync" type="button" class="btn-skill-sync">スキル対象を同期する</button>
+    </div>
+
     <div class="mypage-favorites">
       <div class="mypage-section-title">ライバル登録 <span>最大5件</span></div>
       <div id="favoriteUserList" class="favorite-user-list"></div>
@@ -1958,6 +2117,56 @@ button:disabled {
   </div>
 </div>
 
+
+
+<div id="skillSyncMask" class="site-dialog-mask">
+  <div class="skill-sync-dialog">
+    <div class="skill-sync-head">
+      <div>
+        <div class="skill-sync-kicker">e-amusement連携</div>
+        <h3>スキル対象を同期する</h3>
+      </div>
+      <button id="btnCloseSkillSync" type="button" class="skill-sync-close">×</button>
+    </div>
+
+    <div class="skill-sync-note">
+      <strong>実行前にe-amusementへログインしてください。</strong><br>
+      GitHub Pagesからログイン済みページを直接読み取ることはできないため、
+      e-amusement上で動く「同期ブックマーク」を使います。初回だけ登録すれば、次回以降は同じブックマークを使えます。
+    </div>
+
+    <div class="skill-sync-step">
+      <span class="skill-sync-step-no">1</span>
+      <div>
+        <strong>同期ブックマークを登録</strong>
+        <div class="section-note">PCは下の「GITADORA同期」をブックマークバーへドラッグできます。スマホは「コードをコピー」してブックマークのURLへ設定してください。</div>
+        <div class="skill-sync-actions">
+          <a id="skillSyncBookmarklet" class="skill-sync-bookmarklet" href="#">GITADORA同期</a>
+          <button id="btnCopySkillSync" type="button">コードをコピー</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-sync-step">
+      <span class="skill-sync-step-no">2</span>
+      <div>
+        <strong>e-amusementを開く</strong>
+        <div class="section-note">開いたページでログイン状態を確認し、ブックマークの「GITADORA同期」を実行してください。</div>
+        <button id="btnOpenEamusement" type="button" class="btn-open-eamusement">e-amusementを開く</button>
+      </div>
+    </div>
+
+    <div class="skill-sync-step">
+      <span class="skill-sync-step-no">3</span>
+      <div>
+        <strong>自動取得・登録</strong>
+        <div class="section-note">GF HOT / GF OTHER / DM HOT / DM OTHER を各25件取得し、このサイトへ戻して登録します。既存のFC・オプションは上書きしません。</div>
+      </div>
+    </div>
+
+    <div id="skillSyncStatus" class="skill-sync-status">待機中</div>
+  </div>
+</div>
 
 <div id="userDetailPage" class="user-detail-page">
   <div class="user-detail-header">
@@ -2063,6 +2272,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=17_0"></script>
+<script type="module" src="./js/app.js?v=18_0"></script>
 </body>
 </html>
