@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_3';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_3';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_3';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_3';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_3';
-import { getGameVersions } from './versions.js?v=21_3';
+import { supabase } from './supabase.js?v=21_4';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_4';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_4';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_4';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_4';
+import { getGameVersions } from './versions.js?v=21_4';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_3';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_3';
+import * as adminApi from './admin.js?v=21_4';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_4';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -460,6 +460,11 @@ function applyInstrumentUI() {
   $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
   if ($('instrumentLabel')) $('instrumentLabel').textContent = activeInstrument;
   if ($('userSort')) $('userSort').value = activeInstrument === 'DM' ? 'dm_desc' : 'gf_desc';
+
+  document.body.classList.toggle('dm-mode', activeInstrument === 'DM');
+  if (activeInstrument === 'DM' && $('formOption')) {
+    $('formOption').value = 'NORMAL';
+  }
 }
 async function switchInstrument(instrument) {
   if (!['GF','DM'].includes(instrument) || instrument === activeInstrument) return;
@@ -613,8 +618,12 @@ function getPartColorClass(part) {
   return '';
 }
 
-function getFcBadgeMarkup(fc) {
-  const value = String(fc || '').toUpperCase();
+function getFcBadgeMarkup(fc, achievementRate = null) {
+  const rate = Number(achievementRate);
+  const value = Number.isFinite(rate) && rate === 100
+    ? 'EXC'
+    : String(fc || '').toUpperCase();
+
   if (value !== 'FC' && value !== 'EXC') return '';
   const cls = value === 'EXC' ? 'exc' : 'fc';
   return `<span class="fc-unified-badge ${cls}">${value}</span>`;
@@ -637,7 +646,7 @@ function getHotTagMarkup(isHot) {
 
 function createCard(record, index, mode = 'MANAGE') {
   const skill = Number(record.skill);
-  const fcBadge = getFcBadgeMarkup(record.fc);
+  const fcBadge = getFcBadgeMarkup(record.fc, record.achievement_rate);
   const optionBadge = getOptionBadgeMarkup(record.play_option);
   const hotTag = getHotTagMarkup(record.is_hot);
   const pendingTag = record.pending_master ? '<span class="pending-badge">申請中</span>' : '';
@@ -780,8 +789,10 @@ function openScoreModal(score = null) {
   $('partSelect').value = score?.part || instrumentParts()[0];
   $('formLevel').value = score ? formatLevel(score.level) : '';
   $('formRate').value = score ? formatRate(score.achievement_rate) : '';
-  $('formFc').value = score?.fc || '';
-  $('formOption').value = score?.play_option || 'NORMAL';
+  $('formFc').value = score?.fc === 'FC' ? 'FC' : '';
+  $('formOption').value = activeInstrument === 'DM'
+    ? 'NORMAL'
+    : (score?.play_option || 'NORMAL');
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
   $('songSuggestions').innerHTML = '';
   $('btnSubmitForm').textContent = '保存する';
@@ -954,13 +965,17 @@ async function submitScore() {
     requestId = request.id;
   }
 
+  const numericRate = Number(rate);
+  const autoFc = numericRate === 100 ? 'EXC' : $('formFc').value;
+  const playOption = activeInstrument === 'DM' ? 'NORMAL' : $('formOption').value;
+
   await saveScore({
     scoreId: editingScoreId,
     songId,
     requestId,
     achievementRate: rate,
-    fc: $('formFc').value,
-    playOption: $('formOption').value
+    fc: autoFc,
+    playOption
   });
 
   closeModal();
@@ -1219,7 +1234,7 @@ async function openRateComparison(songId, title, part) {
         <div class="rate-user">
           <div>#${index + 1} ${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
           <div class="rate-badges">
-            ${getFcBadgeMarkup(row.fc)}
+            ${getFcBadgeMarkup(row.fc, row.achievement_rate)}
             ${getOptionBadgeMarkup(row.play_option)}
           </div>
         </div>
