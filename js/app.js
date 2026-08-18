@@ -1,7 +1,8 @@
-import { supabase } from './supabase.js?v=15_9';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_9';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_8';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_8';
+import { supabase } from './supabase.js?v=16_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=16_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=16_0';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=16_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=16_0';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +119,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_8';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_8';
+import * as adminApi from './admin.js?v=16_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=16_0';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -167,6 +168,10 @@ function showAuth(mode = 'login') {
   $('authPasswordConfirmGroup').classList.toggle('hidden', isLogin);
   $('authPasswordConfirm').required = !isLogin;
   $('authPasswordConfirm').value = '';
+
+  prepareAuthCaptcha().catch(error => {
+    console.error('Turnstile初期化エラー:', error);
+  });
 }
 
 async function showApp(session) {
@@ -217,6 +222,7 @@ function closeSiteDialog() {
 
 async function init() {
   $('partSelect').innerHTML = PARTS.map(p => `<option value="${p}">${p}</option>`).join('');
+  await initAuthCaptcha();
   const session = await getSession();
   if (session) await showApp(session);
   else showAuth('login');
@@ -1181,9 +1187,12 @@ $('authForm').addEventListener('submit', async e => {
   const mode = currentAuthMode;
   const username = $('authUsername').value.trim();
   const password = $('authPassword').value;
+  const button = $('authSubmit');
+  const defaultText = mode === 'register' ? '登録する' : 'ログイン';
 
   try {
-    $('authSubmit').disabled = true;
+    button.disabled = true;
+    button.textContent = '確認中...';
 
     if (mode === 'register') {
       if (!validateUsername(username)) {
@@ -1194,33 +1203,23 @@ $('authForm').addEventListener('submit', async e => {
         throw new Error('確認用パスワードが一致していません。');
       }
 
-      // アカウント名重複チェック
-      const { data: existingAccounts, error: duplicateCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .limit(1);
+      // RLSにより未ログイン時のprofiles直接検索には依存しない。
+      // 重複はSupabase Auth側の結果でも判定する。
+      const captchaToken = await getAuthCaptchaToken();
+      button.textContent = '登録中...';
+      const result = await register(username, password, captchaToken);
 
-      if (duplicateCheckError) throw duplicateCheckError;
-
-      if (existingAccounts?.length) {
-        await showSiteDialog(
-          'そのアカウント名は既に登録されています。',
-          '新規登録できません'
-        );
-        return;
-      }
-
-      const result = await register(username,password);
       if (result.user && !result.session) {
         throw new Error('Supabase側でメール確認が有効です。Confirm email をOFFにしてください。');
       }
       if (result.session) await showApp(result.session);
     } else {
-      await login(username,password);
+      button.textContent = 'ログイン中...';
+      await login(username, password, getAuthCaptchaToken, resetAuthCaptcha);
     }
   } catch (e) {
     const message = e?.message || String(e);
+    const lower = message.toLowerCase();
 
     if (
       message.includes('User already registered') ||
@@ -1233,11 +1232,16 @@ $('authForm').addEventListener('submit', async e => {
         'そのアカウント名は既に登録されています。',
         '新規登録できません'
       );
+    } else if (lower.includes('captcha') || message.includes('セキュリティ確認')) {
+      await showSiteDialog(
+        'セキュリティ確認に失敗しました。ページを再読み込みするか、しばらくして再度お試しください。',
+        'セキュリティ確認エラー'
+      );
     } else {
       await showSiteDialog(
         mode === 'register'
-          ? '新規登録に失敗しました。'
-          : 'ログインに失敗しました。',
+          ? '新規登録に失敗しました。入力内容を確認して再度お試しください。'
+          : 'ログインに失敗しました。アカウント名またはパスワードを確認してください。',
         'エラー'
       );
       console.error(
@@ -1245,8 +1249,14 @@ $('authForm').addEventListener('submit', async e => {
         e
       );
     }
+
+    // 失敗後は使い回さず、新しいTurnstileトークンを取得する。
+    try { await resetAuthCaptcha(); } catch (captchaResetError) { console.error(captchaResetError); }
   } finally {
-    $('authSubmit').disabled = false;
+    button.disabled = false;
+    if (!$('authScreen').classList.contains('hidden')) {
+      button.textContent = defaultText;
+    }
   }
 });
 

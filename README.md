@@ -46,3 +46,9 @@ Skillは `my_score_details` view で
 
 例:
 8.20 × 20 × 80.00 / 100 = 131.20
+
+
+## Cloudflare Turnstile
+- Provider: Cloudflare Turnstile
+- Site Key is public and stored in `js/config.js`.
+- Secret Key must exist only in Supabase Authentication > Attack Protection and must never be committed to GitHub.
