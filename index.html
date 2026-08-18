@@ -2330,6 +2330,14 @@ button:disabled {
   text-overflow:ellipsis;
 }
 
+/* === v21 FIX4: DM登録フォーム / EXC自動 === */
+body.dm-mode #optionFieldGroup{
+  display:none !important;
+}
+body.dm-mode #scoreExtraFields{
+  grid-template-columns:1fr !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2474,16 +2482,16 @@ button:disabled {
       <input id="formRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="例 95.50">
     </div>
 
-    <div class="form-grid-two">
+    <div id="scoreExtraFields" class="form-grid-two">
       <div class="f-group">
         <label>フルコン</label>
         <select id="formFc">
           <option value="">なし</option>
           <option value="FC">FC</option>
-          <option value="EXC">EXC</option>
         </select>
+        <div class="section-note" style="margin-top:4px;">達成率100.00%は自動でEXCになります。</div>
       </div>
-      <div class="f-group">
+      <div id="optionFieldGroup" class="f-group">
         <label>オプション</label>
         <select id="formOption">
           <option value="NORMAL">正規</option>
@@ -2710,6 +2718,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_3"></script>
+<script type="module" src="./js/app.js?v=21_4"></script>
 </body>
 </html>
