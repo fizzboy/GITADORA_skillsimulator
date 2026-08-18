@@ -1,8 +1,8 @@
-import { supabase } from './supabase.js??v=17_2';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=17_2';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=17_2';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=17_2';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=17_2';
+import { supabase } from './supabase.js??v=18_0';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js??v=18_0';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js??v=18_0';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js??v=18_0';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js??v=18_0';
 const {
   isAdmin,
   getAdminSongs,
@@ -19,6 +19,180 @@ const {
 const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
   'MAS-G','MAS-B','MAS-D','EXT-G','EXT-B','EXT-D','ADV-G','ADV-B','ADV-D','BSC-G','BSC-B','BSC-D'
 ];
+
+const EAMUSEMENT_ORIGIN = 'https://p.eagate.573.jp';
+const EAMUSEMENT_SYNC_ENTRY = 'https://p.eagate.573.jp/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=1';
+let skillSyncInProgress = false;
+
+function setSkillSyncStatus(message, state = '') {
+  const el = $('skillSyncStatus');
+  if (!el) return;
+  el.textContent = String(message || '');
+  el.className = `skill-sync-status ${state}`.trim();
+}
+
+function buildSkillSyncBookmarklet() {
+  const returnOrigin = location.origin;
+  const returnUrl = location.origin + location.pathname + location.search;
+
+  const code = `(async()=>{try{
+const AO=${JSON.stringify(returnOrigin)},RU=${JSON.stringify(returnUrl)};
+if(location.hostname!=='p.eagate.573.jp'){alert('e-amusementのページで実行してください。');return;}
+const P=[
+['GF','HOT','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=1'],
+['GF','OTHER','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=gf&stype=0'],
+['DM','HOT','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=dm&stype=1'],
+['DM','OTHER','/game/gfdm/gitadora_galaxywave_delta/p/playdata/skill.html?gtype=dm&stype=0']
+];
+const MP={GUITAR:'G',BASS:'B',DRUM:'D',DRUMS:'D'},MD={BASIC:'BSC',ADVANCED:'ADV',EXTREME:'EXT',MASTER:'MAS'};
+const A=[],C={};
+for(const [I,K,U] of P){
+ const R=await fetch(U,{credentials:'include',cache:'no-store'});
+ const H=await R.text();
+ if(H.includes('e-amusementへのログインが必要')||H.includes('ログインした状態で'))throw new Error('e-amusementへのログインが必要です。');
+ const D=new DOMParser().parseFromString(H,'text/html');
+ const T=[...D.querySelectorAll('tr')].filter(t=>t.querySelector('.achive_cell')&&t.querySelector('.music_seq_box')).slice(0,25);
+ C[I+'_'+K]=T.length;
+ for(const t of T){
+  const title=(t.querySelector('.title img[alt]')?.getAttribute('alt')||t.querySelector('.title .text_link')?.textContent||'').trim();
+  const pe=t.querySelector('.music_seq_box .seq_icon[class*="part_"]'),de=t.querySelector('.music_seq_box .seq_icon[class*="diff_"]');
+  const pr=[...(pe?.classList||[])].find(c=>c.startsWith('part_'))?.slice(5)||'';
+  const dr=[...(de?.classList||[])].find(c=>c.startsWith('diff_'))?.slice(5)||'';
+  const ps=MP[pr],dp=MD[dr];
+  const rate=parseFloat((t.querySelector('.achive_cell')?.textContent||'').replace('%','').trim());
+  const level=parseFloat((t.querySelector('.diff_cell')?.textContent||'').trim());
+  if(title&&ps&&dp&&Number.isFinite(rate)&&Number.isFinite(level))A.push({title,part:dp+'-'+ps,rate,level,instrument:I,category:K});
+ }
+}
+const M={type:'GITADORA_SKILL_SYNC',version:1,records:A,counts:C};
+if(window.opener&&!window.opener.closed){window.opener.postMessage(M,AO);alert(A.length+'件のスキルデータを送信しました。');window.close();}
+else{location.href=RU+'#skill-sync='+encodeURIComponent(JSON.stringify(M));}
+}catch(e){alert('同期に失敗しました: '+(e?.message||e));}})()`;
+
+  return 'javascript:' + code.replace(/\n/g, '');
+}
+
+function captureSkillSyncHash() {
+  if (!location.hash.startsWith('#skill-sync=')) return;
+  try {
+    const raw = decodeURIComponent(location.hash.slice('#skill-sync='.length));
+    const payload = JSON.parse(raw);
+    sessionStorage.setItem('gitadora_pending_skill_sync', JSON.stringify(payload));
+  } catch (e) {
+    console.error('skill sync hash parse error', e);
+  } finally {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+}
+
+async function importSkillSyncRecords(payload) {
+  if (skillSyncInProgress) return;
+  const records = Array.isArray(payload?.records) ? payload.records : [];
+  if (!records.length) {
+    setSkillSyncStatus('同期データを取得できませんでした。e-amusementへのログイン状態を確認してください。', 'error');
+    return;
+  }
+
+  skillSyncInProgress = true;
+  $('skillSyncMask').style.display = 'flex';
+
+  const unique = new Map();
+  for (const row of records) {
+    const title = String(row?.title || '').trim();
+    const part = String(row?.part || '');
+    const rate = Number(row?.rate);
+    const level = Number(row?.level);
+
+    if (!title || !PARTS.includes(part)) continue;
+    if (!Number.isFinite(rate) || rate < 0 || rate > 100) continue;
+    if (!Number.isFinite(level) || level <= 0 || level > 99.99) continue;
+
+    unique.set(`${title}\u0000${part}`, { title, part, rate, level });
+  }
+
+  const rows = [...unique.values()];
+  const existingByKey = new Map(
+    scores.map(s => [`${String(s.title || '').trim()}\u0000${s.part}`, s])
+  );
+
+  let saved = 0;
+  let requested = 0;
+  const errors = [];
+
+  try {
+    setSkillSyncStatus(`同期中 0 / ${rows.length}`, 'running');
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+
+      try {
+        const song = await getSongByTitleAndPart(row.title, row.part);
+        const existing = existingByKey.get(`${row.title}\u0000${row.part}`);
+
+        if (song) {
+          await saveScore({
+            scoreId: existing?.score_id || null,
+            songId: song.id,
+            achievementRate: row.rate,
+            fc: existing?.fc || '',
+            playOption: existing?.play_option || 'NORMAL'
+          });
+          saved++;
+        } else {
+          const request = await requestSongMaster({
+            title: row.title,
+            part: row.part,
+            proposedLevel: row.level
+          });
+
+          await saveScore({
+            scoreId: existing?.score_id || null,
+            requestId: request.id,
+            achievementRate: row.rate,
+            fc: existing?.fc || '',
+            playOption: existing?.play_option || 'NORMAL'
+          });
+
+          requested++;
+        }
+      } catch (e) {
+        errors.push(`${row.title} / ${row.part}: ${e?.message || e}`);
+      }
+
+      setSkillSyncStatus(
+        `同期中 ${i + 1} / ${rows.length}\n登録: ${saved}件　登録依頼: ${requested}件　エラー: ${errors.length}件`,
+        'running'
+      );
+    }
+
+    await loadScores();
+
+    const countText = payload?.counts
+      ? `GF HOT ${payload.counts.GF_HOT ?? 0} / GF OTHER ${payload.counts.GF_OTHER ?? 0} / DM HOT ${payload.counts.DM_HOT ?? 0} / DM OTHER ${payload.counts.DM_OTHER ?? 0}`
+      : `${rows.length}件`;
+
+    setSkillSyncStatus(
+      `同期完了\n取得: ${countText}\n登録・更新: ${saved}件　登録依頼: ${requested}件${errors.length ? `　エラー: ${errors.length}件` : ''}`,
+      errors.length ? 'error' : 'success'
+    );
+
+    if (errors.length) console.warn('Skill sync errors:', errors);
+  } finally {
+    skillSyncInProgress = false;
+  }
+}
+
+async function processPendingSkillSync() {
+  const raw = sessionStorage.getItem('gitadora_pending_skill_sync');
+  if (!raw) return;
+  sessionStorage.removeItem('gitadora_pending_skill_sync');
+  try {
+    await importSkillSyncRecords(JSON.parse(raw));
+  } catch (e) {
+    console.error(e);
+    setSkillSyncStatus(`同期に失敗しました: ${e?.message || e}`, 'error');
+  }
+}
 
 // v14.3: 曲マスターの横一括編集はapp.js側にも実装。
 // admin.jsのキャッシュや差し替え漏れがあっても保存できるようにする。
@@ -119,8 +293,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js??v=17_2';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js??v=17_2';
+import * as adminApi from './admin.js??v=18_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js??v=18_0';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -240,15 +414,22 @@ async function switchInstrument(instrument) {
 }
 
 async function init() {
+  captureSkillSyncHash();
   applyInstrumentUI();
   await initAuthCaptcha();
   const session = await getSession();
-  if (session) await showApp(session);
-  else showAuth('login');
+  if (session) {
+    await showApp(session);
+    await processPendingSkillSync();
+  } else {
+    showAuth('login');
+  }
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (session) await showApp(session);
-    else {
+    if (session) {
+      await showApp(session);
+      await processPendingSkillSync();
+    } else {
       adminEnabled = false;
       $('btnAdmin').classList.add('hidden');
       closeAdmin();
@@ -1382,6 +1563,50 @@ $('btnCancelForm').addEventListener('click', closeModal);
 
 $('headerUsername').addEventListener('click', openMyPage);
 $('btnCloseMypage').addEventListener('click', closeMyPage);
+
+$('btnOpenSkillSync').addEventListener('click', () => {
+  const bookmarklet = buildSkillSyncBookmarklet();
+  $('skillSyncBookmarklet').href = bookmarklet;
+  setSkillSyncStatus('待機中');
+  $('skillSyncMask').style.display = 'flex';
+});
+
+$('btnCloseSkillSync').addEventListener('click', () => {
+  if (!skillSyncInProgress) $('skillSyncMask').style.display = 'none';
+});
+
+$('skillSyncMask').addEventListener('click', e => {
+  if (e.target === $('skillSyncMask') && !skillSyncInProgress) {
+    $('skillSyncMask').style.display = 'none';
+  }
+});
+
+$('btnCopySkillSync').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(buildSkillSyncBookmarklet());
+    setSkillSyncStatus('同期用ブックマークのコードをコピーしました。', 'success');
+  } catch (e) {
+    setSkillSyncStatus('コピーに失敗しました。PCでは「GITADORA同期」をブックマークバーへドラッグしてください。', 'error');
+  }
+});
+
+$('btnOpenEamusement').addEventListener('click', () => {
+  const bookmarklet = buildSkillSyncBookmarklet();
+  $('skillSyncBookmarklet').href = bookmarklet;
+  const popup = window.open(EAMUSEMENT_SYNC_ENTRY, '_blank');
+  if (!popup) {
+    setSkillSyncStatus('ポップアップがブロックされました。ブラウザのポップアップ許可を確認してください。', 'error');
+    return;
+  }
+  setSkillSyncStatus('e-amusementを開きました。ログイン状態を確認後、ブックマークの「GITADORA同期」を実行してください。', 'running');
+});
+
+window.addEventListener('message', async event => {
+  if (event.origin !== EAMUSEMENT_ORIGIN) return;
+  if (event.data?.type !== 'GITADORA_SKILL_SYNC') return;
+  await importSkillSyncRecords(event.data);
+});
+
 $('btnDeleteAccount').addEventListener('click', deleteOwnAccount);
 $('btnChangeUsername').addEventListener('click', async () => {
   const button = $('btnChangeUsername');
