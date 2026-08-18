@@ -1418,6 +1418,49 @@ body { background:#0b1220; }
   }
 }
 
+/* === v15.2 === */
+
+/* ① 曲名サジェスト: 件数が多くてもモーダル内でスクロール */
+.mdl-sheet #songSuggestions,
+.mdl-sheet .suggestion-list {
+  max-height: 220px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* ③ 登録一覧のカード枠線を明確化 */
+#viewAllManage .m-card {
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.015);
+}
+
+#viewAllManage .m-card:hover {
+  border-color: #64748b !important;
+}
+
+/* ユーザー一覧も同じトーンの枠線 */
+.user-list-row {
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.015);
+}
+
+.user-list-row:active {
+  border-color: #64748b !important;
+  background: #172033 !important;
+}
+
+/* 保存中などの無効状態 */
+button:disabled {
+  cursor: default !important;
+  opacity: .72 !important;
+}
+
 </style>
 </head>
 <body>
@@ -1676,6 +1719,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_1"></script>
+<script type="module" src="./js/app.js?v=15_2"></script>
 </body>
 </html>
