@@ -2601,6 +2601,22 @@ html.ios-viewport-repair {
   min-height: 0 !important;
 }
 
+/* === v21 FIX14: 曲名の不要な「...」を防止 === */
+.sk-title,
+.m-title-text {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+  text-overflow: clip !important;
+  overflow: hidden !important;
+  max-height: 2.4em !important;
+  line-height: 1.2 !important;
+}
+
+.smart-song-title .song-title-text {
+  display: inline;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2980,6 +2996,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_13"></script>
+<script type="module" src="./js/app.js?v=21_14"></script>
 </body>
 </html>
