@@ -1,3 +1,4 @@
+// GD Pocket Board admin.js v14_2
 import { supabase } from './supabase.js';
 
 export async function isAdmin() {
@@ -33,7 +34,7 @@ export async function saveMasterSong({ id = null, isHot = false, title, part, le
     is_hot: Boolean(isHot),
     title: cleanTitle,
     part,
-    level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
+    level: Math.round((numericLevel + Number.EPSILON) * 100) / 100
   };
 
   if (id) {
@@ -96,9 +97,13 @@ export async function getPendingSongRequests(keyword = '') {
   return data ?? [];
 }
 
-export async function approveSongRequest(requestId, isHot = false) {
+export async function approveSongRequest(requestId, level, isHot = false) {
+  const numericLevel = Number(level);
+  if (!Number.isFinite(numericLevel)) throw new Error('難易度を入力してください。');
+
   const { data, error } = await supabase.rpc('approve_song_request', {
     p_request_id: requestId,
+    p_level: Math.round((numericLevel + Number.EPSILON) * 100) / 100,
     p_is_hot: Boolean(isHot)
   });
   if (error) throw error;
@@ -120,4 +125,96 @@ export async function accountAdmin(action, payload = {}) {
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   return data;
+}
+
+
+export const MASTER_PARTS = [
+  'MAS-G','MAS-B',
+  'EXT-G','EXT-B',
+  'ADV-G','ADV-B',
+  'BSC-G','BSC-B'
+];
+
+export async function saveMasterSongRow({
+  originalTitle = '',
+  title,
+  isHot = false,
+  levels = {}
+}) {
+  const cleanTitle = String(title || '').trim();
+  const oldTitle = String(originalTitle || '').trim();
+
+  if (!cleanTitle) throw new Error('曲名を入力してください。');
+
+  const filledParts = MASTER_PARTS.filter(part => String(levels[part] ?? '').trim() !== '');
+  if (!filledParts.length) throw new Error('少なくとも1つの難易度を入力してください。');
+
+  // 曲名変更
+  if (oldTitle && oldTitle !== cleanTitle) {
+    const { error: renameError } = await supabase
+      .from('songs')
+      .update({ title: cleanTitle })
+      .eq('title', oldTitle);
+
+    if (renameError) throw renameError;
+  }
+
+  const targetTitle = cleanTitle;
+
+  const { data: existing, error: existingError } = await supabase
+    .from('songs')
+    .select('id,part')
+    .eq('title', targetTitle);
+
+  if (existingError) throw existingError;
+
+  const existingByPart = new Map((existing ?? []).map(row => [row.part, row]));
+
+  for (const part of MASTER_PARTS) {
+    const raw = String(levels[part] ?? '').trim();
+    const current = existingByPart.get(part);
+
+    if (!raw) {
+      if (current) {
+        const { error } = await supabase.from('songs').delete().eq('id', current.id);
+        if (error) throw error;
+      }
+      continue;
+    }
+
+    const level = Number(raw);
+    if (!Number.isFinite(level) || level <= 0 || level > 99.99) {
+      throw new Error(`${part} の難易度が不正です。`);
+    }
+
+    const { error } = await supabase
+      .from('songs')
+      .upsert({
+        is_hot: Boolean(isHot),
+        title: targetTitle,
+        part,
+        level: Math.round((level + Number.EPSILON) * 100) / 100
+      }, { onConflict: 'title,part' });
+
+    if (error) throw error;
+  }
+
+  const { error: hotError } = await supabase
+    .from('songs')
+    .update({ is_hot: Boolean(isHot) })
+    .eq('title', targetTitle);
+
+  if (hotError) throw hotError;
+}
+
+export async function deleteMasterSongTitle(title) {
+  const cleanTitle = String(title || '').trim();
+  if (!cleanTitle) return;
+
+  const { error } = await supabase
+    .from('songs')
+    .delete()
+    .eq('title', cleanTitle);
+
+  if (error) throw error;
 }
