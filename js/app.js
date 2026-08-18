@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_4';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_4';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_4';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_4';
+import { supabase } from './supabase.js?v=14_5';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_5';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_5';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_5';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,7 +118,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_4';
+import * as adminApi from './admin.js?v=14_5';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -233,15 +233,57 @@ function totals() {
 }
 
 function tintHeaderValues(hot, other, total) {
-  const update = (id, value, rainbow, gold) => {
+  const value = Number(total) || 0;
+
+  let rankClass = 'score-rank-white';
+
+  if (value >= 8500) rankClass = 'score-rank-rainbow';
+  else if (value >= 8000) rankClass = 'score-rank-gold';
+  else if (value >= 7500) rankClass = 'score-rank-silver';
+  else if (value >= 7000) rankClass = 'score-rank-bronze';
+  else if (value >= 6500) rankClass = 'score-rank-red-grad';
+  else if (value >= 6000) rankClass = 'score-rank-red';
+  else if (value >= 5500) rankClass = 'score-rank-purple-grad';
+  else if (value >= 5000) rankClass = 'score-rank-purple';
+  else if (value >= 4500) rankClass = 'score-rank-blue-grad';
+  else if (value >= 4000) rankClass = 'score-rank-blue';
+  else if (value >= 3500) rankClass = 'score-rank-green-grad';
+  else if (value >= 3000) rankClass = 'score-rank-green';
+  else if (value >= 2500) rankClass = 'score-rank-yellow-grad';
+  else if (value >= 2000) rankClass = 'score-rank-yellow';
+  else if (value >= 1500) rankClass = 'score-rank-orange-grad';
+  else if (value >= 1000) rankClass = 'score-rank-orange';
+
+  const allRankClasses = [
+    'score-rank-white',
+    'score-rank-orange',
+    'score-rank-orange-grad',
+    'score-rank-yellow',
+    'score-rank-yellow-grad',
+    'score-rank-green',
+    'score-rank-green-grad',
+    'score-rank-blue',
+    'score-rank-blue-grad',
+    'score-rank-purple',
+    'score-rank-purple-grad',
+    'score-rank-red',
+    'score-rank-red-grad',
+    'score-rank-bronze',
+    'score-rank-silver',
+    'score-rank-gold',
+    'score-rank-rainbow',
+    // 旧実装のクラスが残っていても除去
+    'm-gold-text',
+    'm-rainbow-text'
+  ];
+
+  ['txtGrandTotal', 'txtHotTotal', 'txtOtherTotal'].forEach(id => {
     const el = $(id);
-    el.className = 'score-val';
-    if (value >= rainbow) el.classList.add('m-rainbow-text');
-    else if (value >= gold) el.classList.add('m-gold-text');
-  };
-  update('txtHotTotal', hot, 4250, 4000);
-  update('txtOtherTotal', other, 4250, 4000);
-  update('txtGrandTotal', total, 8500, 8000);
+    if (!el) return;
+
+    el.classList.remove(...allRankClasses);
+    el.classList.add(rankClass);
+  });
 }
 
 function getPartColorClass(part) {
