@@ -1552,6 +1552,111 @@ button:disabled {
   font-weight: 900;
 }
 
+/* === v15.6 === */
+
+/* #順位表示を廃止 */
+.sk-rank { display: none !important; }
+
+/* 登録タブ: 検索 + 複合フィルタ */
+#searchArea.search-bar-container {
+  display: block;
+}
+#searchArea.search-bar-container.hidden {
+  display: none !important;
+}
+.record-search-row {
+  display: flex;
+  gap: 7px;
+}
+.record-search-row .search-input {
+  flex: 1;
+  min-width: 0;
+}
+.record-filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 7px;
+}
+.record-filter-row select {
+  width: 100%;
+  height: 38px;
+  padding: 0 34px 0 10px;
+  border: 1px solid #475569;
+  border-radius: 7px;
+  background-color: #111827;
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* 難易度修正依頼 */
+.level-correction-area {
+  margin: 8px 0 10px;
+  padding: 10px;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  background: #111827;
+}
+.level-correction-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.level-correction-title {
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 900;
+}
+.level-correction-note {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+#btnOpenLevelCorrection,
+#btnSendLevelCorrection {
+  flex-shrink: 0;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: #1d4ed8;
+  color: #fff;
+  font-weight: 900;
+}
+#btnOpenLevelCorrection {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+.level-correction-form {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid #334155;
+}
+.level-correction-form label {
+  display: block;
+  margin-bottom: 4px;
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 900;
+}
+.level-correction-input-row {
+  display: flex;
+  gap: 7px;
+}
+.level-correction-input-row input {
+  flex: 1;
+  min-width: 0;
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: normal !important;
+}
+#btnSendLevelCorrection {
+  min-width: 122px;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -1592,8 +1697,23 @@ button:disabled {
       <div class="p-tab-btn" data-tab="USERS">ユーザー一覧</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
-      <input id="domSearch" class="search-input" placeholder="登録済みの曲を検索...">
-      <button id="btnHeaderAdd" class="btn-add-inline">＋ 登録</button>
+      <div class="record-search-row">
+        <input id="domSearch" class="search-input" placeholder="登録済みの曲を検索...">
+        <button id="btnHeaderAdd" class="btn-add-inline">＋ 登録</button>
+      </div>
+      <div class="record-filter-row">
+        <select id="recordTypeFilter" aria-label="種別フィルタ">
+          <option value="">種別：すべて</option>
+          <option value="OTHER">OTHER</option>
+          <option value="HOT">HOT</option>
+        </select>
+        <select id="recordFcFilter" aria-label="フルコンフィルタ">
+          <option value="">フルコン：すべて</option>
+          <option value="NONE">なし</option>
+          <option value="FC">FC</option>
+          <option value="EXC">EXC</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -1635,6 +1755,22 @@ button:disabled {
       <div class="master-request-note">
         難易度を入力して保存すると、スコアを保存すると同時に管理者へ曲マスター登録依頼を送信します。
         承認時に難易度が修正された場合、保存済みスコアも自動で修正後の難易度に切り替わります。
+      </div>
+    </div>
+    <div id="levelCorrectionArea" class="level-correction-area hidden">
+      <div class="level-correction-head">
+        <div>
+          <div class="level-correction-title">表示されている難易度が違いますか？</div>
+          <div class="level-correction-note">正しい難易度を管理者へ報告できます。</div>
+        </div>
+        <button id="btnOpenLevelCorrection" type="button">難易度を報告</button>
+      </div>
+      <div id="levelCorrectionForm" class="level-correction-form hidden">
+        <label>正しい難易度</label>
+        <div class="level-correction-input-row">
+          <input id="correctionLevel" type="number" min="0.01" max="99.99" step="0.01" inputmode="decimal" placeholder="例 9.30">
+          <button id="btnSendLevelCorrection" type="button">修正依頼を送信</button>
+        </div>
       </div>
     </div>
 
@@ -1811,6 +1947,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_5"></script>
+<script type="module" src="./js/app.js?v=15_6"></script>
 </body>
 </html>
