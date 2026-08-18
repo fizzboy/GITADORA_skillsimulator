@@ -293,7 +293,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=19_0';
+import * as adminApi from './admin.js?v=19_1';
 import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=19_0';
 
 let activeTabName = 'SKILL';
