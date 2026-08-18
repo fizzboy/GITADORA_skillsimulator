@@ -130,10 +130,9 @@ export async function accountAdmin(action, payload = {}) {
 
 
 export const MASTER_PARTS = [
-  'MAS-G','MAS-B','MAS-D',
-  'EXT-G','EXT-B','EXT-D',
-  'ADV-G','ADV-B','ADV-D',
-  'BSC-G','BSC-B','BSC-D'
+  'BSC-D','ADV-D','EXT-D','MAS-D',
+  'BSC-G','ADV-G','EXT-G','MAS-G',
+  'BSC-B','ADV-B','EXT-B','MAS-B'
 ];
 
 export async function saveMasterSongRow({
