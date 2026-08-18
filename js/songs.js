@@ -97,3 +97,44 @@ export async function requestSongMaster({ title, part, proposedLevel }) {
 
   throw error;
 }
+
+
+export async function requestSongLevelCorrection({ songId, proposedLevel }) {
+  const numericLevel = Number(proposedLevel);
+  if (!songId) throw new Error('対象譜面を取得できません。');
+  if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 99.99) {
+    throw new Error('正しい難易度を入力してください。');
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
+
+  const { data: song, error: songError } = await supabase
+    .from('songs')
+    .select('id,title,part,level')
+    .eq('id', songId)
+    .single();
+  if (songError) throw songError;
+
+  const payload = {
+    requester_id: userData.user.id,
+    title: song.title,
+    part: song.part,
+    proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100,
+    request_type: 'level_correction',
+    current_song_id: song.id
+  };
+
+  const { data, error } = await supabase
+    .from('song_requests')
+    .insert(payload)
+    .select('id,title,part,proposed_level,status,request_type,current_song_id')
+    .single();
+
+  if (!error) return data;
+
+  if (error.code === '23505') {
+    throw new Error('この譜面の難易度修正依頼は既に送信されています。');
+  }
+  throw error;
+}
