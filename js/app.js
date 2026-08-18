@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_6';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_6';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_6';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_6';
+import { supabase } from './supabase.js?v=15_7';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_7';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_7';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_7';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_6';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_6';
+import * as adminApi from './admin.js?v=15_7';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_7';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -555,10 +555,17 @@ async function suggestSongs() {
         <span>${r.is_hot ? '[HOT] ' : ''}${esc(r.title)}</span>
       </button>`).join('') || '<div class="empty-state">曲マスターに該当する曲名がありません</div>';
 
-    // 完全一致していればPartに応じて難易度を自動反映
-    const exact = rows.find(r => r.title === title);
-    if (exact) await selectSongTitle(exact.title);
-    else setMissingMasterState();
+    // 入力中は完全一致しても自動確定しない。
+    // 候補をユーザーがタップした時だけ曲名を確定する。
+    // これにより「Flow」入力時にFlowが存在していても
+    // 「Flower remix」まで続けて入力できる。
+    selectedSong = null;
+    $('formLevel').value = '';
+    $('formLevel').readOnly = true;
+    hide('levelCorrectionArea');
+    hide('levelCorrectionForm');
+    hide('masterRequestArea');
+    updateSkillPreview();
   } catch (e) {
     console.error(e);
   }
