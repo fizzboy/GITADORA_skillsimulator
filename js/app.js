@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_4';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_4';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_4';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_4';
+import { supabase } from './supabase.js?v=15_5';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_5';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=15_5';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_5';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_4';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_4';
+import * as adminApi from './admin.js?v=15_5';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_5';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -777,13 +777,51 @@ async function moveFavorite(userId, direction) {
   await loadFavorites();
 }
 
+
+function getOptionDisplayName(option) {
+  switch (option) {
+    case 'NORMAL': return '正規';
+    case 'RAN': return 'RAN';
+    case 'SRA': return 'SRA';
+    case 'RAN+': return 'RAN+';
+    case 'SRA+': return 'SRA+';
+    default: return option || '正規';
+  }
+}
+
+function formatOptionPercentage(value) {
+  const num = Number(value) || 0;
+  return Number.isInteger(num) ? String(num) : num.toFixed(1);
+}
+
 async function openRateComparison(songId, title, part) {
   $('rateCompareTitle').textContent = `${title} / ${part}`;
+  $('rateOptionSummary').innerHTML = '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
   $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   $('rateCompareMask').style.display = 'flex';
 
   try {
-    const rows = await getSongRateComparison(songId);
+    // Rate比較は自分+自分が登録したライバルのみ。
+    // オプション割合はライバル登録に関係なく全ユーザーを集計。
+    const [rows, optionRows] = await Promise.all([
+      getSongRateComparison(songId),
+      getSongOptionDistribution(songId)
+    ]);
+
+    const visibleOptions = optionRows.filter(row => Number(row.percentage) > 0);
+
+    $('rateOptionSummary').innerHTML = visibleOptions.length
+      ? `
+        <div class="option-share-title">全ユーザーのオプション利用割合</div>
+        ${visibleOptions.map(row => `
+          <div class="option-share-item">
+            <span>${getOptionDisplayName(row.play_option)}</span>
+            <strong>${formatOptionPercentage(row.percentage)}%</strong>
+          </div>`
+        ).join('')}
+      `
+      : '';
+
     $('rateCompareBody').innerHTML = rows.map((row, index) => `
       <div class="rate-row ${row.is_self ? 'self' : ''}">
         <div class="rate-user">
@@ -798,6 +836,7 @@ async function openRateComparison(songId, title, part) {
       </div>`
     ).join('') || '<div class="empty-state">比較できる記録がありません</div>';
   } catch (e) {
+    $('rateOptionSummary').innerHTML = '';
     $('rateCompareBody').innerHTML = `<div class="empty-state">比較データの取得に失敗しました: ${esc(e.message)}</div>`;
   }
 }
