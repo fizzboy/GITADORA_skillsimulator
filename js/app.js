@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_3';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_3';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_3';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_3';
+import { supabase } from './supabase.js?v=14_4';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_4';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_4';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_4';
 const {
   isAdmin,
   getAdminSongs,
@@ -89,7 +89,7 @@ async function saveMasterSongRow({
         is_hot: Boolean(isHot),
         title: cleanTitle,
         part,
-        level: Math.floor((level + Number.EPSILON) * 100) / 100
+        level: Math.round((level + Number.EPSILON) * 100) / 100
       }, {
         onConflict: 'title,part'
       });
@@ -118,7 +118,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_3';
+import * as adminApi from './admin.js?v=14_4';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
