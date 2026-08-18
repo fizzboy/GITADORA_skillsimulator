@@ -736,6 +736,58 @@ body { background:#0b1220; }
   background:linear-gradient(90deg,rgba(0,119,255,.20),rgba(214,44,255,.16),rgba(255,45,141,.12),#111827 55%) !important;
 }
 
+/* === v14.7 共通通知モーダル === */
+.site-dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, .72);
+  backdrop-filter: blur(2px);
+}
+.site-dialog {
+  width: 100%;
+  max-width: 390px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .48);
+}
+.site-dialog-head {
+  padding: 16px 18px 10px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.site-dialog-message {
+  padding: 4px 18px 18px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+.site-dialog-actions {
+  padding: 0 18px 18px;
+}
+.site-dialog-ok {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.site-dialog-ok:active {
+  background: #1d4ed8;
+}
+
 </style>
 </head>
 <body>
@@ -744,7 +796,7 @@ body { background:#0b1220; }
   <div class="auth-card">
     <h1 id="authTitle">ログイン</h1>
     <form id="authForm">
-      <label>登録名</label>
+      <label>アカウント名</label>
       <input id="authUsername" autocomplete="username" required maxlength="32" placeholder="日本語可・32文字まで">
       <label>パスワード</label>
       <input id="authPassword" type="password" autocomplete="current-password" required placeholder="パスワードを入力">
@@ -856,12 +908,12 @@ body { background:#0b1220; }
 <div id="mypageModal" class="mypage-modal">
   <div class="mypage-sheet">
     <h3 style="font-size:16px;margin-bottom:12px;">マイページ</h3>
-    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">登録名</label>
+    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">アカウント名</label>
     <div class="mypage-name-row">
       <input id="mypageUsernameInput" maxlength="32" placeholder="日本語可・32文字まで">
       <button id="btnChangeUsername" type="button" class="btn-name-change">変更</button>
     </div>
-    <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しい登録名でログインしてください。</div>
+    <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しいアカウント名でログインしてください。</div>
 
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">新しいパスワード</label>
     <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
@@ -897,7 +949,7 @@ body { background:#0b1220; }
       <input id="adminRequestSearch" placeholder="依頼された曲名を検索...">
     </div>
     <div id="adminUserToolbar" class="admin-toolbar hidden">
-      <input id="adminUserSearch" placeholder="登録名を検索...">
+      <input id="adminUserSearch" placeholder="アカウント名を検索...">
     </div>
   </div>
   <div id="adminBody" class="admin-body"></div>
@@ -944,6 +996,17 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=14_6"></script>
+
+<div id="siteDialogMask" class="site-dialog-mask" role="dialog" aria-modal="true" aria-labelledby="siteDialogTitle">
+  <div class="site-dialog">
+    <div id="siteDialogTitle" class="site-dialog-head">お知らせ</div>
+    <div id="siteDialogMessage" class="site-dialog-message"></div>
+    <div class="site-dialog-actions">
+      <button id="siteDialogOk" class="site-dialog-ok" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./js/app.js?v=14_7"></script>
 </body>
 </html>
