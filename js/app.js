@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=15_7';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_7';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_7';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_7';
+import { supabase } from './supabase.js?v=15_8';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=15_8';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=15_8';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=15_8';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,8 +118,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=15_7';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_7';
+import * as adminApi from './admin.js?v=15_8';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=15_8';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -701,7 +701,27 @@ async function loadUsers() {
 }
 
 function renderUsers() {
-  $('userList').innerHTML = publicUsers.map(user => {
+  const sort = $('userSort')?.value || 'skill_desc';
+  const users = [...publicUsers].sort((a, b) => {
+    const skillA = Number(a.total_skill) || 0;
+    const skillB = Number(b.total_skill) || 0;
+    const nameA = String(a.username || '');
+    const nameB = String(b.username || '');
+    const dateA = a.last_recorded_at ? new Date(a.last_recorded_at).getTime() : 0;
+    const dateB = b.last_recorded_at ? new Date(b.last_recorded_at).getTime() : 0;
+
+    switch (sort) {
+      case 'skill_asc': return skillA - skillB || nameA.localeCompare(nameB, 'ja');
+      case 'name_asc': return nameA.localeCompare(nameB, 'ja');
+      case 'name_desc': return nameB.localeCompare(nameA, 'ja');
+      case 'date_desc': return dateB - dateA || skillB - skillA;
+      case 'date_asc': return dateA - dateB || skillB - skillA;
+      case 'skill_desc':
+      default: return skillB - skillA || nameA.localeCompare(nameB, 'ja');
+    }
+  });
+
+  $('userList').innerHTML = users.map(user => {
     const totalClass = `score-rank-${getTotalSkillRank(user.total_skill)}`;
     return `
       <div class="user-list-row" data-user-open="${user.user_id}" data-user-name="${esc(user.username)}">
@@ -1435,6 +1455,8 @@ $('userSearch').addEventListener('input', () => {
   clearTimeout(userSearchTimer);
   userSearchTimer = setTimeout(loadUsers, 250);
 });
+
+$('userSort').addEventListener('change', renderUsers);
 
 $('btnCloseUserDetail').addEventListener('click', closeUserDetail);
 $('btnCloseRateCompare').addEventListener('click', closeRateComparison);
