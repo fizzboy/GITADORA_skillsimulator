@@ -788,6 +788,42 @@ body { background:#0b1220; }
   background: #1d4ed8;
 }
 
+/* === v14.9 スコア登録モーダルを中央表示 === */
+.mdl-mask {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  background: rgba(2, 6, 23, .72) !important;
+  backdrop-filter: blur(3px);
+}
+
+.mdl-sheet {
+  width: 100% !important;
+  max-width: 520px !important;
+  max-height: calc(100dvh - 32px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .42);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iPhoneなど高さが低い端末でも上下に余白を残しつつ中央配置 */
+@media (max-width: 600px) {
+  .mdl-mask {
+    padding: 12px !important;
+  }
+
+  .mdl-sheet {
+    max-width: 460px !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 14px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1007,6 +1043,6 @@ body { background:#0b1220; }
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=14_8"></script>
+<script type="module" src="./js/app.js?v=14_9"></script>
 </body>
 </html>
