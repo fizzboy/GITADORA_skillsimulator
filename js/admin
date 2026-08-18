@@ -34,7 +34,7 @@ export async function saveMasterSong({ id = null, isHot = false, title, part, le
     is_hot: Boolean(isHot),
     title: cleanTitle,
     part,
-    level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
+    level: Math.round((numericLevel + Number.EPSILON) * 100) / 100
   };
 
   if (id) {
@@ -103,7 +103,7 @@ export async function approveSongRequest(requestId, level, isHot = false) {
 
   const { data, error } = await supabase.rpc('approve_song_request', {
     p_request_id: requestId,
-    p_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100,
+    p_level: Math.round((numericLevel + Number.EPSILON) * 100) / 100,
     p_is_hot: Boolean(isHot)
   });
   if (error) throw error;
@@ -122,7 +122,25 @@ export async function accountAdmin(action, payload = {}) {
   const { data, error } = await supabase.functions.invoke('account-admin', {
     body: { action, ...payload }
   });
-  if (error) throw error;
+
+  if (error) {
+    // FunctionHttpErrorではResponse本体がcontextに入る。
+    // non-2xxでもEdge Functionが返した日本語エラーを画面へ渡す。
+    try {
+      const response = error.context;
+      if (response && typeof response.clone === 'function') {
+        const body = await response.clone().json();
+        if (body?.error) throw new Error(body.error);
+      }
+    } catch (detailError) {
+      if (detailError instanceof Error && detailError.message !== error.message) {
+        throw detailError;
+      }
+    }
+
+    throw error;
+  }
+
   if (data?.error) throw new Error(data.error);
   return data;
 }
@@ -193,7 +211,7 @@ export async function saveMasterSongRow({
         is_hot: Boolean(isHot),
         title: targetTitle,
         part,
-        level: Math.floor((level + Number.EPSILON) * 100) / 100
+        level: Math.round((level + Number.EPSILON) * 100) / 100
       }, { onConflict: 'title,part' });
 
     if (error) throw error;
