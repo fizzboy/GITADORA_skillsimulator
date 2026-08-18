@@ -1280,7 +1280,7 @@ async function openRateComparison(songId, title, part) {
           </div>`
         ).join('')}
       `
-      : '';
+      : '');
 
     $('rateCompareBody').innerHTML = rows.map((row, index) => `
       <div class="rate-row ${row.is_self ? 'self' : ''}">
