@@ -1,7 +1,7 @@
-import { supabase } from './supabase.js?v=14_7';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_7';
-import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_7';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_7';
+import { supabase } from './supabase.js?v=14_8';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=14_8';
+import { PARTS, searchSongTitles, getSongByTitleAndPart, requestSongMaster } from './songs.js?v=14_8';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=14_8';
 const {
   isAdmin,
   getAdminSongs,
@@ -118,7 +118,7 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=14_7';
+import * as adminApi from './admin.js?v=14_8';
 
 let activeTabName = 'SKILL';
 let currentAuthMode = 'login';
@@ -914,7 +914,31 @@ $('authForm').addEventListener('submit', async e => {
       await login(username,password);
     }
   } catch (e) {
-    alert(e.message || String(e));
+    const message = e?.message || String(e);
+
+    if (
+      message.includes('User already registered') ||
+      message.includes('already registered') ||
+      message.includes('already been registered') ||
+      message.includes('既に登録されています') ||
+      message.includes('すでに登録されています')
+    ) {
+      await showSiteDialog(
+        'そのアカウント名は既に登録されています',
+        '新規登録できません'
+      );
+    } else {
+      await showSiteDialog(
+        mode === 'register'
+          ? '新規登録に失敗しました。'
+          : 'ログインに失敗しました。',
+        'エラー'
+      );
+      console.error(
+        mode === 'register' ? '新規登録エラー:' : 'ログインエラー:',
+        e
+      );
+    }
   } finally {
     $('authSubmit').disabled = false;
   }
