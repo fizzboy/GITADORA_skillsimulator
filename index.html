@@ -1655,6 +1655,59 @@ button:disabled {
   filter: none !important;
 }
 
+/* === v15.8 === */
+.users-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 7px;
+}
+#userSort {
+  min-width: 0;
+  height: 100%;
+  min-height: 40px;
+  padding: 0 28px 0 9px;
+  border: 1px solid #475569;
+  border-radius: 7px;
+  background-color: #111827;
+  color: #e5e7eb;
+  font-size: 11px;
+  font-weight: 800;
+}
+.mypage-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mypage-title-row h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.mypage-close {
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 2px 6px 10px;
+}
+.mypage-logout-zone {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #334155;
+}
+.mypage-logout {
+  width: 100% !important;
+  min-height: 42px;
+}
+@media (max-width: 520px) {
+  .users-toolbar {
+    grid-template-columns: minmax(0, 1fr) 132px;
+  }
+  #userSort { font-size: 10px; }
+}
+
 </style>
 </head>
 <body>
@@ -1721,6 +1774,14 @@ button:disabled {
     <div id="viewUsers" class="hidden">
       <div class="users-toolbar">
         <input id="userSearch" placeholder="アカウント名を検索...">
+        <select id="userSort" aria-label="ユーザー一覧の並び順">
+          <option value="skill_desc">スキルTOTAL：高い順</option>
+          <option value="skill_asc">スキルTOTAL：低い順</option>
+          <option value="name_asc">アカウント名：昇順</option>
+          <option value="name_desc">アカウント名：降順</option>
+          <option value="date_desc">更新日：新しい順</option>
+          <option value="date_asc">更新日：古い順</option>
+        </select>
       </div>
       <div id="userList"></div>
     </div>
@@ -1804,15 +1865,18 @@ button:disabled {
     </div>
 
     <div class="btn-block">
-      <button id="btnSubmitForm" class="btn-submit">保存する</button>
       <button id="btnCancelForm" class="btn-cancel">戻る</button>
+      <button id="btnSubmitForm" class="btn-submit">保存する</button>
     </div>
   </div>
 </div>
 
 <div id="mypageModal" class="mypage-modal">
   <div class="mypage-sheet">
-    <h3 style="font-size:16px;margin-bottom:12px;">マイページ</h3>
+    <div class="mypage-title-row">
+      <h3>マイページ</h3>
+      <button id="btnCloseMypage" type="button" class="mypage-close">戻る</button>
+    </div>
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">アカウント名</label>
     <div class="mypage-name-row">
       <input id="mypageUsernameInput" maxlength="32" placeholder="日本語可・32文字まで">
@@ -1821,16 +1885,18 @@ button:disabled {
     <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しいアカウント名でログインしてください。</div>
 
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">新しいパスワード</label>
-    <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
-    <div class="btn-block">
-      <button id="btnChangePassword" class="btn-submit">パスワード変更</button>
-      <button id="btnLogout" class="btn-cancel">ログアウト</button>
-      <button id="btnCloseMypage" class="btn-cancel">戻る</button>
+    <div class="mypage-name-row">
+      <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
+      <button id="btnChangePassword" type="button" class="btn-name-change">変更</button>
     </div>
 
     <div class="mypage-favorites">
       <div class="mypage-section-title">ライバル登録 <span>最大5件</span></div>
       <div id="favoriteUserList" class="favorite-user-list"></div>
+    </div>
+
+    <div class="mypage-logout-zone">
+      <button id="btnLogout" class="btn-cancel mypage-logout">ログアウト</button>
     </div>
 
     <div class="danger-zone">
@@ -1945,6 +2011,6 @@ button:disabled {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=15_7"></script>
+<script type="module" src="./js/app.js?v=15_8"></script>
 </body>
 </html>
