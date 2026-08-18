@@ -32,7 +32,7 @@ async function hashedUsernameToEmail(username) {
 export async function register(username, password) {
   const clean = normalizeUsername(username);
   if (!validateUsername(clean)) {
-    throw new Error('登録名は1〜32文字で入力してください。日本語も使用できます。');
+    throw new Error('アカウント名は1〜32文字で入力してください。日本語も使用できます。');
   }
 
   const email = await hashedUsernameToEmail(clean);
@@ -49,7 +49,7 @@ export async function register(username, password) {
 export async function login(username, password) {
   const clean = normalizeUsername(username);
   if (!validateUsername(clean)) {
-    throw new Error('登録名を入力してください。');
+    throw new Error('アカウント名を入力してください。');
   }
 
   // v13以降のアカウント
