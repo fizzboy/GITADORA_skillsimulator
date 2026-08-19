@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_16';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_16';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_16';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_16';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_16';
-import { getGameVersions } from './versions.js?v=21_16';
+import { supabase } from './supabase.js?v=21_17';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_17';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_17';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_17';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_17';
+import { getGameVersions } from './versions.js?v=21_17';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_16';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_16';
+import * as adminApi from './admin.js?v=21_17';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_17';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1816,8 +1816,6 @@ $('headerUsername').addEventListener('click', openMyPage);
 $('btnCloseMypage').addEventListener('click', closeMyPage);
 
 $('btnOpenSkillSync').addEventListener('click', () => {
-  const bookmarklet = buildSkillSyncBookmarklet();
-  $('skillSyncBookmarklet').href = bookmarklet;
   setSkillSyncStatus('待機中');
   $('skillSyncMask').style.display = 'flex';
 });
@@ -1834,28 +1832,26 @@ $('skillSyncMask').addEventListener('click', e => {
 
 $('btnCopySkillSync').addEventListener('click', async () => {
   try {
-    // 「コードをコピー」と画面上の「GITADORA同期」の中身を完全に統一する。
-    // 生のJavaScript文字列ではなく、ブラウザがhrefとして正規化した値をコピーする。
-    const bookmarklet = buildSkillSyncBookmarklet();
-    const link = $('skillSyncBookmarklet');
-    link.href = bookmarklet;
+    // Safari / Chromeの両方でブックマークURLとして使えるよう、
+    // 一時的な<a>要素のhrefを通してブラウザ正規化済みのコードをコピーする。
+    const link = document.createElement('a');
+    link.href = buildSkillSyncBookmarklet();
+    const bookmarklet = link.href;
 
-    await navigator.clipboard.writeText(link.href);
-    setSkillSyncStatus('「GITADORA同期」と同じコードをコピーしました。', 'success');
+    await navigator.clipboard.writeText(bookmarklet);
+    setSkillSyncStatus('同期用コードをコピーしました。ブックマークのURL欄へ貼り付けてください。', 'success');
   } catch (e) {
-    setSkillSyncStatus('コピーに失敗しました。PCでは「GITADORA同期」をブックマークバーへドラッグしてください。', 'error');
+    setSkillSyncStatus('コードのコピーに失敗しました。ブラウザのクリップボード権限を確認してください。', 'error');
   }
 });
 
 $('btnOpenEamusement').addEventListener('click', () => {
-  const bookmarklet = buildSkillSyncBookmarklet();
-  $('skillSyncBookmarklet').href = bookmarklet;
   const popup = window.open(getEamusementSyncEntry(), '_blank');
   if (!popup) {
     setSkillSyncStatus('ポップアップがブロックされました。ブラウザのポップアップ許可を確認してください。', 'error');
     return;
   }
-  setSkillSyncStatus('e-amusementを開きました。ログイン状態を確認後、ブックマークの「GITADORA同期」を実行してください。', 'running');
+  setSkillSyncStatus('e-amusementを開きました。ログイン状態を確認後、コードを設定した同期用ブックマークを実行してください。', 'running');
 });
 
 window.addEventListener('message', async event => {
