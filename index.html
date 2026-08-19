@@ -2893,7 +2893,7 @@ html.ios-viewport-repair {
 
     <div class="skill-sync-note">
       <strong>実行前にe-amusementへログインしてください。</strong><br>
-      「同期ブックマーク」を使ってスキル対象を取得します。初回だけ登録すれば、次回以降は同じブックマークを使えます。
+      「同期ブックマーク」を使ってスキル対象を取得します。初回だけ登録すれば、次回以降は同じブックマークを使えます。同期処理はサイト側から自動で最新版を読み込みます。
     </div>
 
     <div id="skillSyncStatus" class="skill-sync-status skill-sync-status-top">待機中</div>
@@ -2902,9 +2902,7 @@ html.ios-viewport-repair {
       <span class="skill-sync-step-no">1</span>
       <div>
         <strong>同期ブックマークを登録</strong>
-        <div id="skillSyncBrowserGuide" class="section-note skill-sync-browser-guide">
-          「コードをコピー」を押し、同期用ブックマークのURL欄へ貼り付けてください。
-        </div>
+        <div id="skillSyncBrowserGuide" class="section-note skill-sync-browser-guide"></div>
         <div class="skill-sync-actions">
           <button id="btnCopySkillSync" type="button">コードをコピー</button>
         </div>
@@ -2915,7 +2913,7 @@ html.ios-viewport-repair {
       <span class="skill-sync-step-no">2</span>
       <div>
         <strong>e-amusementを開く</strong>
-        <div class="section-note">開いたページでログイン状態を確認し、コードを設定した同期用ブックマークを実行してください。</div>
+        <div class="section-note">開いたページでログイン状態を確認し、作成した同期用ブックマークを実行してください。</div>
         <button id="btnOpenEamusement" type="button" class="btn-open-eamusement">e-amusementを開く</button>
       </div>
     </div>
