@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_18';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_18';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_18';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_18';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_18';
-import { getGameVersions } from './versions.js?v=21_18';
+import { supabase } from './supabase.js?v=21_19';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_19';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_19';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_19';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_19';
+import { getGameVersions } from './versions.js?v=21_19';
 const {
   isAdmin,
   getAdminSongs,
@@ -261,8 +261,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_18';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_18';
+import * as adminApi from './admin.js?v=21_19';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_19';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1794,9 +1794,42 @@ $('btnCancelForm').addEventListener('click', closeModal);
 $('headerUsername').addEventListener('click', openMyPage);
 $('btnCloseMypage').addEventListener('click', closeMyPage);
 
+function renderSkillSyncBrowserGuide() {
+  const guide = $('skillSyncBrowserGuide');
+  if (!guide) return;
+
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isChromeIOS = isIOS && /CriOS/i.test(ua);
+  const isSafariIOS = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+
+  if (isChromeIOS) {
+    guide.innerHTML =
+      '<strong>Chromeでの設定・実行方法</strong><br>' +
+      '①「コードをコピー」→ ブックマークのURL欄へ貼り付け<br>' +
+      '② e-amusementを開く<br>' +
+      '③ <strong>アドレスバーに同期用ブックマーク名を入力</strong><br>' +
+      '④ 候補に出たブックマークをタップして実行<br>' +
+      '<span class="skill-sync-browser-warning">※ Chromeではブックマーク一覧から直接タップせず、アドレスバーの候補から実行してください。</span>';
+  } else if (isSafariIOS) {
+    guide.innerHTML =
+      '<strong>Safariでの設定・実行方法</strong><br>' +
+      '①「コードをコピー」→ ブックマークのURL欄へ貼り付け<br>' +
+      '② e-amusementを開く<br>' +
+      '③ 作成した同期用ブックマークをタップして実行';
+  } else {
+    guide.innerHTML =
+      '<strong>同期ブックマークの設定</strong><br>' +
+      '「コードをコピー」を押し、作成した同期用ブックマークのURL欄へ貼り付けてください。';
+  }
+}
+
 $('btnOpenSkillSync').addEventListener('click', () => {
+  renderSkillSyncBrowserGuide();
   setSkillSyncStatus('待機中');
   $('skillSyncMask').style.display = 'flex';
+  const dialog = document.querySelector('.skill-sync-dialog');
+  if (dialog) dialog.scrollTop = 0;
 });
 
 $('btnCloseSkillSync').addEventListener('click', () => {
@@ -1818,7 +1851,7 @@ $('btnCopySkillSync').addEventListener('click', async () => {
     const bookmarklet = link.href;
 
     await navigator.clipboard.writeText(bookmarklet);
-    setSkillSyncStatus('同期用コードをコピーしました。Safariはブックマークから、Chromeはe-amusement上でアドレスバーから同期用ブックマークを選んで実行してください。', 'success');
+    setSkillSyncStatus('コードをコピーしました。下の手順に沿って同期用ブックマークへ設定してください。', 'success');
   } catch (e) {
     setSkillSyncStatus('コードのコピーに失敗しました。ブラウザのクリップボード権限を確認してください。', 'error');
   }
