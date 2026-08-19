@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_17';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_17';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_17';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_17';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_17';
-import { getGameVersions } from './versions.js?v=21_17';
+import { supabase } from './supabase.js?v=21_18';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_18';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_18';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_18';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_18';
+import { getGameVersions } from './versions.js?v=21_18';
 const {
   isAdmin,
   getAdminSongs,
@@ -39,43 +39,22 @@ function setSkillSyncStatus(message, state = '') {
 }
 
 function buildSkillSyncBookmarklet() {
-  const returnOrigin = location.origin;
   const returnUrl = location.origin + location.pathname + location.search;
-
   const slug = getEamusementSlug();
+
+  // iPhone Chromeは長いbookmarkletを無反応で処理する場合があるため、
+  // 取得処理を短縮したモバイル向けコードを生成する。
   const code = `(async()=>{try{
-const AO=${JSON.stringify(returnOrigin)},RU=${JSON.stringify(returnUrl)};
-if(location.hostname!=='p.eagate.573.jp'){alert('e-amusementのページで実行してください。');return;}
-const S=${JSON.stringify(getEamusementSlug())};
-const P=[
-['GF','HOT','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=gf&stype=1'],
-['GF','OTHER','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=gf&stype=0'],
-['DM','HOT','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=dm&stype=1'],
-['DM','OTHER','/game/gfdm/'+S+'/p/playdata/skill.html?gtype=dm&stype=0']
-];
-const MP={GUITAR:'G',BASS:'B',DRUM:'D',DRUMS:'D'},MD={BASIC:'BSC',ADVANCED:'ADV',EXTREME:'EXT',MASTER:'MAS'};
-const A=[],C={};
-for(const [I,K,U] of P){
- const R=await fetch(U,{credentials:'include',cache:'no-store'});
- const H=await R.text();
- if(H.includes('e-amusementへのログインが必要')||H.includes('ログインした状態で'))throw new Error('e-amusementへのログインが必要です。');
- const D=new DOMParser().parseFromString(H,'text/html');
- const T=[...D.querySelectorAll('tr')].filter(t=>t.querySelector('.achive_cell')&&t.querySelector('.music_seq_box')).slice(0,25);
- C[I+'_'+K]=T.length;
- for(const t of T){
-  const title=(t.querySelector('.title img[alt]')?.getAttribute('alt')||t.querySelector('.title .text_link')?.textContent||'').trim();
-  const pe=t.querySelector('.music_seq_box .seq_icon[class*="part_"]'),de=t.querySelector('.music_seq_box .seq_icon[class*="diff_"]');
-  const pr=[...(pe?.classList||[])].find(c=>c.startsWith('part_'))?.slice(5)||'';
-  const dr=[...(de?.classList||[])].find(c=>c.startsWith('diff_'))?.slice(5)||'';
-  const ps=MP[pr],dp=MD[dr];
-  const rate=parseFloat((t.querySelector('.achive_cell')?.textContent||'').replace('%','').trim());
-  const level=parseFloat((t.querySelector('.diff_cell')?.textContent||'').trim());
-  if(title&&ps&&dp&&Number.isFinite(rate)&&Number.isFinite(level))A.push({title,part:dp+'-'+ps,rate,level,instrument:I,category:K});
- }
-}
-const M={type:'GITADORA_SKILL_SYNC',version:1,records:A,counts:C};
-if(window.opener&&!window.opener.closed){window.opener.postMessage(M,AO);alert(A.length+'件のスキルデータを送信しました。');window.close();}
-else{location.href=RU+'#skill-sync='+encodeURIComponent(JSON.stringify(M));}
+const R=${JSON.stringify(returnUrl)},S=${JSON.stringify(slug)},A=[],C={},P={GUITAR:'G',BASS:'B',DRUM:'D',DRUMS:'D'},D={BASIC:'BSC',ADVANCED:'ADV',EXTREME:'EXT',MASTER:'MAS'};
+if(location.hostname!=='p.eagate.573.jp')throw Error('e-amusementのページで実行してください。');
+for(const g of ['gf','dm'])for(const s of [1,0]){
+const h=await(await fetch('/game/gfdm/'+S+'/p/playdata/skill.html?gtype='+g+'&stype='+s,{credentials:'include',cache:'no-store'})).text(),d=new DOMParser().parseFromString(h,'text/html'),t=[...d.querySelectorAll('tr')].filter(x=>x.querySelector('.achive_cell')&&x.querySelector('.music_seq_box')).slice(0,25);
+C[(g==='gf'?'GF':'DM')+'_'+(s?'HOT':'OTHER')]=t.length;
+for(const x of t){
+const n=(x.querySelector('.title img[alt]')?.alt||x.querySelector('.title .text_link')?.textContent||'').trim(),q=x.querySelector('.music_seq_box'),p=[...(q.querySelector('[class*="part_"]')?.classList||[])].find(v=>v.startsWith('part_'))?.slice(5),f=[...(q.querySelector('[class*="diff_"]')?.classList||[])].find(v=>v.startsWith('diff_'))?.slice(5),a=parseFloat(x.querySelector('.achive_cell')?.textContent),l=parseFloat(x.querySelector('.diff_cell')?.textContent);
+if(n&&P[p]&&D[f]&&Number.isFinite(a)&&Number.isFinite(l))A.push({title:n,part:D[f]+'-'+P[p],rate:a,level:l});
+}}
+location.href=R+'#skill-sync='+encodeURIComponent(JSON.stringify({type:'GITADORA_SKILL_SYNC',version:1,records:A,counts:C}));
 }catch(e){alert('同期に失敗しました: '+(e?.message||e));}})()`;
 
   return 'javascript:' + code.replace(/\n/g, '');
@@ -282,8 +261,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_17';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_17';
+import * as adminApi from './admin.js?v=21_18';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_18';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1839,7 +1818,7 @@ $('btnCopySkillSync').addEventListener('click', async () => {
     const bookmarklet = link.href;
 
     await navigator.clipboard.writeText(bookmarklet);
-    setSkillSyncStatus('同期用コードをコピーしました。ブックマークのURL欄へ貼り付けてください。', 'success');
+    setSkillSyncStatus('同期用コードをコピーしました。Safariはブックマークから、Chromeはe-amusement上でアドレスバーから同期用ブックマークを選んで実行してください。', 'success');
   } catch (e) {
     setSkillSyncStatus('コードのコピーに失敗しました。ブラウザのクリップボード権限を確認してください。', 'error');
   }
