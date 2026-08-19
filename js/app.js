@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_15';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_15';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_15';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_15';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_15';
-import { getGameVersions } from './versions.js?v=21_15';
+import { supabase } from './supabase.js?v=21_16';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_16';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_16';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_16';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_16';
+import { getGameVersions } from './versions.js?v=21_16';
 const {
   isAdmin,
   getAdminSongs,
@@ -282,8 +282,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_15';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_15';
+import * as adminApi from './admin.js?v=21_16';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_16';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1834,8 +1834,14 @@ $('skillSyncMask').addEventListener('click', e => {
 
 $('btnCopySkillSync').addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText(buildSkillSyncBookmarklet());
-    setSkillSyncStatus('同期用ブックマークのコードをコピーしました。', 'success');
+    // 「コードをコピー」と画面上の「GITADORA同期」の中身を完全に統一する。
+    // 生のJavaScript文字列ではなく、ブラウザがhrefとして正規化した値をコピーする。
+    const bookmarklet = buildSkillSyncBookmarklet();
+    const link = $('skillSyncBookmarklet');
+    link.href = bookmarklet;
+
+    await navigator.clipboard.writeText(link.href);
+    setSkillSyncStatus('「GITADORA同期」と同じコードをコピーしました。', 'success');
   } catch (e) {
     setSkillSyncStatus('コピーに失敗しました。PCでは「GITADORA同期」をブックマークバーへドラッグしてください。', 'error');
   }
