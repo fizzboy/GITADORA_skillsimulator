@@ -10,16 +10,13 @@
     }
     window.__GITADORA_SKILL_SIMULATOR_SYNC_RUNNING__ = true;
 
-    const currentScript = document.currentScript;
-    const params = new URL(currentScript?.src || '', location.href).searchParams;
-    const returnUrl = params.get('r');
-    const slug = params.get('s') || 'gitadora_galaxywave_delta';
+    const returnUrl = 'https://gitadorafc.github.io/skillsimulator/';
+    const slug =
+      location.pathname.match(/\/game\/gfdm\/([^/]+)\//)?.[1] ||
+      'gitadora_galaxywave_delta';
 
     if (location.hostname !== 'p.eagate.573.jp') {
       throw new Error('e-amusementのページで実行してください。');
-    }
-    if (!returnUrl) {
-      throw new Error('戻り先URLを取得できませんでした。');
     }
 
     const PART_MAP = { GUITAR:'G', BASS:'B', DRUM:'D', DRUMS:'D' };
