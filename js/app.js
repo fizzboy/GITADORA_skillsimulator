@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_20';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_20';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_20';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_20';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_20';
-import { getGameVersions } from './versions.js?v=21_20';
+import { supabase } from './supabase.js?v=21_21';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_21';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_21';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_21';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_21';
+import { getGameVersions } from './versions.js?v=21_21';
 const {
   isAdmin,
   getAdminSongs,
@@ -39,11 +39,8 @@ function setSkillSyncStatus(message, state = '') {
 }
 
 function buildSkillSyncBookmarklet() {
-  const returnUrl = location.origin + location.pathname + location.search;
-  const slug = getEamusementSlug();
-  const loaderUrl = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}js/eamusement-sync.js`;
-
-  return `javascript:void(!function(d){var s=d.createElement('script');s.type='text/javascript';s.src=${JSON.stringify(loaderUrl)}+'?r='+encodeURIComponent(${JSON.stringify(returnUrl)})+'&s='+encodeURIComponent(${JSON.stringify(slug)})+'&t='+Date.now();s.onerror=function(){alert('同期スクリプトの読み込みに失敗しました。');};d.head.appendChild(s);}(document));`;
+  // 同期本体は外部JS側。ブックマークレットは読み込みだけにして最短化する。
+  return "javascript:void(!function(d){var s=d.createElement('script');s.src='https://gitadorafc.github.io/skillsimulator/js/eamusement-sync.js?t='+Date.now();d.head.appendChild(s)}(document))";
 }
 
 function captureSkillSyncHash() {
@@ -247,8 +244,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_20';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_20';
+import * as adminApi from './admin.js?v=21_21';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_21';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -1788,8 +1785,7 @@ function renderSkillSyncBrowserGuide() {
     '<strong>同期ブックマークの設定</strong><br>' +
     '①「コードをコピー」→ 作成した同期用ブックマークのURL欄へ貼り付け<br>' +
     '② e-amusementを開いてログイン状態を確認<br>' +
-    '③ 作成した同期用ブックマークを実行<br>' +
-    '<span class="skill-sync-browser-warning">Safari / Chrome / Brave 共通の短い同期コードです。</span>';
+    '③ 作成した同期用ブックマークを実行';
 }
 
 $('btnOpenSkillSync').addEventListener('click', () => {
