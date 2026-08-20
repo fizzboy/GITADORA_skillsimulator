@@ -165,7 +165,7 @@ import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
 import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
 import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_57';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_57';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_93';
 import { getGameVersions } from './versions.js?v=21_57';
 const {
   isAdmin,
@@ -626,11 +626,16 @@ async function init() {
     show('introScreen');
   }
 
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (session) {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    // 初期表示は上の getSession() で処理済み。
+    // TOKEN_REFRESHED / USER_UPDATED では画面全体を再読込しない。
+    if (event === 'SIGNED_IN' && session) {
       await showApp(session);
       await processPendingSkillSync();
-    } else {
+      return;
+    }
+
+    if (event === 'SIGNED_OUT' || !session) {
       adminEnabled = false;
       $('btnAdmin').classList.add('hidden');
       closeAdmin();
