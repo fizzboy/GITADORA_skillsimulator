@@ -126,12 +126,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_40';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_40';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_40';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_40';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_40';
-import { getGameVersions } from './versions.js?v=21_40';
+import { supabase } from './supabase.js?v=21_42';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_42';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_42';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_42';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_42';
+import { getGameVersions } from './versions.js?v=21_42';
 const {
   isAdmin,
   getAdminSongs,
@@ -372,10 +372,12 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_40';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_40';
+import * as adminApi from './admin.js?v=21_42';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_42';
 
 let userListSort = { key: 'total', dir: 'desc' };
+const USER_LIST_PAGE_SIZE = 30;
+let userListPage = 0;
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let gameVersions = [];
@@ -1378,6 +1380,7 @@ function formatDateOnly(value) {
 async function loadUsers() {
   try {
     publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument, activeVersionId);
+    userListPage = 0;
     renderUsers();
   } catch (e) {
     $('userList').innerHTML = `<div class="empty-state">ユーザーリストの取得に失敗しました: ${esc(e.message)}</div>`;
@@ -1411,7 +1414,13 @@ function renderUsers() {
     return result * sign || nameA.localeCompare(nameB, 'ja');
   });
 
-  $('userList').innerHTML = users.map(user => {
+  const totalPages = Math.max(1, Math.ceil(users.length / USER_LIST_PAGE_SIZE));
+  if (userListPage >= totalPages) userListPage = totalPages - 1;
+
+  const pageStart = userListPage * USER_LIST_PAGE_SIZE;
+  const pageUsers = users.slice(pageStart, pageStart + USER_LIST_PAGE_SIZE);
+
+  $('userList').innerHTML = pageUsers.map(user => {
     const gf = Number(user.gf_skill) || 0;
     const dm = Number(user.dm_skill) || 0;
     const combined = gf + dm;
@@ -1435,6 +1444,21 @@ function renderUsers() {
               title="${rivalLabel}">${user.is_favorite ? '★' : '☆'}</button>`}
       </div>`;
   }).join('') || '<div class="empty-state">該当するユーザーがいません</div>';
+
+  const pager = $('userListPager');
+  if (pager) {
+    if (!users.length || totalPages <= 1) {
+      pager.innerHTML = users.length
+        ? `<span class="user-list-page-summary">${users.length}件</span>`
+        : '';
+    } else {
+      pager.innerHTML = `
+        <button type="button" data-user-page="prev" ${userListPage <= 0 ? 'disabled' : ''}>← 前へ</button>
+        <span>${userListPage + 1} / ${totalPages}ページ　${users.length}件</span>
+        <button type="button" data-user-page="next" ${userListPage + 1 >= totalPages ? 'disabled' : ''}>次へ →</button>
+      `;
+    }
+  }
 }
 
 async function openUserDetail(userId, username) {
@@ -2287,8 +2311,26 @@ document.querySelector('.user-list-header')?.addEventListener('click', e => {
     userListSort.key = key;
     userListSort.dir = key === 'name' ? 'asc' : 'desc';
   }
+  userListPage = 0;
   renderUsers();
 });
+$('userListPager')?.addEventListener('click', e => {
+  const button = e.target.closest('[data-user-page]');
+  if (!button || button.disabled) return;
+
+  if (button.dataset.userPage === 'prev' && userListPage > 0) {
+    userListPage--;
+  } else if (button.dataset.userPage === 'next') {
+    const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
+    if (userListPage + 1 < totalPages) userListPage++;
+  } else {
+    return;
+  }
+
+  renderUsers();
+  $('viewUsers')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+});
+
 $('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
 
 $('btnCloseUserDetail').addEventListener('click', closeUserDetail);
