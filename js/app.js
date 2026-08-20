@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_21';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_21';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_21';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_21';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_21';
-import { getGameVersions } from './versions.js?v=21_21';
+import { supabase } from './supabase.js?v=21_22';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_22';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_22';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_22';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_22';
+import { getGameVersions } from './versions.js?v=21_22';
 const {
   isAdmin,
   getAdminSongs,
@@ -244,8 +244,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_21';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_21';
+import * as adminApi from './admin.js?v=21_22';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_22';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -281,6 +281,7 @@ function show(id) { $(id).classList.remove('hidden'); }
 function hide(id) { $(id).classList.add('hidden'); }
 
 function showAuth(mode = 'login') {
+  hide('introScreen');
   currentAuthMode = mode;
   hide('appScreen');
   show('authScreen');
@@ -307,6 +308,7 @@ function showAuth(mode = 'login') {
 }
 
 async function showApp(session) {
+  hide('introScreen');
   hide('authScreen');
   show('appScreen');
   currentUserId = session?.user?.id || null;
@@ -449,7 +451,9 @@ async function init() {
     await showApp(session);
     await processPendingSkillSync();
   } else {
-    showAuth('login');
+    hide('authScreen');
+    hide('appScreen');
+    show('introScreen');
   }
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -460,9 +464,76 @@ async function init() {
       adminEnabled = false;
       $('btnAdmin').classList.add('hidden');
       closeAdmin();
-      showAuth('login');
+      hide('authScreen');
+      hide('appScreen');
+      show('introScreen');
     }
   });
+}
+
+
+function openMenu() { $('menuMask').style.display = 'flex'; }
+function closeMenu() { $('menuMask').style.display = 'none'; }
+function openHowTo() { closeMenu(); $('howToMask').style.display = 'flex'; }
+function closeHowTo() { $('howToMask').style.display = 'none'; }
+
+function shareSkillImage() {
+  const target = totals();
+  const rowsHot = target.hotRows || [];
+  const rowsOther = target.otherRows || [];
+  const W = 1080, H = 1920;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+
+  x.fillStyle = '#08111f'; x.fillRect(0,0,W,H);
+  x.fillStyle = '#111c30'; x.fillRect(42,42,W-84,H-84);
+  x.fillStyle = '#f8fafc'; x.font = '900 48px sans-serif';
+  x.fillText(`GITADORA ${activeInstrument} SKILL`,72,112);
+  x.fillStyle = '#94a3b8'; x.font = '700 23px sans-serif';
+  x.fillText(activeVersion?.name || '',72,150);
+
+  x.fillStyle = '#f8fafc'; x.font = '900 78px sans-serif';
+  x.fillText(Number(target.total).toFixed(2),72,245);
+  x.font = '800 26px sans-serif'; x.fillStyle='#94a3b8';
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,72,292);
+
+  const drawColumn=(title,rows,left)=>{
+    x.fillStyle='#60a5fa'; x.font='900 26px sans-serif'; x.fillText(title,left,355);
+    rows.slice(0,25).forEach((r,i)=>{
+      const y=405+i*55;
+      x.fillStyle='#64748b'; x.font='700 18px sans-serif'; x.fillText(String(i+1).padStart(2,'0'),left,y);
+      x.fillStyle='#f8fafc'; x.font='700 18px sans-serif';
+      let name=String(r.title||'');
+      while(x.measureText(name).width>300 && name.length>4) name=name.slice(0,-1);
+      if(name!==String(r.title||'')) name=name.slice(0,-1)+'…';
+      x.fillText(name,left+38,y);
+      x.fillStyle='#94a3b8'; x.font='700 16px sans-serif'; x.fillText(`${r.part}  ${Number(r.achievement_rate).toFixed(2)}%`,left+38,y+22);
+      x.fillStyle='#f8fafc'; x.font='900 18px sans-serif'; x.textAlign='right'; x.fillText(Number(r.skill).toFixed(2),left+440,y); x.textAlign='left';
+    });
+  };
+  drawColumn('HOT TOP 25',rowsHot,72);
+  drawColumn('OTHER TOP 25',rowsOther,568);
+
+  x.fillStyle='#64748b'; x.font='700 18px sans-serif';
+  x.fillText('GITADORA Skill Simulator',72,1865);
+
+  c.toBlob(async blob=>{
+    if(!blob) return;
+    const file=new File([blob],`GITADORA_${activeInstrument}_skill.png`,{type:'image/png'});
+    const text=`GITADORA ${activeInstrument} SKILL ${Number(target.total).toFixed(2)}`;
+    try{
+      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+        await navigator.share({files:[file],title:'GITADORA Skill Simulator',text});
+      }else{
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=file.name; a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+        await showSiteDialog('画像を保存しました。XやInstagramの投稿画面から画像を選択してください。','共有画像');
+      }
+    }catch(e){
+      if(e?.name!=='AbortError') await showSiteDialog('共有に失敗しました: '+e.message,'エラー');
+    }
+  },'image/png');
 }
 
 async function loadScores() {
@@ -1774,7 +1845,6 @@ $('btnSubmitForm').addEventListener('click', async () => {
 });
 $('btnCancelForm').addEventListener('click', closeModal);
 
-$('headerUsername').addEventListener('click', openMyPage);
 $('btnCloseMypage').addEventListener('click', closeMyPage);
 
 function renderSkillSyncBrowserGuide() {
@@ -2173,6 +2243,18 @@ document.addEventListener('click', async e => {
   }
 });
 
+
+
+$('btnIntroLogin').addEventListener('click', () => showAuth('login'));
+$('btnIntroRegister').addEventListener('click', () => showAuth('register'));
+$('btnMenu').addEventListener('click', openMenu);
+$('btnCloseMenu').addEventListener('click', closeMenu);
+$('menuMask').addEventListener('click', e => { if (e.target === $('menuMask')) closeMenu(); });
+$('btnMenuMypage').addEventListener('click', async () => { closeMenu(); await openMyPage(); });
+$('btnMenuHowTo').addEventListener('click', openHowTo);
+$('btnCloseHowTo').addEventListener('click', closeHowTo);
+$('howToMask').addEventListener('click', e => { if (e.target === $('howToMask')) closeHowTo(); });
+$('btnShareSkill').addEventListener('click', shareSkillImage);
 
 $('siteDialogOk').addEventListener('click', () => closeSiteDialog(true));
 $('siteDialogCancel').addEventListener('click', () => closeSiteDialog(false));
