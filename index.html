@@ -3313,6 +3313,52 @@ html.ios-viewport-repair {
   line-height: 1.2;
 }
 
+
+/* FIX67: 曲名 / HOT、および Lv / 達成率の縦位置を微調整 */
+
+/* 曲名がHOTよりわずかに上に見える分だけ1px下げる */
+.sk-row .sk-title,
+#viewAllManage .m-card .m-title-text {
+  position: relative;
+  top: 1px;
+}
+
+/* Lv / 達成率はラベルと数値を同じ中央基準で揃える */
+.sk-row .sk-meta {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+.sk-row .sk-meta-lv,
+.sk-row .sk-meta-rate {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+.sk-row .sk-meta-lv strong,
+.sk-row .sk-meta-rate strong {
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+/* 登録曲側も同じ基準 */
+#viewAllManage .m-txt-lv,
+#viewAllManage .m-txt-rate {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+#viewAllManage .m-txt-lv strong,
+#viewAllManage .m-txt-rate strong {
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
