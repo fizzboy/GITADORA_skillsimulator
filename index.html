@@ -4395,6 +4395,78 @@ html.ios-viewport-repair {
   }
 }
 
+
+/* FIX104: ライバル管理にTOTALスキル表示 + ユーザー詳細導線 */
+.favorite-user-row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:6px !important;
+  align-items:center !important;
+}
+
+.favorite-user-open{
+  min-width:0;
+  min-height:42px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  grid-template-areas:
+    "name label arrow"
+    "name skill arrow";
+  column-gap:7px;
+  align-items:center;
+  padding:5px 8px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#f8fafc;
+  text-align:left;
+  cursor:pointer;
+}
+
+.favorite-user-open:active{
+  background:rgba(51,65,85,.45);
+}
+
+.favorite-user-open .name{
+  grid-area:name;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-weight:900;
+}
+
+.favorite-user-skill-label{
+  grid-area:label;
+  color:#64748b;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+  text-align:right;
+}
+
+.favorite-user-skill{
+  grid-area:skill;
+  justify-self:end;
+  display:inline-block;
+  width:max-content;
+  font-size:12px;
+  font-weight:900;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.favorite-user-arrow{
+  grid-area:arrow;
+  color:#64748b;
+  font-size:20px;
+  line-height:1;
+}
+
+.favorite-user-row > .remove{
+  flex-shrink:0;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4653,7 +4725,7 @@ html.ios-viewport-repair {
       <strong>ライバル管理</strong>
       <button id="btnCloseRivalManage" type="button">×</button>
     </div>
-    <div class="section-note rival-manage-note">ユーザーリストから登録したライバルを確認・削除できます。GF / DMそれぞれ最大10件です。</div>
+    <div class="section-note rival-manage-note">ライバルのTOTALスキルを確認できます。ユーザー名をタップするとスキル対象を表示します。GF / DMそれぞれ最大10件です。</div>
     <div class="rival-manage-block">
       <div class="mypage-section-title"><strong>GF</strong> ライバル <span>最大10件</span></div>
       <div id="favoriteUserListGF" class="favorite-user-list"></div>
