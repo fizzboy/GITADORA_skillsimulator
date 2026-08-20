@@ -4522,6 +4522,36 @@ html.ios-viewport-repair {
   font:inherit;
 }
 
+
+/* FIX112: 管理者画面コードバージョン / 新規曲インライン登録 */
+.admin-title-wrap{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  min-width:0;
+}
+.admin-code-version{
+  color:#64748b;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.master-new-row td{
+  background:#eef6ff !important;
+}
+.master-new-row input{
+  background:#ffffff !important;
+  border-color:#60a5fa !important;
+}
+.master-new-row .master-row-save{
+  background:#2563eb !important;
+  color:#fff !important;
+}
+.master-new-row .master-row-delete{
+  background:#e2e8f0 !important;
+  color:#334155 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4903,7 +4933,7 @@ html.ios-viewport-repair {
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title">管理者画面</div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX112</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -4980,6 +5010,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_111"></script>
+<script type="module" src="./js/app.js?v=21_112"></script>
 </body>
 </html>
