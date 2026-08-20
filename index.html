@@ -3078,6 +3078,80 @@ html.ios-viewport-repair {
   box-sizing:border-box !important;
 }
 
+/* === v21 FIX46: 登録曲カード完全統一 === */
+
+/* border-colorではグラデーション不可なので疑似要素で描画 */
+#viewAllManage .m-card {
+  position: relative !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  overflow: hidden;
+}
+#viewAllManage .m-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: var(--song-skill-border, #475569);
+  pointer-events: none;
+  z-index: 2;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* HOTはスキル対象と同一 */
+#viewAllManage .m-card .hot-tag {
+  color: #fecaca !important;
+  background: #450a0a !important;
+  border: 1px solid #991b1b !important;
+}
+
+/* オプションもスキル対象と同一 */
+#viewAllManage .m-card .opt-ran {
+  color: #86efac !important;
+  background: transparent !important;
+  border: 1px solid #15803d !important;
+}
+#viewAllManage .m-card .opt-sra {
+  color: #ffedd5 !important;
+  background: transparent !important;
+  border: 1px solid #c2410c !important;
+}
+#viewAllManage .m-card .opt-ran-plus {
+  color: #67e8f9 !important;
+  background: transparent !important;
+  border: 1px solid #0369a1 !important;
+}
+#viewAllManage .m-card .opt-sra-plus {
+  color: #fecdd3 !important;
+  background: transparent !important;
+  border: 1px solid #be123c !important;
+}
+
+.edit-delete-area {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #334155;
+}
+.btn-delete-editing-score {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #7f1d1d;
+  border-radius: 7px;
+  background: #3f0d12;
+  color: #fecaca;
+  font-weight: 900;
+  font-size: 11px;
+}
+.btn-delete-editing-score:disabled {
+  opacity: .5;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3262,6 +3336,10 @@ html.ios-viewport-repair {
     <div class="f-group">
       <label>Skill</label>
       <div id="formSkill" class="skill-preview">-</div>
+    </div>
+
+    <div id="editDeleteArea" class="edit-delete-area hidden">
+      <button id="btnDeleteEditingScore" type="button" class="btn-delete-editing-score">この登録データを削除</button>
     </div>
 
     <div class="btn-block">
@@ -3506,6 +3584,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_45b"></script>
+<script type="module" src="./js/app.js?v=21_46"></script>
 </body>
 </html>
