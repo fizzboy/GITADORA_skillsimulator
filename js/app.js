@@ -1,9 +1,90 @@
-import { supabase } from './supabase.js?v=21_27';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_27';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_27';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_27';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_27';
-import { getGameVersions } from './versions.js?v=21_27';
+
+/* === v21 FIX28: SINGLE SOURCE OF TRUTH / SKILL COLOR TABLE ===
+   サイト表示・ユーザーリスト・共有画像は、すべてこのテーブルを参照する。
+   配色を変更するときは原則ここだけ変更する。
+*/
+const SKILL_COLOR_TABLE = Object.freeze([
+  { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
+    stops: [['#ff2525',0],['#ff7b22',14],['#ffd900',28],['#22c94b',42],['#15d8d0',56],['#2588ff',70],['#6d39ff',84],['#e926d6',100]] },
+  { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
+    stops: [['#ff7070',0],['#ffad66',14],['#ffe66a',28],['#7ee67a',42],['#64e6d9',56],['#70b8ff',70],['#9a7dff',84],['#f27ae7',100]] },
+  { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
+    stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
+  { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
+    stops: [['#ffffff',0],['#d8dde3',42],['#8e99a5',100]] },
+  { min: 7000, rank: 'bronze', type: 'gradient', direction: '180deg',
+    stops: [['#ffd0ad',0],['#c77b45',48],['#7d3f20',100]] },
+  { min: 6500, rank: 'red-grad', type: 'gradient', direction: '180deg',
+    stops: [['#ffd9df',0],['#ff4d68',42],['#c70023',100]] },
+  { min: 6000, rank: 'red', type: 'solid', color: '#ff1638' },
+  { min: 5500, rank: 'purple-grad', type: 'gradient', direction: '180deg',
+    stops: [['#f9dcff',0],['#ea5cff',42],['#a400d2',100]] },
+  { min: 5000, rank: 'purple', type: 'solid', color: '#e02cff' },
+  { min: 4500, rank: 'blue-grad', type: 'gradient', direction: '180deg',
+    stops: [['#e2f3ff',0],['#53adff',42],['#0966d9',100]] },
+  { min: 4000, rank: 'blue', type: 'solid', color: '#2f91ff' },
+  { min: 3500, rank: 'green-grad', type: 'gradient', direction: '180deg',
+    stops: [['#d9ffe1',0],['#44e45b',45],['#0c9f2b',100]] },
+  { min: 3000, rank: 'green', type: 'solid', color: '#22d13b' },
+  { min: 2500, rank: 'yellow-grad', type: 'gradient', direction: '180deg',
+    stops: [['#fffbd1',0],['#ffe94d',45],['#f5c400',100]] },
+  { min: 2000, rank: 'yellow', type: 'solid', color: '#ffe600' },
+  { min: 1500, rank: 'orange-grad', type: 'gradient', direction: '180deg',
+    stops: [['#fff2e8',0],['#ff9b43',42],['#ff5a00',100]] },
+  { min: 1000, rank: 'orange', type: 'solid', color: '#ff7a22' },
+  { min: 0, rank: 'white', type: 'solid', color: '#ffffff' }
+]);
+
+const SKILL_COLOR_BY_RANK = Object.freeze(
+  Object.fromEntries(SKILL_COLOR_TABLE.map(row => [row.rank, row]))
+);
+
+function getSkillColorRowByTotalValue(totalValue) {
+  const value = Number(totalValue) || 0;
+  return SKILL_COLOR_TABLE.find(row => value >= row.min) || SKILL_COLOR_TABLE[SKILL_COLOR_TABLE.length - 1];
+}
+
+function skillColorCss(row) {
+  if (!row) return '#ffffff';
+  if (row.type === 'solid') return row.color;
+  return `linear-gradient(${row.direction || '90deg'}, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
+}
+
+function installSkillColorCss() {
+  const old = document.getElementById('skill-color-table-style');
+  if (old) old.remove();
+
+  const style = document.createElement('style');
+  style.id = 'skill-color-table-style';
+  style.textContent = SKILL_COLOR_TABLE.map(row => {
+    if (row.type === 'solid') {
+      return `.score-rank-${row.rank}{color:${row.color}!important;background:none!important;-webkit-text-fill-color:${row.color}!important;filter:none!important;}`;
+    }
+    const bg = skillColorCss(row);
+    return `.score-rank-${row.rank}{background:${bg}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
+  }).join('\n');
+  document.head.appendChild(style);
+}
+installSkillColorCss();
+
+function skillColorCanvasPaint(ctx, row, left, top, width, height) {
+  if (!row) return '#ffffff';
+  if (row.type === 'solid') return row.color;
+
+  const horizontal = (row.direction || '90deg') === '90deg';
+  const g = horizontal
+    ? ctx.createLinearGradient(left, top, left + width, top)
+    : ctx.createLinearGradient(left, top, left, top + height);
+
+  row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
+  return g;
+}
+import { supabase } from './supabase.js?v=21_29';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_29';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_29';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_29';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_29';
+import { getGameVersions } from './versions.js?v=21_29';
 const {
   isAdmin,
   getAdminSongs,
@@ -244,8 +325,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_27';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_27';
+import * as adminApi from './admin.js?v=21_29';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_29';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -490,179 +571,162 @@ function shareSkillImage() {
   const rowsHot = target.hotRows || [];
   const rowsOther = target.otherRows || [];
 
-  const W = 1080;
-  const H = 3180;
+  // スマホで見やすいよう、HOT / OTHER を左右2カラムに戻す。
+  // 背景はダークのまま維持。
+  const W = 1400;
+  const H = 2000;
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;
   const x = c.getContext('2d');
 
-  const rankPaint = (rank, left, top, width, height) => {
-    const solids = {
-      white:'#ffffff', orange:'#ff7a22', yellow:'#ffe600',
-      green:'#22d13b', blue:'#2f91ff', purple:'#e02cff', red:'#ff1638'
-    };
-    if (solids[rank]) return solids[rank];
-
-    const stops = {
-      'orange-grad': [['#fff2e8',0],['#ff9b43',.42],['#ff5a00',1]],
-      'yellow-grad': [['#fffbd1',0],['#ffe94d',.45],['#f5c400',1]],
-      'green-grad':  [['#d9ffe1',0],['#44e45b',.45],['#0c9f2b',1]],
-      'blue-grad':   [['#e2f3ff',0],['#53adff',.42],['#0966d9',1]],
-      'purple-grad': [['#f9dcff',0],['#ea5cff',.42],['#a400d2',1]],
-      'red-grad':    [['#ffd9df',0],['#ff4d68',.42],['#c70023',1]],
-      bronze:        [['#ffd0ad',0],['#c77b45',.48],['#7d3f20',1]],
-      silver:        [['#ffffff',0],['#d8dde3',.42],['#8e99a5',1]],
-      gold:          [['#fff7b2',0],['#ffd83d',.42],['#d89a00',1]]
-    };
-
-    if (rank === 'rainbow' || rank === 'deep-rainbow') {
-      const g = x.createLinearGradient(left, top, left + width, top);
-      const colors = rank === 'deep-rainbow'
-        ? [['#ff2525',0],['#ff7b22',.14],['#ffd900',.28],['#22c94b',.42],['#15d8d0',.56],['#2588ff',.70],['#6d39ff',.84],['#e926d6',1]]
-        : [['#ff7070',0],['#ffad66',.14],['#ffe66a',.28],['#7ee67a',.42],['#64e6d9',.56],['#70b8ff',.70],['#9a7dff',.84],['#f27ae7',1]];
-      colors.forEach(([color,pos]) => g.addColorStop(pos,color));
-      return g;
-    }
-
-    const colors = stops[rank] || [['#ffffff',0],['#ffffff',1]];
-    const g = x.createLinearGradient(left, top, left, top + height);
-    colors.forEach(([color,pos]) => g.addColorStop(pos,color));
-    return g;
-  };
-
   const totalPaint = (value, left, top, width, height) =>
-    rankPaint(getTotalSkillRank(value), left, top, width, height);
-
+    skillColorCanvasPaint(x, getSkillColorRowByTotalValue(value), left, top, width, height);
   const songPaint = (value, left, top, width, height) =>
-    rankPaint(getSongSkillRank(value), left, top, width, height);
+    skillColorCanvasPaint(x, getSkillColorRowByTotalValue((Number(value) || 0) * 50), left, top, width, height);
 
   // background
-  x.fillStyle = '#090909';
-  x.fillRect(0,0,W,H);
+  x.fillStyle = '#07101d';
+  x.fillRect(0, 0, W, H);
+  x.fillStyle = '#0f1a2d';
+  x.fillRect(28, 28, W - 56, H - 56);
 
-  // top title
-  x.fillStyle = '#ffffff';
+  // title
+  x.fillStyle = '#f8fafc';
   x.font = '900 42px sans-serif';
-  x.fillText(`GITADORA ${activeVersion?.name || ''}`, 42, 62);
+  x.fillText(`GITADORA ${activeInstrument} SKILL`, 54, 82);
 
-  const chipW = 96, chipH = 44;
+  x.fillStyle = '#94a3b8';
+  x.font = '700 20px sans-serif';
+  x.fillText(activeVersion?.name || '', 54, 116);
+
+  const chipW = 86, chipH = 38;
   x.fillStyle = activeInstrument === 'GF' ? '#e8336a' : '#3caa2a';
-  x.beginPath(); x.roundRect(W-42-chipW,24,chipW,chipH,8); x.fill();
-  x.fillStyle='#ffffff'; x.font='900 24px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-  x.fillText(activeInstrument,W-42-chipW/2,24+chipH/2);
+  x.beginPath(); x.roundRect(W - 54 - chipW, 48, chipW, chipH, 8); x.fill();
+  x.fillStyle='#fff'; x.font='900 22px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
+  x.fillText(activeInstrument, W - 54 - chipW / 2, 48 + chipH / 2);
   x.textAlign='left'; x.textBaseline='alphabetic';
 
-  // summary header
-  const sx=42, sw=W-84, summaryTop=92, summaryH=150;
-  x.strokeStyle='#d1d5db'; x.lineWidth=2;
-  x.strokeRect(sx,summaryTop,sw,summaryH);
-  x.fillStyle='#111111'; x.fillRect(sx,summaryTop,sw,42);
-  x.fillStyle='#ffffff'; x.font='900 24px sans-serif'; x.fillText('SKILL DATA',sx+14,summaryTop+29);
+  // summary
+  const sx=54, sy=142, sw=W-108, sh=142;
+  x.fillStyle='#0b1424'; x.fillRect(sx,sy,sw,sh);
+  x.strokeStyle='#334155'; x.lineWidth=2; x.strokeRect(sx,sy,sw,sh);
 
-  const cellTop=summaryTop+42, cellH=summaryH-42, cellW=sw/3;
-  ['TOTAL','HOT','OTHER'].forEach((label,i)=>{
-    if(i>0){x.beginPath();x.moveTo(sx+i*cellW,cellTop);x.lineTo(sx+i*cellW,summaryTop+summaryH);x.stroke();}
-    x.fillStyle='#cbd5e1'; x.font='700 19px sans-serif'; x.textAlign='center';
-    x.fillText(label,sx+i*cellW+cellW/2,cellTop+30);
-  });
+  const cellW=sw/3;
+  const labels=['TOTAL','HOT','OTHER'];
   const vals=[target.total,target.hot,target.other];
-  vals.forEach((v,i)=>{
-    x.fillStyle=totalPaint(target.total,sx+i*cellW+22,cellTop+40,cellW-44,42);
-    x.font='900 34px sans-serif'; x.textAlign='center';
-    x.fillText(Number(v).toFixed(2),sx+i*cellW+cellW/2,cellTop+72);
+
+  labels.forEach((label,i)=>{
+    if(i>0){
+      x.beginPath(); x.moveTo(sx+i*cellW,sy); x.lineTo(sx+i*cellW,sy+sh); x.stroke();
+    }
+    x.fillStyle='#94a3b8'; x.font='800 18px sans-serif'; x.textAlign='center';
+    x.fillText(label,sx+i*cellW+cellW/2,sy+34);
+    x.fillStyle=totalPaint(target.total,sx+i*cellW+36,sy+46,cellW-72,52);
+    x.font='900 36px sans-serif';
+    x.fillText(Number(vals[i]).toFixed(2),sx+i*cellW+cellW/2,sy+86);
   });
   x.textAlign='left';
 
-  const tableX=42, tableW=W-84;
-  const cols=[54, 445, 165, 190, 142];
-  const colX=[tableX];
-  for(let i=0;i<cols.length;i++) colX.push(colX[i]+cols[i]);
+  const gap = 24;
+  const colW = (W - 108 - gap) / 2;
+  const leftHot = 54;
+  const leftOther = 54 + colW + gap;
+  const tableTop = 320;
 
-  const drawSection=(title, rows, top, headerColor) => {
-    const sectionTitleH=42, headH=58, rowH=51;
-    x.fillStyle=headerColor;
-    x.fillRect(tableX,top,tableW,sectionTitleH);
-    x.fillStyle='#101010'; x.font='900 24px sans-serif';
-    x.fillText(title,tableX+12,top+29);
+  const drawTable = (sectionTitle, rows, left, accent) => {
+    const tableW = colW;
+    const titleH = 40;
+    const headerH = 48;
+    const rowH = 58;
+    const cols = [44, 300, 98, 132, 78]; // No / 譜面 / Skill / 達成率 / Lv
+    const scale = tableW / cols.reduce((a,b)=>a+b,0);
+    const widths = cols.map(v => v*scale);
+    const pos=[left];
+    widths.forEach(w=>pos.push(pos[pos.length-1]+w));
 
-    const headTop=top+sectionTitleH;
-    x.fillStyle='#f2f2f2'; x.fillRect(tableX,headTop,tableW,headH);
-    x.strokeStyle='#555'; x.lineWidth=1;
+    x.fillStyle=accent;
+    x.fillRect(left,tableTop,tableW,titleH);
+    x.fillStyle='#0b1020';
+    x.font='900 21px sans-serif';
+    x.fillText(sectionTitle,left+10,tableTop+27);
 
-    const labels=['No.','譜面','曲別スキル','達成率','難易度'];
+    const headTop=tableTop+titleH;
+    x.fillStyle='#111827'; x.fillRect(left,headTop,tableW,headerH);
+    x.strokeStyle='#334155'; x.lineWidth=1;
+
+    const labels=['No.','譜面','SKILL','達成率','Lv'];
     labels.forEach((label,i)=>{
-      x.strokeRect(colX[i],headTop,cols[i],headH);
-      x.fillStyle='#111'; x.font='900 18px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-      x.fillText(label,colX[i]+cols[i]/2,headTop+headH/2);
+      x.strokeRect(pos[i],headTop,widths[i],headerH);
+      x.fillStyle='#e5e7eb'; x.font='800 14px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
+      x.fillText(label,pos[i]+widths[i]/2,headTop+headerH/2);
     });
 
     rows.slice(0,25).forEach((r,i)=>{
-      const y=headTop+headH+i*rowH;
-      x.fillStyle = i%2===0 ? '#ffffff' : '#f2f2f2';
-      x.fillRect(tableX,y,tableW,rowH);
-
-      for(let c=0;c<cols.length;c++) x.strokeRect(colX[c],y,cols[c],rowH);
+      const y=headTop+headerH+i*rowH;
+      x.fillStyle=i%2===0 ? '#111827' : '#0d1627';
+      x.fillRect(left,y,tableW,rowH);
+      for(let c=0;c<widths.length;c++) x.strokeRect(pos[c],y,widths[c],rowH);
 
       // No.
-      x.fillStyle='#111'; x.font='800 16px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-      x.fillText(String(i+1),colX[0]+cols[0]/2,y+rowH/2);
+      x.fillStyle='#cbd5e1'; x.font='800 13px sans-serif';
+      x.textAlign='center'; x.textBaseline='middle';
+      x.fillText(String(i+1),pos[0]+widths[0]/2,y+rowH/2);
 
-      // chart/title
-      x.textAlign='left'; x.textBaseline='alphabetic'; x.fillStyle='#111'; x.font='800 17px sans-serif';
+      // title + part
+      x.textAlign='left'; x.textBaseline='alphabetic';
+      x.fillStyle='#f8fafc'; x.font='800 14px sans-serif';
       let titleText=String(r.title||'');
-      while(x.measureText(titleText).width > cols[1]-22 && titleText.length>4) titleText=titleText.slice(0,-1);
+      while(x.measureText(titleText).width > widths[1]-16 && titleText.length>4) titleText=titleText.slice(0,-1);
       if(titleText!==String(r.title||'')) titleText=titleText.slice(0,-1)+'…';
-      x.fillText(titleText,colX[1]+10,y+22);
-      x.font='700 13px sans-serif'; x.fillStyle='#555';
-      x.fillText(r.part,colX[1]+10,y+42);
+      x.fillText(titleText,pos[1]+8,y+22);
+      x.fillStyle='#94a3b8'; x.font='700 11px sans-serif';
+      x.fillText(r.part,pos[1]+8,y+43);
 
-      // song skill - individual song color
+      // skill
       const sv=Number(r.skill)||0;
-      x.fillStyle=songPaint(sv,colX[2]+8,y+9,cols[2]-16,rowH-18);
-      x.font='900 20px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-      x.fillText(sv.toFixed(2),colX[2]+cols[2]/2,y+rowH/2);
+      x.fillStyle=songPaint(sv,pos[2]+6,y+8,widths[2]-12,rowH-16);
+      x.font='900 15px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
+      x.fillText(sv.toFixed(2),pos[2]+widths[2]/2,y+rowH/2);
 
-      // achievement top / badge bottom
-      x.fillStyle='#111'; x.font='900 16px sans-serif';
-      x.fillText(`${Number(r.achievement_rate).toFixed(2)}%`,colX[3]+cols[3]/2,y+15);
+      // achievement + badge
+      x.fillStyle='#f8fafc'; x.font='900 13px sans-serif';
+      x.fillText(`${Number(r.achievement_rate).toFixed(2)}%`,pos[3]+widths[3]/2,y+17);
 
       const badge = Number(r.achievement_rate)===100
         ? 'EXC'
         : (String(r.fc||'').toUpperCase()==='FC' ? 'FC' : '');
       if(badge){
-        const bw=54,bh=20,bx=colX[3]+(cols[3]-bw)/2,by=y+26;
+        const bw=46,bh=18,bx=pos[3]+(widths[3]-bw)/2,by=y+30;
         const bg=x.createLinearGradient(bx,by,bx,by+bh);
         if(badge==='EXC'){
           bg.addColorStop(0,'#fff7b2');bg.addColorStop(.45,'#ffd83d');bg.addColorStop(1,'#d89a00');
         }else{
           bg.addColorStop(0,'#ffffff');bg.addColorStop(.45,'#d8dde3');bg.addColorStop(1,'#8e99a5');
         }
-        x.fillStyle=bg;x.beginPath();x.roundRect(bx,by,bw,bh,7);x.fill();
-        x.strokeStyle=badge==='EXC'?'#9a6700':'#66717d';x.stroke();
-        x.fillStyle='#222';x.font='900 12px sans-serif';
-        x.fillText(badge,colX[3]+cols[3]/2,by+bh/2+1);
+        x.fillStyle=bg; x.beginPath(); x.roundRect(bx,by,bw,bh,6); x.fill();
+        x.strokeStyle=badge==='EXC'?'#9a6700':'#66717d'; x.stroke();
+        x.fillStyle='#182033'; x.font='900 10px sans-serif';
+        x.fillText(badge,pos[3]+widths[3]/2,by+bh/2+1);
       }
 
       // level
-      x.fillStyle='#111';x.font='700 17px sans-serif';x.textAlign='center';x.textBaseline='middle';
-      x.fillText(Number(r.level).toFixed(2),colX[4]+cols[4]/2,y+rowH/2);
+      x.fillStyle='#e5e7eb'; x.font='800 13px sans-serif';
+      x.fillText(Number(r.level).toFixed(2),pos[4]+widths[4]/2,y+rowH/2);
     });
 
     x.textAlign='left'; x.textBaseline='alphabetic';
-    return headTop+headH+Math.min(rows.length,25)*rowH;
   };
 
-  let y=278;
-  y=drawSection('HOT TOP 25',rowsHot,y,'#e94b88')+18;
-  y=drawSection('OTHER TOP 25',rowsOther,y,'#83c63d');
+  drawTable('HOT TOP 25', rowsHot, leftHot, '#e94b88');
+  drawTable('OTHER TOP 25', rowsOther, leftOther, '#83c63d');
 
   // footer
-  x.fillStyle='#111'; x.fillRect(42,H-72,W-84,38);
-  x.fillStyle='#fff'; x.font='700 18px sans-serif';
-  x.fillText('GITADORA Skill Simulator',54,H-47);
+  x.fillStyle='#0b1424'; x.fillRect(54,H-62,W-108,30);
+  x.fillStyle='#94a3b8'; x.font='700 14px sans-serif';
+  x.fillText('GITADORA Skill Simulator',64,H-41);
   x.textAlign='right';
-  x.fillText(new Date().toLocaleDateString('ja-JP'),W-54,H-47);
+  x.fillText(new Date().toLocaleDateString('ja-JP'),W-64,H-41);
   x.textAlign='left';
 
   c.toBlob(async blob=>{
@@ -732,32 +796,12 @@ function totals() {
 
 
 function getTotalSkillRank(totalValue) {
-  const value = Number(totalValue) || 0;
-
-  if (value >= 9000) return 'deep-rainbow';
-  if (value >= 8500) return 'rainbow';
-  if (value >= 8000) return 'gold';
-  if (value >= 7500) return 'silver';
-  if (value >= 7000) return 'bronze';
-  if (value >= 6500) return 'red-grad';
-  if (value >= 6000) return 'red';
-  if (value >= 5500) return 'purple-grad';
-  if (value >= 5000) return 'purple';
-  if (value >= 4500) return 'blue-grad';
-  if (value >= 4000) return 'blue';
-  if (value >= 3500) return 'green-grad';
-  if (value >= 3000) return 'green';
-  if (value >= 2500) return 'yellow-grad';
-  if (value >= 2000) return 'yellow';
-  if (value >= 1500) return 'orange-grad';
-  if (value >= 1000) return 'orange';
-  return 'white';
+  return getSkillColorRowByTotalValue(totalValue).rank;
 }
 
 function getSongSkillRank(skillValue) {
-  // 曲別Skillは×50した値をTOTALスキル帯に当てはめる
-  // 例: 93.00 × 50 = 4650 → BLUE Gradation
-  return getTotalSkillRank((Number(skillValue) || 0) * 50);
+  // 曲別Skillは×50した値をTOTALスキル帯へ変換し、同じカラーテーブルを使う。
+  return getSkillColorRowByTotalValue((Number(skillValue) || 0) * 50).rank;
 }
 
 function tintHeaderValues(hot, other, total) {
