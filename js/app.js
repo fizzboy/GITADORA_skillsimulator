@@ -7,7 +7,7 @@ const SKILL_COLOR_TABLE = Object.freeze([
   { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
     stops: [['#ff1010',0],['#ff5a00',14],['#ffd000',28],['#00b83d',42],['#00bfc2',56],['#006fff',70],['#5520ff',84],['#e000c8',100]] },
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff9b9b',0],['#ffc28a',14],['#fff08a',28],['#a7f0a0',42],['#9be9e5',56],['#9dcaff',70],['#bba8ff',84],['#f3a8ea',100]] },
+    stops: [['#ff6868',0],['#ff9a45',14],['#f3d72f',28],['#58d66b',42],['#42d1c8',56],['#589fff',70],['#8b68ff',84],['#df5bd2',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
     stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
@@ -69,7 +69,9 @@ function installSkillColorCss() {
       ? `.skill-box-${row.rank}{background:${row.color}!important;color:${['white','yellow','yellow-grad','green','green-grad','gold','silver'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`
       : `.skill-box-${row.rank}{background:${paint}!important;color:${['gold','silver','rainbow'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`;
 
-    return textRule + boxText;
+    const readableSkillValue = `.skill-box-${row.rank}{font-weight:900!important;color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;text-shadow:-1px -1px 0 #111827,1px -1px 0 #111827,-1px 1px 0 #111827,1px 1px 0 #111827,0 2px 3px rgba(0,0,0,.9)!important;}`;
+
+    return textRule + boxText + readableSkillValue;
   }).join('\n');
 
   document.head.appendChild(style);
@@ -88,12 +90,12 @@ function skillColorCanvasPaint(ctx, row, left, top, width, height) {
   row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
   return g;
 }
-import { supabase } from './supabase.js?v=21_30';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_30';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_30';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_30';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_30';
-import { getGameVersions } from './versions.js?v=21_30';
+import { supabase } from './supabase.js?v=21_33';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_33';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_33';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_33';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_33';
+import { getGameVersions } from './versions.js?v=21_33';
 const {
   isAdmin,
   getAdminSongs,
@@ -334,8 +336,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_30';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_30';
+import * as adminApi from './admin.js?v=21_33';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_33';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -643,7 +645,7 @@ function shareSkillImage() {
 
     const headTop=tableTop+titleH;
     x.fillStyle='#111827'; x.fillRect(left,headTop,tableW,headerH);
-    x.strokeStyle='#334155'; x.lineWidth=1;
+    x.strokeStyle='#94a3b8'; x.lineWidth=1;
 
     const labels=['No.','譜面','SKILL','達成率','Lv'];
     labels.forEach((label,i)=>{
@@ -1334,14 +1336,10 @@ function renderUsers() {
     const dmA = Number(a.dm_skill) || 0, dmB = Number(b.dm_skill) || 0;
     const totalA = gfA + dmA, totalB = gfB + dmB;
     const nameA = String(a.username || ''), nameB = String(b.username || '');
-    const dateA = a.last_recorded_at ? new Date(a.last_recorded_at).getTime() : 0;
-    const dateB = b.last_recorded_at ? new Date(b.last_recorded_at).getTime() : 0;
-
     let result = 0;
     if (key === 'gf') result = gfA - gfB;
     else if (key === 'dm') result = dmA - dmB;
     else if (key === 'total') result = totalA - totalB;
-    else if (key === 'date') result = dateA - dateB;
     else if (key === 'name') return dir === 'asc'
       ? nameA.localeCompare(nameB, 'ja')
       : nameB.localeCompare(nameA, 'ja');
@@ -1365,7 +1363,6 @@ function renderUsers() {
         <div class="user-list-skill user-list-gf"><div class="user-list-skill-value ${gfClass}">${formatSkill(gf)}</div></div>
         <div class="user-list-skill user-list-dm"><div class="user-list-skill-value ${dmClass}">${formatSkill(dm)}</div></div>
         <div class="user-list-total-skill ${totalClass}">${formatSkill(combined)}</div>
-        <div class="user-list-date">${formatDateOnly(user.last_recorded_at)}</div>
         ${user.is_self
           ? '<div></div>'
           : `<button class="favorite-toggle ${user.is_favorite ? 'active' : ''}"
