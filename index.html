@@ -3152,6 +3152,62 @@ html.ios-viewport-repair {
   opacity: .5;
 }
 
+/* === v21 FIX47: スキル対象もグラデーション枠 / option色統一 === */
+
+/* スキル対象の外枠も登録曲と同じgradient border */
+.sk-row {
+  position: relative !important;
+  border: 0 !important;
+  overflow: hidden;
+}
+.sk-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: var(--song-skill-border, #475569);
+  pointer-events: none;
+  z-index: 2;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* RAN系：緑。同系色で + を濃く */
+.opt-ran,
+#viewAllManage .m-card .opt-ran,
+.rate-badges .opt-ran {
+  color: #86efac !important;
+  background: transparent !important;
+  border: 1px solid #15803d !important;
+}
+.opt-ran-plus,
+#viewAllManage .m-card .opt-ran-plus,
+.rate-badges .opt-ran-plus {
+  color: #4ade80 !important;
+  background: rgba(20,83,45,.34) !important;
+  border: 1px solid #166534 !important;
+}
+
+/* SRA系：オレンジ。同系色で + を濃く */
+.opt-sra,
+#viewAllManage .m-card .opt-sra,
+.rate-badges .opt-sra {
+  color: #fdba74 !important;
+  background: transparent !important;
+  border: 1px solid #c2410c !important;
+}
+.opt-sra-plus,
+#viewAllManage .m-card .opt-sra-plus,
+.rate-badges .opt-sra-plus {
+  color: #fb923c !important;
+  background: rgba(124,45,18,.38) !important;
+  border: 1px solid #9a3412 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3584,6 +3640,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_46"></script>
+<script type="module" src="./js/app.js?v=21_48"></script>
 </body>
 </html>
