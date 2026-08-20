@@ -694,8 +694,8 @@ function shareSkillImage() {
   x.fillText(shareGameTitle, 54, 82);
 
   x.fillStyle = '#94a3b8';
-  x.font = '700 20px sans-serif';
-  x.fillText(activeVersion?.name || '', 54, 116);
+  x.font = '700 24px sans-serif';
+  x.fillText(activeVersion?.name || '', 54, 118);
 
   // ユーザー名 + TOTALスキルを横並び。
   // 旧ユーザー名(22px)と旧TOTAL(68px)の中間程度として42pxに統一。
@@ -728,8 +728,8 @@ function shareSkillImage() {
   x.fillText(shareTotal, totalX, shareLineY);
 
   x.fillStyle = '#94a3b8';
-  x.font = '800 23px sans-serif';
-  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,218);
+  x.font = '800 26px sans-serif';
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,220);
 
   const gap = 24;
   const colW = (W - 108 - gap) / 2;
@@ -785,19 +785,23 @@ function shareSkillImage() {
       }
 
       // No.
-      x.fillStyle='#cbd5e1'; x.font='800 15px sans-serif';
+      x.fillStyle='#cbd5e1'; x.font='800 17px sans-serif';
       x.textAlign='center'; x.textBaseline='middle';
       x.fillText(String(i+1),pos[0]+widths[0]/2,y+rowH/2);
 
       // title + part
-      x.textAlign='left'; x.textBaseline='alphabetic';
+      x.textAlign='left';
+      x.textBaseline='middle';
       x.fillStyle='#f8fafc'; x.font='800 16px sans-serif';
       let titleText=String(r.title||'');
       while(x.measureText(titleText).width > widths[1]-16 && titleText.length>4) titleText=titleText.slice(0,-1);
       if(titleText!==String(r.title||'')) titleText=titleText.slice(0,-1)+'…';
-      x.fillText(titleText,pos[1]+8,y+22);
+      // 曲名は上枠線とパート表示の間で上下余白が均等になる位置へ。
+      x.fillText(titleText,pos[1]+8,y+19);
+      x.textBaseline='alphabetic';
       x.fillStyle='#94a3b8'; x.font='700 11px sans-serif';
-      x.fillText(r.part,pos[1]+8,y+43);
+      // パートは従来より少し下へ。
+      x.fillText(r.part,pos[1]+8,y+48);
 
       // SKILL:
       // 数字は白固定。左右の帯だけを、その曲のスキルカラーで表示する。
@@ -819,7 +823,7 @@ function shareSkillImage() {
       x.fillRect(skillCellX+skillCellW-barW-2,barY,barW,barH);
 
       x.fillStyle='#ffffff';
-      x.font='900 17px sans-serif';
+      x.font='900 19px sans-serif';
       x.textAlign='center';
       x.textBaseline='middle';
       x.shadowColor='rgba(0,0,0,.9)';
@@ -829,28 +833,41 @@ function shareSkillImage() {
       x.shadowColor='transparent';
 
       // achievement + badge
-      x.fillStyle='#f8fafc'; x.font='900 13px sans-serif';
-      x.fillText(`${Number(r.achievement_rate).toFixed(2)}%`,pos[3]+widths[3]/2,y+17);
+      x.fillStyle='#f8fafc'; x.font='900 15px sans-serif';
+      x.fillText(`${Number(r.achievement_rate).toFixed(2)}%`,pos[3]+widths[3]/2,y+18);
 
       const badge = Number(r.achievement_rate)===100
         ? 'EXC'
         : (String(r.fc||'').toUpperCase()==='FC' ? 'FC' : '');
       if(badge){
-        const bw=46,bh=18,bx=pos[3]+(widths[3]-bw)/2,by=y+30;
+        // 画面上のスキル対象 / 登録曲と同じFC・EXC配色。
+        // 共有画像では少し小さめにする。
+        const bw=40,bh=15,bx=pos[3]+(widths[3]-bw)/2,by=y+34;
         const bg=x.createLinearGradient(bx,by,bx,by+bh);
         if(badge==='EXC'){
-          bg.addColorStop(0,'#fff7b2');bg.addColorStop(.45,'#ffd83d');bg.addColorStop(1,'#d89a00');
+          bg.addColorStop(0,'#fef08a');
+          bg.addColorStop(1,'#f59e0b');
         }else{
-          bg.addColorStop(0,'#ffffff');bg.addColorStop(.45,'#d8dde3');bg.addColorStop(1,'#8e99a5');
+          bg.addColorStop(0,'#ffffff');
+          bg.addColorStop(.5,'#cbd5e1');
+          bg.addColorStop(1,'#94a3b8');
         }
-        x.fillStyle=bg; x.beginPath(); x.roundRect(bx,by,bw,bh,6); x.fill();
-        x.strokeStyle=badge==='EXC'?'#9a6700':'#66717d'; x.stroke();
-        x.fillStyle='#182033'; x.font='900 10px sans-serif';
-        x.fillText(badge,pos[3]+widths[3]/2,by+bh/2+1);
+        x.fillStyle=bg;
+        x.beginPath();
+        x.roundRect(bx,by,bw,bh,3);
+        x.fill();
+        x.strokeStyle=badge==='EXC'?'#b45309':'#475569';
+        x.lineWidth=1;
+        x.stroke();
+        x.fillStyle=badge==='EXC'?'#7f1d1d':'#1e3a8a';
+        x.font='900 8px sans-serif';
+        x.textAlign='center';
+        x.textBaseline='middle';
+        x.fillText(badge,pos[3]+widths[3]/2,by+bh/2+.5);
       }
 
       // level
-      x.fillStyle='#e5e7eb'; x.font='800 15px sans-serif';
+      x.fillStyle='#e5e7eb'; x.font='800 17px sans-serif';
       x.fillText(Number(r.level).toFixed(2),pos[4]+widths[4]/2,y+rowH/2);
     });
 
