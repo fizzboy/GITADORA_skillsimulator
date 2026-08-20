@@ -3406,11 +3406,15 @@ html.ios-viewport-repair {
 }
 
 
-/* FIX75: HOTだけを1px上へ。行の高さは変えない */
+/* FIX78: HOTは負のmarginを使わず、17px高で中央に揃える */
 .sk-row .hot-tag,
 #viewAllManage .m-card .hot-tag {
-  margin-top: -1px !important;
-  margin-bottom: 1px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  height: 17px !important;
+  min-height: 17px !important;
+  line-height: 17px !important;
+  align-self: center !important;
 }
 
 
