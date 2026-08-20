@@ -1421,7 +1421,7 @@ body { background:#0b1220; }
   border-color: #64748b !important;
 }
 
-/* ユーザー一覧も同じトーンの枠線 */
+/* ユーザーリストも同じトーンの枠線 */
 .user-list-row {
   border: 1px solid #475569 !important;
   border-radius: 8px !important;
@@ -1921,7 +1921,7 @@ button:disabled {
 .skill-sync-status.success{color:#bbf7d0;border-color:#15803d;}
 .skill-sync-status.error{color:#fecaca;border-color:#b91c1c;}
 
-/* === v19: ユーザー一覧GF/DM両表示・ライバルGF/DM分離 === */
+/* === v19: ユーザーリストGF/DM両表示・ライバルGF/DM分離 === */
 .user-list-row{
   grid-template-columns:minmax(0,1fr) 82px 82px 84px 38px !important;
 }
@@ -2194,7 +2194,7 @@ button:disabled {
   display:none !important;
 }
 
-/* TOTAL/HOT/OTHERはユーザー一覧と同じスキルカラーの描画幅にする。
+/* TOTAL/HOT/OTHERはユーザーリストと同じスキルカラーの描画幅にする。
    flexの横幅全体ではなく、文字そのものの幅にgradientを適用する。 */
 .score-val{
   display:inline-block !important;
@@ -2202,7 +2202,7 @@ button:disabled {
   align-self:center !important;
 }
 
-/* ユーザー一覧は常に横一列 */
+/* ユーザーリストは常に横一列 */
 .user-list-row{
   display:grid !important;
   grid-template-columns:minmax(110px,1fr) 82px 82px 82px 38px !important;
@@ -2673,6 +2673,65 @@ html.ios-viewport-repair {
 .favorite-user-row{grid-template-columns:minmax(0,1fr) auto !important;}
 .favorite-user-row .remove{min-width:64px;}
 
+/* === v21 FIX24: user list / rainbow distinction === */
+.score-rank-rainbow {
+  background: linear-gradient(90deg,#57e6ff 0%,#4aa3ff 26%,#7d75ff 48%,#c56dff 72%,#ff8fd8 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;color:transparent !important;
+}
+.score-rank-deep-rainbow {
+  background: linear-gradient(90deg,#00f0ff 0%,#006cff 15%,#5b21ff 30%,#c000ff 45%,#ff008c 60%,#ff3b00 76%,#ffb800 89%,#fff200 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;color:transparent !important;
+  filter:drop-shadow(0 0 2px rgba(255,0,140,.24)) !important;
+}
+.users-toolbar{display:block !important;position:sticky;top:128px;z-index:5;padding:8px 3px 5px;background:#030712}
+.user-list-header{
+  position:sticky;top:183px;z-index:4;
+  display:grid;grid-template-columns:minmax(108px,1fr) 72px 72px 82px 72px 38px;
+  gap:5px;align-items:center;padding:5px 8px;margin-bottom:5px;
+  border:1px solid #273449;border-radius:7px;background:#0b1220;
+}
+.user-sort-head,.user-list-rival-head{
+  min-width:0;border:0;background:transparent;color:#94a3b8;
+  font-size:10px;font-weight:900;padding:4px 1px;text-align:right;white-space:nowrap;
+}
+.user-sort-head.name{text-align:left}
+.user-sort-head.active{color:#f8fafc}
+.user-sort-head .sort-arrow{display:inline-block;width:9px;color:#60a5fa}
+.user-sort-head.active[data-sort-dir="desc"] .sort-arrow::after{content:"▼"}
+.user-sort-head.active[data-sort-dir="asc"] .sort-arrow::after{content:"▲"}
+.user-list-rival-head{text-align:center;font-size:8px}
+.user-list-row{
+  grid-template-columns:minmax(108px,1fr) 72px 72px 82px 72px 38px !important;
+  gap:5px !important;padding:9px 8px !important;
+}
+.user-list-skill-value{font-size:12px !important;font-weight:900}
+.user-list-skill-label{display:none !important}
+.user-list-total-skill{text-align:right;min-width:0}
+.user-list-date{font-size:9px !important}
+@media(max-width:520px){
+  .user-list-header,.user-list-row{
+    grid-template-columns:minmax(86px,1fr) 60px 60px 70px 58px 34px !important;
+    gap:3px !important;
+  }
+  .user-list-header{top:181px;padding-left:6px;padding-right:6px}
+  .user-sort-head{font-size:9px}
+  .user-list-name{font-size:11px !important}
+  .user-list-skill-value,.user-list-total-skill{font-size:11px !important}
+  .user-list-date{font-size:8px !important}
+}
+
+/* === v21 FIX25: MENU再編 === */
+.rival-manage-dialog{
+  width:min(92vw,460px);max-height:84dvh;overflow:auto;
+  background:#0f172a;color:#fff;border:1px solid #334155;
+  border-radius:14px;padding:16px;
+}
+.rival-manage-note{margin-bottom:10px}
+.rival-manage-block{padding:12px 0;border-top:1px solid #1e293b}
+.rival-manage-block:first-of-type{border-top:0}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2741,7 +2800,7 @@ html.ios-viewport-repair {
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
       <div class="p-tab-btn" data-tab="RECORDS">登録</div>
-      <div class="p-tab-btn" data-tab="USERS">ユーザー一覧</div>
+      <div class="p-tab-btn" data-tab="USERS">ユーザーリスト</div>
     </div>
     <div id="searchArea" class="search-bar-container hidden">
       <div class="record-search-row">
@@ -2770,14 +2829,14 @@ html.ios-viewport-repair {
     <div id="viewUsers" class="hidden">
       <div class="users-toolbar">
         <input id="userSearch" placeholder="アカウント名を検索...">
-        <select id="userSort" aria-label="ユーザー一覧の並び順">
-          <option value="gf_desc">GFスキル順（高→低）</option>
-          <option value="gf_asc">GFスキル順（低→高）</option>
-          <option value="dm_desc">DMスキル順（高→低）</option>
-          <option value="dm_asc">DMスキル順（低→高）</option>
-          <option value="date_desc">更新日順（新→旧）</option>
-          <option value="date_asc">更新日順（旧→新）</option>
-        </select>
+      </div>
+      <div class="user-list-header" aria-label="ユーザーリストの並び替え">
+        <button type="button" class="user-sort-head name" data-user-sort="name">ユーザー名 <span class="sort-arrow"></span></button>
+        <button type="button" class="user-sort-head" data-user-sort="gf">GF <span class="sort-arrow"></span></button>
+        <button type="button" class="user-sort-head" data-user-sort="dm">DM <span class="sort-arrow"></span></button>
+        <button type="button" class="user-sort-head" data-user-sort="total">TOTAL <span class="sort-arrow"></span></button>
+        <button type="button" class="user-sort-head date" data-user-sort="date">更新日 <span class="sort-arrow"></span></button>
+        <span class="user-list-rival-head">RIVAL</span>
       </div>
       <div id="userList"></div>
     </div>
@@ -2871,6 +2930,9 @@ html.ios-viewport-repair {
   <div class="app-menu-sheet">
     <div class="app-menu-head"><strong>MENU</strong><button id="btnCloseMenu" type="button">×</button></div>
     <button id="btnMenuMypage" type="button" class="app-menu-item">マイページ <span>›</span></button>
+    <button id="btnMenuSkillSync" type="button" class="app-menu-item">スキル対象同期 <span>›</span></button>
+    <button id="btnMenuShareSkill" type="button" class="app-menu-item">スキル画像共有 <span>›</span></button>
+    <button id="btnMenuRivals" type="button" class="app-menu-item">ライバル管理 <span>›</span></button>
     <button id="btnMenuHowTo" type="button" class="app-menu-item">How to use <span>›</span></button>
     <div class="app-menu-version">
       <label>VERSION</label>
@@ -2885,10 +2947,29 @@ html.ios-viewport-repair {
     <div class="howto-body">
       <section><b>1. GF / DMを切り替える</b><p>画面上部のGF / DMボタンで表示するスキルを切り替えます。</p></section>
       <section><b>2. スコアを登録する</b><p>「登録」→「＋登録」から曲名・Part・達成率を入力します。GFではFCとオプションも登録できます。</p></section>
-      <section><b>3. スキル対象を同期する</b><p>MENU → マイページ →「スキル対象を同期する」から、e-amusementのHOT / OTHERをまとめて取得できます。</p></section>
-      <section><b>4. ライバルを登録する</b><p>ユーザー一覧からGF / DMそれぞれ最大10人まで登録できます。</p></section>
+      <section><b>3. スキル対象を同期する</b><p>MENU →「スキル対象同期」から、e-amusementのHOT / OTHERをまとめて取得できます。</p></section>
+      <section><b>4. ライバルを登録する</b><p>ユーザーリストからGF / DMそれぞれ最大10人まで登録できます。</p></section>
       <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップすると達成率比較や自己ベストを確認できます。</p></section>
-      <section><b>6. SNSへ共有する</b><p>「スキル対象を画像で共有」から現在のGF / DMスキル対象画像を作成し、端末の共有メニューからXやInstagramなどへ送れます。</p></section>
+      <section><b>6. SNSへ共有する</b><p>MENU →「スキル画像共有」から現在のGF / DMスキル対象画像を作成し、端末の共有メニューからXやInstagramなどへ送れます。</p></section>
+    </div>
+  </div>
+</div>
+
+
+<div id="rivalManageMask" class="site-dialog-mask">
+  <div class="rival-manage-dialog">
+    <div class="app-menu-head">
+      <strong>ライバル管理</strong>
+      <button id="btnCloseRivalManage" type="button">×</button>
+    </div>
+    <div class="section-note rival-manage-note">ユーザーリストから登録したライバルを確認・削除できます。GF / DMそれぞれ最大10件です。</div>
+    <div class="rival-manage-block">
+      <div class="mypage-section-title"><strong>GF</strong> ライバル <span>最大10件</span></div>
+      <div id="favoriteUserListGF" class="favorite-user-list"></div>
+    </div>
+    <div class="rival-manage-block">
+      <div class="mypage-section-title"><strong>DM</strong> ライバル <span>最大10件</span></div>
+      <div id="favoriteUserListDM" class="favorite-user-list"></div>
     </div>
   </div>
 </div>
@@ -2910,28 +2991,6 @@ html.ios-viewport-repair {
     <div class="mypage-name-row">
       <input id="newPassword" type="password" minlength="8" autocomplete="new-password" placeholder="8文字以上">
       <button id="btnChangePassword" type="button" class="btn-name-change">変更</button>
-    </div>
-
-    <div class="mypage-sync-section">
-      <div class="mypage-section-title">スキル対象同期</div>
-      <div class="section-note">実行前にe-amusementにログインしてください。</div>
-      <button id="btnOpenSkillSync" type="button" class="btn-skill-sync">スキル対象を同期する</button>
-    </div>
-    <div class="mypage-sync-section">
-      <div class="mypage-section-title">SNS共有</div>
-      <div class="section-note">現在表示中のGF / DMスキル対象を画像にして共有します。</div>
-      <button id="btnShareSkill" type="button" class="btn-skill-sync">スキル対象を画像で共有</button>
-    </div>
-
-    <div class="mypage-favorites">
-      <div class="mypage-rival-block rival-gf">
-        <div class="mypage-section-title"><strong>GF</strong> ライバル登録 <span>最大10件</span></div>
-        <div id="favoriteUserListGF" class="favorite-user-list"></div>
-      </div>
-      <div class="mypage-rival-block rival-dm">
-        <div class="mypage-section-title"><strong>DM</strong> ライバル登録 <span>最大10件</span></div>
-        <div id="favoriteUserListDM" class="favorite-user-list"></div>
-      </div>
     </div>
 
     <div class="mypage-logout-zone">
@@ -3101,6 +3160,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_23"></script>
+<script type="module" src="./js/app.js?v=21_26"></script>
 </body>
 </html>
