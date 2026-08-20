@@ -3772,19 +3772,29 @@ html.ios-viewport-repair {
 }
 
 
-/* FIX88: スキル対象 / 登録曲 / ユーザー詳細の曲名レイアウトを共通化
-   1行でも2行でもタイトル領域の上下中央に配置し、下段との余白も一定にする */
+/* FIX89:
+   FIX88のgrid化は使わず、元のカード構造を維持したまま
+   「1行/2行の曲名 + Lv/達成率」をひとまとまりとして上下中央に揃える */
 
-/* --- スキル対象 / ユーザー詳細 --- */
+/* ---------- スキル対象 / ユーザー詳細 ---------- */
+#viewSkill .sk-row,
+#userDetailSkill .sk-row {
+  height: auto !important;
+  min-height: 64px !important;
+}
+
 #viewSkill .sk-row .sk-text-column,
 #userDetailSkill .sk-row .sk-text-column {
-  display: grid !important;
-  grid-template-rows: 32px 14px !important;
-  row-gap: 4px !important;
-  align-content: center !important;
-  height: 50px !important;
-  min-height: 50px !important;
-  justify-content: stretch !important;
+  height: auto !important;
+  min-height: 48px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: stretch !important;
+
+  gap: 4px !important;
+  overflow: visible !important;
 }
 
 #viewSkill .sk-row .sk-title,
@@ -3794,43 +3804,51 @@ html.ios-viewport-repair {
   -webkit-line-clamp: 2 !important;
   line-clamp: 2 !important;
 
-  align-self: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-
   white-space: normal !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   word-break: break-word !important;
 
-  line-height: 1.2 !important;
-  max-height: 2.4em !important;
+  line-height: 1.18 !important;
+  max-height: 2.36em !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
 }
 
 #viewSkill .sk-row .sk-meta,
 #userDetailSkill .sk-row .sk-meta {
-  align-self: center !important;
   margin: 0 !important;
-  height: 14px !important;
+  padding: 0 !important;
+  height: auto !important;
   min-height: 14px !important;
-  line-height: 14px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
 }
 
-/* --- 登録曲 --- */
-/* 上段をタイトル用32px、下段を14px相当の情報行として扱い、
-   1行/2行どちらでもスキル対象と同じ見え方にする */
+/* ---------- 登録曲 ---------- */
+#viewAllManage .m-card {
+  height: auto !important;
+  min-height: 72px !important;
+}
+
 #viewAllManage .m-card .m-main-area {
-  display: grid !important;
-  grid-template-rows: 32px 24px !important;
-  row-gap: 4px !important;
-  align-content: center !important;
   height: auto !important;
   min-height: 64px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
 }
 
 #viewAllManage .m-card .m-upper-row {
-  height: 32px !important;
-  min-height: 32px !important;
+  height: auto !important;
+  min-height: 22px !important;
   align-items: center !important;
 }
 
@@ -3840,40 +3858,71 @@ html.ios-viewport-repair {
   -webkit-line-clamp: 2 !important;
   line-clamp: 2 !important;
 
-  align-self: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-
   white-space: normal !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   word-break: break-word !important;
 
-  line-height: 1.2 !important;
-  max-height: 2.4em !important;
+  line-height: 1.18 !important;
+  max-height: 2.36em !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
   position: static !important;
   top: auto !important;
   transform: none !important;
 }
 
 #viewAllManage .m-card .m-lower-row {
-  height: 24px !important;
+  height: auto !important;
   min-height: 24px !important;
+  margin-top: 4px !important;
   align-items: center !important;
 }
 
-#viewAllManage .m-card .m-flow-container {
-  align-items: center !important;
-}
-
-/* 1行タイトル時も2行時も、PART/HOT/曲名の上段は同じ中央基準 */
+/* ---------- PART / HOT 共通 ---------- */
+/* 3画面すべてでPARTとHOTを同じ外寸に固定 */
 #viewSkill .sk-row .p-badge,
 #viewSkill .sk-row .hot-tag,
 #userDetailSkill .sk-row .p-badge,
 #userDetailSkill .sk-row .hot-tag,
 #viewAllManage .m-card .p-badge,
 #viewAllManage .m-card .hot-tag {
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  box-sizing: border-box !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  line-height: 1 !important;
+  vertical-align: middle !important;
   align-self: center !important;
+
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+#viewSkill .sk-row .hot-tag,
+#userDetailSkill .sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  padding: 0 7px !important;
+}
+
+/* Safariは箱を動かさずHOT文字だけ微調整 */
+@supports (-webkit-touch-callout: none) {
+  #viewSkill .sk-row .hot-tag,
+  #userDetailSkill .sk-row .hot-tag,
+  #viewAllManage .m-card .hot-tag {
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+  }
 }
 
 </style>
@@ -4308,6 +4357,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_88"></script>
+<script type="module" src="./js/app.js?v=21_89"></script>
 </body>
 </html>
