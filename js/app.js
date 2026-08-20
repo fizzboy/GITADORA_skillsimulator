@@ -53,10 +53,11 @@ function skillColorCss(row) {
 function skillColorVerticalCss(row) {
   if (!row) return '#ffffff';
 
-  // 単色ランク:
-  // 上 = ランク色 / 下 = 白
+  // 単色ランクは完全な単色。
+  // TOTAL / HOT / OTHER / ユーザーリスト / ライバル管理など、
+  // score-rank-* を使う表示はすべて同じ単色になる。
   if (row.type === 'solid') {
-    return `linear-gradient(180deg, ${row.color} 0%, #ffffff 100%)`;
+    return row.color;
   }
 
   // RAINBOW文字だけは、CSSのline-box内で文字そのものが占める高さが狭いため、
@@ -71,8 +72,7 @@ function skillColorVerticalCss(row) {
     return `linear-gradient(180deg, ${stops.join(', ')})`;
   }
 
-  // それ以外のグラデーションは0%=上、100%=下。
-  // 下端の白を必ず維持する。
+  // グラデーションランクだけ0%=上、100%=下。
   return `linear-gradient(180deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
 }
 
@@ -88,8 +88,9 @@ function installSkillColorCss() {
 
     // TOTAL / HOT / OTHER / ユーザーリスト等の文字色
     const textPaint = skillColorVerticalCss(row);
-    const textRule =
-      `.score-rank-${row.rank}{background:${textPaint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
+    const textRule = row.type === 'solid'
+      ? `.score-rank-${row.rank}{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;-webkit-text-fill-color:${row.color}!important;color:${row.color}!important;filter:none!important;}`
+      : `.score-rank-${row.rank}{background:${textPaint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
 
     // 曲別Skillは数字を白で固定し、左右の帯だけをスキルカラーにする。
     // 左右帯は「上→下」の縦グラデーションに統一する。
