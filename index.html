@@ -2727,6 +2727,73 @@ html.ios-viewport-repair {
   }
 }
 
+/* === v21 FIX39: ユーザーリスト中央揃え / TOTAL配色幅統一 === */
+.user-list-header,
+.user-list-row {
+  grid-template-columns:
+    minmax(112px, 1fr)
+    68px
+    68px
+    68px
+    34px !important;
+  column-gap: 6px !important;
+  align-items: center !important;
+}
+
+.user-sort-head,
+.user-list-rival-head {
+  text-align: center !important;
+}
+
+.user-list-name {
+  text-align: left !important;
+}
+
+.user-list-skill,
+.user-list-total-skill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+.user-list-skill-value,
+.user-list-total-value {
+  display: inline-block !important;
+  width: max-content !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+  font-feature-settings: "tnum" 1, "lnum" 1 !important;
+  font-family: "SFMono-Regular", "Roboto Mono", "Noto Sans Mono", Consolas, monospace !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  font-weight: 900 !important;
+}
+
+.favorite-toggle {
+  justify-self: center !important;
+}
+
+@media (max-width: 430px) {
+  .user-list-header,
+  .user-list-row {
+    grid-template-columns:
+      minmax(100px, 1fr)
+      62px
+      62px
+      62px
+      30px !important;
+    column-gap: 4px !important;
+  }
+  .user-list-skill-value,
+  .user-list-total-value {
+    font-size: 10px !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2757,7 +2824,7 @@ html.ios-viewport-repair {
   <div class="auth-card">
     <h1 id="authTitle">ログイン</h1>
     <form id="authForm">
-      <label>アカウント名</label>
+      <label>ユーザー名</label>
       <input id="authUsername" autocomplete="username" required maxlength="32" placeholder="日本語可・32文字まで">
       <label>パスワード</label>
       <input id="authPassword" type="password" autocomplete="current-password" required placeholder="パスワードを入力">
@@ -2823,7 +2890,7 @@ html.ios-viewport-repair {
     <div id="viewAllManage" class="list-container hidden"></div>
     <div id="viewUsers" class="hidden">
       <div class="users-toolbar">
-        <input id="userSearch" placeholder="アカウント名を検索...">
+        <input id="userSearch" placeholder="ユーザー名を検索...">
       </div>
       <div class="user-list-header" aria-label="ユーザーリストの並び替え">
         <button type="button" class="user-sort-head name" data-user-sort="name">ユーザー名 <span class="sort-arrow"></span></button>
@@ -2974,12 +3041,12 @@ html.ios-viewport-repair {
       <h3>マイページ</h3>
       <button id="btnCloseMypage" type="button" class="mypage-close">戻る</button>
     </div>
-    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">アカウント名</label>
+    <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">ユーザー名</label>
     <div class="mypage-name-row">
       <input id="mypageUsernameInput" maxlength="32" placeholder="日本語可・32文字まで">
       <button id="btnChangeUsername" type="button" class="btn-name-change">変更</button>
     </div>
-    <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しいアカウント名でログインしてください。</div>
+    <div class="section-note" style="margin-bottom:14px;">変更後は、次回から新しいユーザー名でログインしてください。</div>
 
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">新しいパスワード</label>
     <div class="mypage-name-row">
@@ -2992,7 +3059,7 @@ html.ios-viewport-repair {
     </div>
 
     <div class="danger-zone">
-      <button id="btnDeleteAccount" class="btn-danger-wide">アカウントを削除</button>
+      <button id="btnDeleteAccount" class="btn-danger-wide">ユーザーを削除</button>
       <div class="section-note">登録したスコアも削除されます。この操作は元に戻せません。</div>
     </div>
   </div>
@@ -3095,7 +3162,7 @@ html.ios-viewport-repair {
       <input id="adminRequestSearch" placeholder="依頼された曲名を検索...">
     </div>
     <div id="adminUserToolbar" class="admin-toolbar hidden">
-      <input id="adminUserSearch" placeholder="アカウント名を検索...">
+      <input id="adminUserSearch" placeholder="ユーザー名を検索...">
     </div>
   </div>
   <div id="adminBody" class="admin-body"></div>
@@ -3154,6 +3221,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_38"></script>
+<script type="module" src="./js/app.js?v=21_39"></script>
 </body>
 </html>
