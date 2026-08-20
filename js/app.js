@@ -158,12 +158,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_52';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_52';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_52';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_52';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_52';
-import { getGameVersions } from './versions.js?v=21_52';
+import { supabase } from './supabase.js?v=21_53';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_53';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_53';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_53';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_53';
+import { getGameVersions } from './versions.js?v=21_53';
 const {
   isAdmin,
   getAdminSongs,
@@ -404,8 +404,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_52';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_52';
+import * as adminApi from './admin.js?v=21_53';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_53';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -694,20 +694,28 @@ function shareSkillImage() {
   x.font = '700 20px sans-serif';
   x.fillText(activeVersion?.name || '', 54, 116);
 
+  // ユーザー名：TOTALと同じスキルカラーに準拠。
+  const shareUsername = String($('headerUsername')?.textContent || '').trim();
+  if (shareUsername) {
+    x.fillStyle = totalPaint(target.total, 54, 126, 620, 28);
+    x.font = '900 22px sans-serif';
+    x.fillText(shareUsername, 54, 151);
+  }
+
   // TOTALを大きく表示
-  x.fillStyle = totalPaint(target.total,54,142,420,74);
+  x.fillStyle = totalPaint(target.total,54,158,420,74);
   x.font = '900 68px sans-serif';
-  x.fillText(Number(target.total).toFixed(2),54,205);
+  x.fillText(Number(target.total).toFixed(2),54,221);
 
   x.fillStyle = '#94a3b8';
   x.font = '800 23px sans-serif';
-  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,246);
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,262);
 
   const gap = 24;
   const colW = (W - 108 - gap) / 2;
   const leftHot = 54;
   const leftOther = 54 + colW + gap;
-  const tableTop = 284;
+  const tableTop = 300;
 
   const drawTable = (sectionTitle, rows, left, accent) => {
     const tableW = colW;
