@@ -5,9 +5,9 @@
 */
 const SKILL_COLOR_TABLE = Object.freeze([
   { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff1010',0],['#ff5a00',14],['#ffd000',28],['#00b83d',42],['#00bfc2',56],['#006fff',70],['#5520ff',84],['#e000c8',100]] },
+    stops: [['#ff0000',0],['#ff4a00',14],['#ffc400',28],['#00a92f',42],['#00aeb8',56],['#005ee8',70],['#4614e6',84],['#c900b7',100]] },
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff6868',0],['#ff9a45',14],['#f3d72f',28],['#58d66b',42],['#42d1c8',56],['#589fff',70],['#8b68ff',84],['#df5bd2',100]] },
+    stops: [['#ff8b8b',0],['#ffb065',14],['#f6df56',28],['#75df82',42],['#67dbd2',56],['#77b0ff',70],['#9d82ff',84],['#e77bdb',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
     stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
@@ -67,9 +67,10 @@ function installSkillColorCss() {
     const paint = row.type === 'solid' ? row.color : skillColorCss(row);
 
     // TOTAL / HOT / OTHER / ユーザーリスト等の文字色
+    const textPaint = row.type === 'solid' ? row.color : skillColorVerticalCss(row);
     const textRule = row.type === 'solid'
       ? `.score-rank-${row.rank}{color:${row.color}!important;background:none!important;-webkit-text-fill-color:${row.color}!important;filter:none!important;}`
-      : `.score-rank-${row.rank}{background:${paint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
+      : `.score-rank-${row.rank}{background:${textPaint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
 
     // 曲別Skillは数字を白で固定し、左右の帯だけをスキルカラーにする。
     // 左右帯は「上→下」の縦グラデーションに統一する。
@@ -113,12 +114,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
   return g;
 }
-import { supabase } from './supabase.js?v=21_36';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_36';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_36';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_36';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_36';
-import { getGameVersions } from './versions.js?v=21_36';
+import { supabase } from './supabase.js?v=21_37';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_37';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_37';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_37';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_37';
+import { getGameVersions } from './versions.js?v=21_37';
 const {
   isAdmin,
   getAdminSongs,
@@ -359,8 +360,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_36';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_36';
+import * as adminApi from './admin.js?v=21_37';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_37';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -615,7 +616,7 @@ function shareSkillImage() {
   const x = c.getContext('2d');
 
   const totalPaint = (value, left, top, width, height) =>
-    skillColorCanvasPaint(x, getSkillColorRowByTotalValue(value), left, top, width, height);
+    skillColorCanvasVerticalPaint(x, getSkillColorRowByTotalValue(value), left, top, width, height);
   const songPaint = (value, left, top, width, height) =>
     skillColorCanvasPaint(x, getSkillColorRowByTotalValue((Number(value) || 0) * 50), left, top, width, height);
 
