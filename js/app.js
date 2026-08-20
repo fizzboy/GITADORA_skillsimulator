@@ -2279,11 +2279,9 @@ $('skillSyncMask').addEventListener('click', e => {
 
 $('btnCopySkillSync').addEventListener('click', async () => {
   try {
-    // Safari / Chromeの両方でブックマークURLとして使えるよう、
-    // 一時的な<a>要素のhrefを通してブラウザ正規化済みのコードをコピーする。
-    const link = document.createElement('a');
-    link.href = buildSkillSyncBookmarklet();
-    const bookmarklet = link.href;
+    // Android Chromeでは <a>.href を通すと、コード中の ' が %27 に変換される場合がある。
+    // ブックマークレットはURL正規化せず、生のJavaScript文字列をそのままコピーする。
+    const bookmarklet = buildSkillSyncBookmarklet();
 
     await navigator.clipboard.writeText(bookmarklet);
     setSkillSyncStatus('同期用コードをコピーしました。ブックマークのURL欄へ貼り付けてください。', 'success');
