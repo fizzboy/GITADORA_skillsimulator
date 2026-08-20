@@ -113,12 +113,15 @@ function installSkillColorCss() {
       `border-left:0!important;border-right:0!important;` +
       `box-sizing:border-box!important;}`;
 
-    // 登録曲カードの外枠は曲別Skillと同じ配色。
-    // CSSのborder-color自体はgradient非対応なので、疑似要素用CSS変数に
-    // 同じsidePaintを渡して、本物のgradient borderとして描画する。
+    // スキル対象・登録曲の「外枠だけ」は45度グラデーションにする。
+    // スキル値の左右帯、ヘッダー、共有画像には sidePaint をそのまま使うため影響しない。
+    const borderPaint = row.type === 'solid'
+      ? `linear-gradient(45deg, ${row.color} 0%, #ffffff 100%)`
+      : `linear-gradient(45deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
+
     const cardBorderRule =
       `.m-card:has(.skill-box-${row.rank}),` +
-      `.sk-row:has(.skill-box-${row.rank}){--song-skill-border:${sidePaint};}`;
+      `.sk-row:has(.skill-box-${row.rank}){--song-skill-border:${borderPaint};}`;
 
     return textRule + songBoxRule + cardBorderRule;
   }).join('\n');
