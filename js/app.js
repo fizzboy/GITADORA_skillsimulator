@@ -1498,6 +1498,11 @@ async function submitScore() {
     const level = $('formLevel').value;
     if (!level) throw new Error('登録依頼する難易度を入力してください。');
 
+    const numericLevel = Number(level);
+    if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 9.99) {
+      throw new Error('難易度は0.01～9.99の範囲で入力してください。');
+    }
+
     const request = await requestSongMaster({
       title,
       part,
@@ -2417,8 +2422,9 @@ $('btnSendLevelCorrection').addEventListener('click', async () => {
   }
 
   const proposedLevel = $('correctionLevel').value;
-  if (!proposedLevel) {
-    await showSiteDialog('正しい難易度を入力してください。', '入力エラー');
+  const numericProposedLevel = Number(proposedLevel);
+  if (!proposedLevel || !Number.isFinite(numericProposedLevel) || numericProposedLevel <= 0 || numericProposedLevel > 9.99) {
+    await showSiteDialog('難易度は0.01～9.99の範囲で入力してください。', '入力エラー');
     return;
   }
 
@@ -2968,6 +2974,10 @@ document.addEventListener('click', async e => {
     try {
       const requestId = adminApproveRequest.dataset.adminApproveRequest;
       const level = $(`requestLevel_${requestId}`).value;
+      const numericLevel = Number(level);
+      if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 9.99) {
+        throw new Error('難易度は0.01～9.99の範囲で入力してください。');
+      }
       await approveSongRequest(requestId, level, false);
       await loadAdminRequests();
     } catch (e) {
@@ -2980,6 +2990,10 @@ document.addEventListener('click', async e => {
     try {
       const requestId = adminHotRequest.dataset.adminHotRequest;
       const level = $(`requestLevel_${requestId}`).value;
+      const numericLevel = Number(level);
+      if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 9.99) {
+        throw new Error('難易度は0.01～9.99の範囲で入力してください。');
+      }
       await approveSongRequest(requestId, level, true);
       await loadAdminRequests();
     } catch (e) {
