@@ -84,7 +84,16 @@ export async function initAuthCaptcha() {
 export async function prepareAuthCaptcha() {
   const alreadyRendered = widgetId !== null;
   await initAuthCaptcha();
-  if (alreadyRendered) await resetAuthCaptcha();
+
+  // 初回描画時はrender自身がチャレンジを開始する。
+  // 2回目以降だけ1回resetし、前回の使用済みtokenを必ず破棄する。
+  if (alreadyRendered) {
+    captchaToken = '';
+    setStatus('');
+    if (widgetId !== null && window.turnstile) {
+      window.turnstile.reset(widgetId);
+    }
+  }
 }
 
 export async function resetAuthCaptcha() {
