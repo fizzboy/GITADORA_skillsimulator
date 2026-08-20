@@ -436,6 +436,7 @@ const ADMIN_SONG_PAGE_SIZE = 100;
 let adminRequests = [];
 let adminFeedback = [];
 let adminEditingSongId = null;
+let adminNewSongRowVisible = false;
 let publicUsers = [];
 let favoriteUsers = { GF: [], DM: [] };
 let viewedUserScores = [];
@@ -2009,6 +2010,31 @@ async function loadAdminSongs() {
             </tr>
           </thead>
           <tbody>
+            ${adminNewSongRowVisible ? `
+              <tr class="master-new-row" data-master-new-row>
+                <td class="master-hot-cell">
+                  <input type="checkbox" data-master-hot>
+                </td>
+                <td class="master-title-cell">
+                  <input type="text" data-master-title value="" placeholder="曲名">
+                </td>
+                ${MASTER_PARTS.map(part => `
+                  <td class="master-level-cell">
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      data-master-level="${part}"
+                      value=""
+                      placeholder="-">
+                  </td>`).join('')}
+                <td class="master-action-cell">
+                  <div class="master-row-actions">
+                    <button class="master-row-save" data-admin-register-master-row>登録</button>
+                    <button class="master-row-delete" data-admin-cancel-master-row>キャンセル</button>
+                  </div>
+                </td>
+              </tr>` : ''}
             ${rows.map((row, index) => `
               <tr data-master-row="${index}" data-original-title="${esc(row.title)}">
                 <td class="master-hot-cell">
@@ -2043,7 +2069,7 @@ async function loadAdminSongs() {
         <button id="btnAdminMasterNext" type="button" ${adminSongPage + 1 >= totalPages ? 'disabled' : ''}>次へ →</button>
       </div>`;
 
-    if (!rows.length) {
+    if (!rows.length && !adminNewSongRowVisible) {
       $('adminBody').innerHTML = '<div class="empty-state">該当する曲がありません</div>';
       return;
     }
@@ -2635,7 +2661,14 @@ $('adminUserSearch').addEventListener('input', () => {
   adminUserSearchTimer = setTimeout(loadAdminUsers,250);
 });
 
-$('btnAdminAddSong').addEventListener('click', () => openAdminSongForm());
+$('btnAdminAddSong').addEventListener('click', async () => {
+  adminNewSongRowVisible = true;
+  adminSongPage = 0;
+  $('adminSongSearch').value = '';
+  await loadAdminSongs();
+  const titleInput = $('adminBody').querySelector('[data-master-new-row] [data-master-title]');
+  titleInput?.focus();
+});
 $('btnAdminCancelSong').addEventListener('click', closeAdminSongForm);
 $('btnAdminSaveSong').addEventListener('click', async () => {
   try {
@@ -2754,6 +2787,8 @@ document.addEventListener('click', async e => {
   const favoriteOpen = e.target.closest('[data-favorite-open]');
   const favoriteRemove = e.target.closest('[data-favorite-remove]');
   const compareCard = e.target.closest('[data-compare-song]');
+  const adminRegisterMasterRow = e.target.closest('[data-admin-register-master-row]');
+  const adminCancelMasterRow = e.target.closest('[data-admin-cancel-master-row]');
   const adminSaveMasterRow = e.target.closest('[data-admin-save-master-row]');
   const adminDeleteMasterRow = e.target.closest('[data-admin-delete-master-row]');
 
@@ -2826,6 +2861,42 @@ document.addEventListener('click', async e => {
     } catch (e) {
       await showSiteDialog('削除に失敗しました: ' + e.message, 'エラー');
     }
+  }
+
+  if (adminRegisterMasterRow) {
+    const tr = adminRegisterMasterRow.closest('tr[data-master-new-row]');
+    if (!tr) return;
+
+    const levels = {};
+    MASTER_PARTS.forEach(part => {
+      levels[part] = tr.querySelector(`[data-master-level="${part}"]`)?.value ?? '';
+    });
+
+    try {
+      adminRegisterMasterRow.disabled = true;
+      await saveMasterSongRow({
+        originalTitle: '',
+        title: tr.querySelector('[data-master-title]').value,
+        isHot: tr.querySelector('[data-master-hot]').checked,
+        levels
+      });
+      adminNewSongRowVisible = false;
+      await loadAdminSongs();
+      await showSiteDialog('新規曲を登録しました。', '登録完了');
+    } catch (e) {
+      await showSiteDialog('新規曲の登録に失敗しました: ' + e.message, 'エラー');
+    } finally {
+      if (adminRegisterMasterRow.isConnected) {
+        adminRegisterMasterRow.disabled = false;
+      }
+    }
+    return;
+  }
+
+  if (adminCancelMasterRow) {
+    adminNewSongRowVisible = false;
+    await loadAdminSongs();
+    return;
   }
 
   if (adminSaveMasterRow) {
