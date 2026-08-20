@@ -412,11 +412,11 @@ async function deleteMasterSongTitle(title) {
 import * as adminApi from './admin.js?v=21_57';
 import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_57';
 
-let userListSort = { key: 'total', dir: 'desc' };
+let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
+let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
 let userListPage = 0;
 let activeTabName = 'SKILL';
-let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let gameVersions = [];
 let activeVersionId = localStorage.getItem('gitadora_version_id') || null;
 let activeVersion = null;
@@ -608,6 +608,8 @@ async function switchInstrument(instrument) {
   if (!['GF','DM'].includes(instrument) || instrument === activeInstrument) return;
   activeInstrument = instrument;
   localStorage.setItem('gitadora_instrument', instrument);
+  userListSort = { key: instrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
+  userListPage = 0;
   selectedSong = null; editingScoreId = null; viewedUserScores = []; publicUsers = [];
   applyInstrumentUI();
   closeModal();
@@ -1686,7 +1688,19 @@ async function loadFavorites() {
 }
 
 function renderFavoriteList(instrument) {
-  const rows = favoriteUsers[instrument] || [];
+  const rows = [...(favoriteUsers[instrument] || [])].sort((a, b) => {
+    const skillA = Number(a.total_skill);
+    const skillB = Number(b.total_skill);
+
+    const validA = Number.isFinite(skillA);
+    const validB = Number.isFinite(skillB);
+
+    if (validA && validB && skillB !== skillA) return skillB - skillA;
+    if (validA !== validB) return validA ? -1 : 1;
+
+    return String(a.username || '').localeCompare(String(b.username || ''), 'ja');
+  });
+
   const target = $(`favoriteUserList${instrument}`);
 
   target.innerHTML = rows.map(fav => {
