@@ -3369,7 +3369,7 @@ html.ios-viewport-repair {
 }
 
 
-/* FIX71: HOTバッジの見切れ・Safari文字上寄りを解消 */
+/* FIX72: HOTバッジをMAS-Gと同じ縦中央位置へ揃える */
 .sk-row .hot-tag,
 #viewAllManage .m-card .hot-tag {
   position: static !important;
@@ -3385,22 +3385,23 @@ html.ios-viewport-repair {
   padding: 0 5px !important;
   box-sizing: border-box !important;
 
-  line-height: 1 !important;
+  line-height: 18px !important;
   vertical-align: middle !important;
   overflow: visible !important;
+  align-self: center !important;
 }
 
-/* Safariで文字のフォントメトリクスが上寄りに見える分を、文字だけ視覚補正 */
-.sk-row .hot-tag {
-  padding-top: 1px !important;
-}
+/* 文字だけが上/下に寄らないよう余白補正は入れない */
+.sk-row .hot-tag,
 #viewAllManage .m-card .hot-tag {
-  padding-top: 1px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
-/* HOTを含むタイトル行自体は中央揃えのまま、クリッピングさせない */
+/* タイトル行はバッジ・曲名とも同一の中央基準 */
 .sk-row .sk-title,
 #viewAllManage .m-card .m-title-text {
+  align-items: center !important;
   overflow: visible !important;
 }
 
