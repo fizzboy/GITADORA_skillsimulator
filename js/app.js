@@ -98,7 +98,7 @@ function installSkillColorCss() {
     // これで WHITE / ORANGE / YELLOW / GREEN / BLUE / PURPLE / RED など
     // 非グラデーション帯も、グラデーション帯と同じ左右カラー帯になる。
     const sidePaint = row.type === 'solid'
-      ? row.color
+      ? `linear-gradient(180deg, ${row.color} 0%, ${row.color} 100%)`
       : skillColorVerticalCss(row);
 
     const songBoxRule =
@@ -2071,7 +2071,12 @@ async function loadAdminFeedback() {
                 class="${isDone ? 'admin-reset' : 'admin-edit'}"
                 data-admin-feedback-status="${item.id}"
                 data-feedback-next-status="${isDone ? 'new' : 'resolved'}">
-                ${isDone ? '未対応に戻す' : '対応済み'}
+                ${isDone ? '未対応に戻す' : '対応済みにする'}
+              </button>
+              <button
+                class="admin-delete"
+                data-admin-feedback-delete="${item.id}">
+                削除
               </button>
             </div>
           </div>
@@ -2096,6 +2101,22 @@ async function updateAdminFeedbackStatus(id, status) {
   const { error } = await supabase
     .from('user_feedback')
     .update(payload)
+    .eq('id', id);
+
+  if (error) throw error;
+  await loadAdminFeedback();
+}
+
+async function deleteAdminFeedback(id) {
+  const ok = await showSiteConfirm(
+    'この要望・不具合報告を削除しますか？\n削除したデータは元に戻せません。',
+    '削除確認'
+  );
+  if (!ok) return;
+
+  const { error } = await supabase
+    .from('user_feedback')
+    .delete()
     .eq('id', id);
 
   if (error) throw error;
@@ -2573,6 +2594,18 @@ $('rateCompareMask').addEventListener('click', e => {
 });
 
 document.addEventListener('click', async e => {
+  const adminFeedbackDelete = e.target.closest('[data-admin-feedback-delete]');
+  if (adminFeedbackDelete) {
+    try {
+      adminFeedbackDelete.disabled = true;
+      await deleteAdminFeedback(adminFeedbackDelete.dataset.adminFeedbackDelete);
+    } catch (error) {
+      await showSiteDialog(error?.message || '削除に失敗しました。', 'エラー');
+      adminFeedbackDelete.disabled = false;
+    }
+    return;
+  }
+
   const adminFeedbackStatus = e.target.closest('[data-admin-feedback-status]');
   if (adminFeedbackStatus) {
     try {
