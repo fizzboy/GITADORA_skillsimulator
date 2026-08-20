@@ -2651,7 +2651,12 @@ document.addEventListener('click', async e => {
       await deleteAdminFeedback(adminFeedbackDelete.dataset.adminFeedbackDelete);
     } catch (error) {
       await showSiteDialog(error?.message || '削除に失敗しました。', 'エラー');
-      adminFeedbackDelete.disabled = false;
+    } finally {
+      // キャンセル時は一覧を再描画しないため、押したボタンが残る。
+      // その場合も必ず再度押せる状態へ戻す。
+      if (adminFeedbackDelete.isConnected) {
+        adminFeedbackDelete.disabled = false;
+      }
     }
     return;
   }
