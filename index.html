@@ -4233,6 +4233,43 @@ html.ios-viewport-repair {
   }
 }
 
+
+/* FIX92: スキル値表示をFIX90以前のサイズ・見た目へ戻す */
+.dc-card .dc-skill {
+  width: 65px !important;
+  min-width: 65px !important;
+  max-width: 65px !important;
+  justify-self: end !important;
+
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+
+  padding: 4px 0 !important;
+  border-radius: 3px !important;
+  text-align: center !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  box-sizing: border-box !important;
+}
+
+/* 旧スキル値ボックスと同じサイズ感をスマホでも維持 */
+@media (max-width: 430px) {
+  .dc-card .dc-skill {
+    width: 65px !important;
+    min-width: 65px !important;
+    max-width: 65px !important;
+    font-size: 14px !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4665,6 +4702,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_91"></script>
+<script type="module" src="./js/app.js?v=21_92"></script>
 </body>
 </html>
