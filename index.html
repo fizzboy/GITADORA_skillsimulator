@@ -2664,6 +2664,69 @@ html.ios-viewport-repair {
   -webkit-text-fill-color: #fff !important;
 }
 
+/* === v21 FIX38: ユーザーリスト列幅・縦位置統一 === */
+.user-list-header,
+.user-list-row {
+  grid-template-columns:
+    minmax(112px, 1fr)
+    68px
+    68px
+    68px
+    32px !important;
+  column-gap: 4px !important;
+  align-items: center !important;
+}
+
+.user-list-skill {
+  height: 100% !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+.user-list-skill-value,
+.user-list-total-skill {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  align-self: center !important;
+  vertical-align: middle !important;
+}
+
+.user-list-total-skill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  height: 100% !important;
+  min-height: 32px !important;
+}
+
+.user-sort-head {
+  text-align: center !important;
+}
+.user-sort-head.name {
+  text-align: left !important;
+}
+
+@media (max-width: 430px) {
+  .user-list-header,
+  .user-list-row {
+    grid-template-columns:
+      minmax(104px, 1fr)
+      64px
+      64px
+      64px
+      30px !important;
+    column-gap: 3px !important;
+  }
+
+  .user-list-skill-value,
+  .user-list-total-skill {
+    font-size: 10px !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3091,6 +3154,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_37"></script>
+<script type="module" src="./js/app.js?v=21_38"></script>
 </body>
 </html>
