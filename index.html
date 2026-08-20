@@ -3208,43 +3208,8 @@ html.ios-viewport-repair {
   border: 1px solid #9a3412 !important;
 }
 
-/* === v21 FIX52: ヘッダーRAINBOWをユーザーリスト基準へ統一 === */
-.score-cell .score-val.score-rank-rainbow {
-  background: linear-gradient(180deg,
-    #ff8787 0%,
-    #ffad6f 14.2857%,
-    #f0d967 28.5714%,
-    #7bd889 42.8571%,
-    #6fd3d0 57.1429%,
-    #7ca9f5 71.4286%,
-    #aa88eb 85.7143%,
-    #df82d4 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-}
-.score-cell .score-val.score-rank-deep-rainbow {
-  background: linear-gradient(180deg,
-    #e60000 0%,
-    #f05a00 14.2857%,
-    #e6b800 28.5714%,
-    #12a936 42.8571%,
-    #00aeb5 57.1429%,
-    #1559e6 71.4286%,
-    #681fd1 85.7143%,
-    #bf16ad 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-}
-.score-cell .score-val {
-  display: inline-block !important;
-  width: max-content !important;
-  align-self: center !important;
-}
 
+/* v21 FIX54: ヘッダーとユーザーリストは同一のscore-rank配色を使用 */
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
