@@ -513,9 +513,13 @@ async function showApp(session) {
 
 let siteDialogResolver = null;
 let siteDialogConfirmMode = false;
+let siteDialogPromptMode = false;
 
 function showSiteDialog(message, title = 'お知らせ') {
   siteDialogConfirmMode = false;
+  siteDialogPromptMode = false;
+  $('siteDialogInput').classList.add('hidden');
+  $('siteDialogInput').value = '';
   $('siteDialogTitle').textContent = title;
   $('siteDialogMessage').textContent = String(message || '');
   $('siteDialogOk').textContent = 'OK';
@@ -529,6 +533,9 @@ function showSiteDialog(message, title = 'お知らせ') {
 
 function showSiteConfirm(message, title = '確認', confirmText = '削除する') {
   siteDialogConfirmMode = true;
+  siteDialogPromptMode = false;
+  $('siteDialogInput').classList.add('hidden');
+  $('siteDialogInput').value = '';
   $('siteDialogTitle').textContent = title;
   $('siteDialogMessage').textContent = String(message || '');
   $('siteDialogOk').textContent = confirmText;
@@ -540,13 +547,37 @@ function showSiteConfirm(message, title = '確認', confirmText = '削除する'
   });
 }
 
+function showSitePrompt(message, title = '入力', confirmText = 'OK', placeholder = '') {
+  siteDialogConfirmMode = true;
+  siteDialogPromptMode = true;
+  $('siteDialogTitle').textContent = title;
+  $('siteDialogMessage').textContent = String(message || '');
+  $('siteDialogInput').classList.remove('hidden');
+  $('siteDialogInput').value = '';
+  $('siteDialogInput').placeholder = placeholder;
+  $('siteDialogOk').textContent = confirmText;
+  $('siteDialogCancel').classList.remove('hidden');
+  $('siteDialogMask').style.display = 'flex';
+
+  setTimeout(() => $('siteDialogInput').focus(), 0);
+
+  return new Promise(resolve => {
+    siteDialogResolver = resolve;
+  });
+}
+
 function closeSiteDialog(result = true) {
+  const promptValue = siteDialogPromptMode ? $('siteDialogInput').value : result;
   $('siteDialogMask').style.display = 'none';
   $('siteDialogCancel').classList.add('hidden');
+  $('siteDialogInput').classList.add('hidden');
+  $('siteDialogInput').value = '';
   const resolve = siteDialogResolver;
   siteDialogResolver = null;
+  const wasPrompt = siteDialogPromptMode;
   siteDialogConfirmMode = false;
-  if (resolve) resolve(result);
+  siteDialogPromptMode = false;
+  if (resolve) resolve(wasPrompt ? (result ? promptValue : null) : result);
 }
 
 
@@ -998,7 +1029,7 @@ async function loadScores() {
     render();
   } catch (e) {
     console.error(e);
-    alert('データ取得に失敗しました: ' + e.message);
+    await showSiteDialog('データ取得に失敗しました: ' + e.message, 'データ取得エラー');
   }
 }
 
@@ -1869,10 +1900,23 @@ function closeMyPage() {
 }
 
 async function deleteOwnAccount() {
-  const ok1 = confirm('ユーザーを削除します。登録したスコアもすべて削除されます。よろしいですか？');
+  const ok1 = await showSiteConfirm(
+    'ユーザーを削除します。登録したスコアもすべて削除されます。よろしいですか？',
+    'ユーザー削除',
+    '次へ'
+  );
   if (!ok1) return;
-  const typed = prompt('確認のため「削除」と入力してください。');
-  if (typed !== '削除') return;
+
+  const typed = await showSitePrompt(
+    '確認のため「削除」と入力してください。',
+    '最終確認',
+    '削除する',
+    '削除'
+  );
+  if (typed !== '削除') {
+    if (typed !== null) await showSiteDialog('「削除」と入力してください。', '入力確認');
+    return;
+  }
 
   try {
     $('btnDeleteAccount').disabled = true;
@@ -1881,9 +1925,9 @@ async function deleteOwnAccount() {
     closeMyPage();
     scores = [];
     showAuth('login');
-    alert('ユーザーを削除しました。');
+    await showSiteDialog('ユーザーを削除しました。', '削除完了');
   } catch (e) {
-    alert('ユーザー削除に失敗しました: ' + e.message);
+    await showSiteDialog('ユーザー削除に失敗しました: ' + e.message, 'エラー');
   } finally {
     $('btnDeleteAccount').disabled = false;
   }
@@ -2235,7 +2279,7 @@ async function submitAdminPassword() {
   if (password.length < 8) throw new Error('パスワードは8文字以上にしてください。');
   await accountAdmin('set_password', { target_user_id: adminPasswordUserId, password });
   closeAdminPassword();
-  alert('パスワードを変更しました。');
+  await showSiteDialog('パスワードを変更しました。', '変更完了');
 }
 
 /* ---------- イベント ---------- */
@@ -2530,7 +2574,7 @@ $('btnLogout').addEventListener('click', async () => {
     selectedSong = null;
     await logout();
   } catch (e) {
-    alert(e.message);
+    await showSiteDialog(e?.message || 'ログアウトに失敗しました。', 'エラー');
   }
 });
 
@@ -2598,7 +2642,7 @@ $('btnAdminSaveSong').addEventListener('click', async () => {
     $('btnAdminSaveSong').disabled = true;
     await submitAdminSong();
   } catch (e) {
-    alert('保存に失敗しました: ' + e.message);
+    await showSiteDialog('保存に失敗しました: ' + e.message, 'エラー');
   } finally {
     $('btnAdminSaveSong').disabled = false;
   }
@@ -2610,7 +2654,7 @@ $('btnAdminPasswordSave').addEventListener('click', async () => {
     $('btnAdminPasswordSave').disabled = true;
     await submitAdminPassword();
   } catch (e) {
-    alert('変更に失敗しました: ' + e.message);
+    await showSiteDialog('変更に失敗しました: ' + e.message, 'エラー');
   } finally {
     $('btnAdminPasswordSave').disabled = false;
   }
@@ -2803,7 +2847,7 @@ document.addEventListener('click', async e => {
       });
       await loadAdminSongs();
     } catch (e) {
-      alert('曲マスター保存に失敗しました: ' + e.message);
+      await showSiteDialog('曲マスター保存に失敗しました: ' + e.message, 'エラー');
     } finally {
       adminSaveMasterRow.disabled = false;
     }
@@ -2813,13 +2857,17 @@ document.addEventListener('click', async e => {
     const tr = adminDeleteMasterRow.closest('tr[data-master-row]');
     if (!tr) return;
     const title = tr.dataset.originalTitle;
-    if (!confirm(`「${title}」の全Partを曲マスターから削除しますか？\n登録済みユーザー記録も影響を受けるため注意してください。`)) return;
+    if (!await showSiteConfirm(
+      `「${title}」の全パートを曲マスターから削除しますか？\n登録済みユーザー記録も影響を受けるため注意してください。`,
+      '曲マスター削除',
+      '削除する'
+    )) return;
 
     try {
       await deleteMasterSongTitle(title);
       await loadAdminSongs();
     } catch (e) {
-      alert('曲マスター削除に失敗しました: ' + e.message);
+      await showSiteDialog('曲マスター削除に失敗しました: ' + e.message, 'エラー');
     }
   }
 
@@ -2831,58 +2879,66 @@ document.addEventListener('click', async e => {
   if (adminDeleteSong) {
     const song = adminSongs.find(s => s.id === adminDeleteSong.dataset.adminDeleteSong);
     if (!song) return;
-    if (!confirm(`「${song.title} / ${song.part}」を曲マスターから削除しますか？\nこの譜面を登録しているユーザーの記録も削除されます。`)) return;
+    if (!await showSiteConfirm(
+      `「${song.title} / ${song.part}」を曲マスターから削除しますか？\nこの譜面を登録しているユーザーの記録も削除されます。`,
+      '曲マスター削除',
+      '削除する'
+    )) return;
     try {
       await deleteMasterSong(song.id);
       await loadAdminSongs();
     } catch (e) {
-      alert('削除に失敗しました: ' + e.message);
+      await showSiteDialog('削除に失敗しました: ' + e.message, 'エラー');
     }
   }
 
   if (adminApproveRequest) {
-    if (!confirm('この登録依頼をOTHERとして承認しますか？')) return;
+    if (!await showSiteConfirm('この登録依頼をOTHERとして承認しますか？', '登録依頼の承認', '承認する')) return;
     try {
       const requestId = adminApproveRequest.dataset.adminApproveRequest;
       const level = $(`requestLevel_${requestId}`).value;
       await approveSongRequest(requestId, level, false);
       await loadAdminRequests();
     } catch (e) {
-      alert('承認に失敗しました: ' + e.message);
+      await showSiteDialog('承認に失敗しました: ' + e.message, 'エラー');
     }
   }
 
   if (adminHotRequest) {
-    if (!confirm('この登録依頼をHOT曲として承認しますか？')) return;
+    if (!await showSiteConfirm('この登録依頼をHOT曲として承認しますか？', 'HOT承認', '承認する')) return;
     try {
       const requestId = adminHotRequest.dataset.adminHotRequest;
       const level = $(`requestLevel_${requestId}`).value;
       await approveSongRequest(requestId, level, true);
       await loadAdminRequests();
     } catch (e) {
-      alert('HOT承認に失敗しました: ' + e.message);
+      await showSiteDialog('HOT承認に失敗しました: ' + e.message, 'エラー');
     }
   }
 
   if (adminRejectRequest) {
-    if (!confirm('この登録依頼を却下しますか？')) return;
+    if (!await showSiteConfirm('この登録依頼を却下しますか？', '登録依頼の却下', '却下する')) return;
     try {
       await rejectSongRequest(adminRejectRequest.dataset.adminRejectRequest);
       await loadAdminRequests();
     } catch (e) {
-      alert('却下に失敗しました: ' + e.message);
+      await showSiteDialog('却下に失敗しました: ' + e.message, 'エラー');
     }
   }
 
   if (adminDeleteUser) {
     const user = adminUsers.find(u => u.id === adminDeleteUser.dataset.adminDeleteUser);
     if (!user) return;
-    if (!confirm(`ユーザー「${user.username}」を削除しますか？\n登録スコアも削除され、元に戻せません。`)) return;
+    if (!await showSiteConfirm(
+      `ユーザー「${user.username}」を削除しますか？\n登録スコアも削除され、元に戻せません。`,
+      'ユーザー削除',
+      '削除する'
+    )) return;
     try {
       await accountAdmin('delete_user', { target_user_id: user.id });
       await loadAdminUsers();
     } catch (e) {
-      alert('ユーザー削除に失敗しました: ' + e.message);
+      await showSiteDialog('ユーザー削除に失敗しました: ' + e.message, 'エラー');
     }
   }
 
@@ -2909,6 +2965,7 @@ $('btnCloseRivalManage').addEventListener('click', closeRivalManage);
 $('rivalManageMask').addEventListener('click', e => { if (e.target === $('rivalManageMask')) closeRivalManage(); });
 
 $('siteDialogOk').addEventListener('click', () => closeSiteDialog(true));
+$('siteDialogInput').addEventListener('keydown', e => { if (e.key === 'Enter') closeSiteDialog(true); });
 $('siteDialogCancel').addEventListener('click', () => closeSiteDialog(false));
 $('siteDialogMask').addEventListener('click', e => {
   if (e.target === $('siteDialogMask')) closeSiteDialog(siteDialogConfirmMode ? false : true);
@@ -2928,5 +2985,5 @@ window.addEventListener('focus', () => {
 
 init().catch(err => {
   console.error(err);
-  alert('初期化に失敗しました: ' + err.message);
+  showSiteDialog('初期化に失敗しました: ' + err.message, '初期化エラー');
 });
