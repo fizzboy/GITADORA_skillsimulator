@@ -114,7 +114,7 @@ export async function requestSongLevelCorrection({ songId, proposedLevel }) {
 
   const { data: song, error: songError } = await supabase
     .from('songs')
-    .select('id,title,part,level')
+    .select('id,title,part,level,version_id')
     .eq('id', songId)
     .single();
   if (songError) throw songError;
@@ -123,6 +123,7 @@ export async function requestSongLevelCorrection({ songId, proposedLevel }) {
     requester_id: userData.user.id,
     title: song.title,
     part: song.part,
+    version_id: song.version_id,
     proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100,
     request_type: 'level_correction',
     current_song_id: song.id
@@ -131,7 +132,7 @@ export async function requestSongLevelCorrection({ songId, proposedLevel }) {
   const { data, error } = await supabase
     .from('song_requests')
     .insert(payload)
-    .select('id,title,part,proposed_level,status,request_type,current_song_id')
+    .select('id,title,part,version_id,proposed_level,status,request_type,current_song_id')
     .single();
 
   if (!error) return data;
