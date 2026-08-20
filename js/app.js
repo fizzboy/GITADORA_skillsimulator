@@ -158,12 +158,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_56';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_56';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_56';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_56';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_56';
-import { getGameVersions } from './versions.js?v=21_56';
+import { supabase } from './supabase.js?v=21_57';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_57';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_57';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_57';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_57';
+import { getGameVersions } from './versions.js?v=21_57';
 const {
   isAdmin,
   getAdminSongs,
@@ -404,8 +404,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_56';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_56';
+import * as adminApi from './admin.js?v=21_57';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_57';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -688,7 +688,10 @@ function shareSkillImage() {
   // header: 以前のシンプルなレイアウトに戻す
   x.fillStyle = '#f8fafc';
   x.font = '900 42px sans-serif';
-  x.fillText(`GITADORA ${activeInstrument} SKILL`, 54, 82);
+  const shareGameTitle = activeInstrument === 'GF'
+    ? 'GITADORA GuitarFreaks Skill'
+    : 'GITADORA DrumMania Skill';
+  x.fillText(shareGameTitle, 54, 82);
 
   x.fillStyle = '#94a3b8';
   x.font = '700 20px sans-serif';
@@ -782,13 +785,13 @@ function shareSkillImage() {
       }
 
       // No.
-      x.fillStyle='#cbd5e1'; x.font='800 13px sans-serif';
+      x.fillStyle='#cbd5e1'; x.font='800 15px sans-serif';
       x.textAlign='center'; x.textBaseline='middle';
       x.fillText(String(i+1),pos[0]+widths[0]/2,y+rowH/2);
 
       // title + part
       x.textAlign='left'; x.textBaseline='alphabetic';
-      x.fillStyle='#f8fafc'; x.font='800 14px sans-serif';
+      x.fillStyle='#f8fafc'; x.font='800 16px sans-serif';
       let titleText=String(r.title||'');
       while(x.measureText(titleText).width > widths[1]-16 && titleText.length>4) titleText=titleText.slice(0,-1);
       if(titleText!==String(r.title||'')) titleText=titleText.slice(0,-1)+'…';
@@ -816,7 +819,7 @@ function shareSkillImage() {
       x.fillRect(skillCellX+skillCellW-barW-2,barY,barW,barH);
 
       x.fillStyle='#ffffff';
-      x.font='900 15px sans-serif';
+      x.font='900 17px sans-serif';
       x.textAlign='center';
       x.textBaseline='middle';
       x.shadowColor='rgba(0,0,0,.9)';
@@ -847,7 +850,7 @@ function shareSkillImage() {
       }
 
       // level
-      x.fillStyle='#e5e7eb'; x.font='800 13px sans-serif';
+      x.fillStyle='#e5e7eb'; x.font='800 15px sans-serif';
       x.fillText(Number(r.level).toFixed(2),pos[4]+widths[4]/2,y+rowH/2);
     });
 
