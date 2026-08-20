@@ -121,7 +121,65 @@ export async function saveScore({
     play_option: playOption || 'NORMAL'
   };
 
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    throw new Error('ログイン情報を取得できません。');
+  }
+
   if (scoreId) {
+    // 編集先の譜面がすでに登録済みの場合は、
+    // 編集中レコードをそのままUPDATEすると (user_id, song_id) UNIQUE に衝突する。
+    // その場合は「編集内容で既存レコードを上書き → 元レコードを削除」する。
+    if (songId) {
+      const { data: existingRows, error: existingError } = await supabase
+        .from('user_scores')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .eq('song_id', songId)
+        .limit(2);
+
+      if (existingError) throw existingError;
+
+      const collision = (existingRows ?? []).find(row => row.id !== scoreId);
+      if (collision?.id) {
+        const { data: targetSong, error: targetSongError } = await supabase
+          .from('songs')
+          .select('title,part')
+          .eq('id', songId)
+          .single();
+
+        if (targetSongError) throw targetSongError;
+
+        const displayPart = targetSong?.part || '選択したパート';
+        throw new Error(`この曲の${displayPart}は既に登録されています`);
+      }
+    }
+
+    if (requestId) {
+      const { data: existingRows, error: existingError } = await supabase
+        .from('user_scores')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .eq('song_request_id', requestId)
+        .limit(2);
+
+      if (existingError) throw existingError;
+
+      const collision = (existingRows ?? []).find(row => row.id !== scoreId);
+      if (collision?.id) {
+        const { data: targetRequest, error: targetRequestError } = await supabase
+          .from('song_requests')
+          .select('title,part')
+          .eq('id', requestId)
+          .single();
+
+        if (targetRequestError) throw targetRequestError;
+
+        const displayPart = targetRequest?.part || '選択したパート';
+        throw new Error(`この曲の${displayPart}は既に登録されています`);
+      }
+    }
+
     const { error } = await supabase
       .from('user_scores')
       .update(payload)
@@ -129,11 +187,6 @@ export async function saveScore({
 
     if (error) throw error;
     return;
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) {
-    throw new Error('ログイン情報を取得できません。');
   }
 
   const row = {
