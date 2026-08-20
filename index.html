@@ -3558,6 +3558,53 @@ html.ios-viewport-repair {
   }
 }
 
+
+/* FIX85: 曲カードの共通バッジデザイン
+   スキル対象 / 登録曲 / ユーザー詳細スキル対象で同じ寸法に統一 */
+.sk-row .p-badge,
+.sk-row .hot-tag,
+#viewAllManage .m-card .p-badge,
+#viewAllManage .m-card .hot-tag {
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+/* HOTはPARTと同じ20pxの外寸を維持 */
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  padding: 0 5px !important;
+}
+
+/* PARTも上下paddingで高さが膨らまないよう固定 */
+.sk-row .p-badge,
+#viewAllManage .m-card .p-badge {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Safariも箱そのものは動かさない。文字だけ微調整 */
+@supports (-webkit-touch-callout: none) {
+  .sk-row .hot-tag,
+  #viewAllManage .m-card .hot-tag {
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3990,6 +4037,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_84"></script>
+<script type="module" src="./js/app.js?v=21_85"></script>
 </body>
 </html>
