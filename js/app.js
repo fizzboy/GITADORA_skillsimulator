@@ -162,8 +162,8 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   return g;
 }
 import { supabase } from './supabase.js?v=21_57';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_62';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_83';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
 import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_57';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_57';
 import { getGameVersions } from './versions.js?v=21_57';
