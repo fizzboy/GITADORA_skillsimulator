@@ -3245,6 +3245,46 @@ html.ios-viewport-repair {
   background-repeat: no-repeat !important;
 }
 
+/* === v21 FIX56: 自分/ユーザー詳細ヘッダーの文字仕様統一 === */
+
+/* 項目名はユーザー詳細側を正とする */
+.score-lbl,
+.user-detail-summary span {
+  display: block !important;
+  color: #94a3b8 !important;
+  font-size: 9px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+}
+
+/* スキル値は自分のヘッダー側を正とする */
+.score-val,
+.user-detail-summary strong.user-detail-skill-value {
+  display: inline-block !important;
+  width: max-content !important;
+  height: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: normal !important;
+  font-feature-settings: normal !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* 項目名と数値の間隔も揃える */
+.score-cell .score-val,
+.user-detail-summary strong.user-detail-skill-value {
+  margin-top: 2px !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3677,6 +3717,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_53"></script>
+<script type="module" src="./js/app.js?v=21_56"></script>
 </body>
 </html>
