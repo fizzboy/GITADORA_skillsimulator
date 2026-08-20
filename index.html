@@ -2669,6 +2669,10 @@ html.ios-viewport-repair {
 .howto-dialog{width:min(92vw,520px);max-height:84dvh;overflow:auto;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:14px;padding:16px}.howto-body section{padding:12px 0;border-bottom:1px solid #1e293b}.howto-body b{font-size:13px}.howto-body p{font-size:11px;line-height:1.65;color:#cbd5e1;margin:5px 0 0}
 .skill-share-bar{padding:5px 6px 0;background:#0b1220}.skill-share-bar button{width:100%;min-height:34px;border:1px solid #334155;border-radius:6px;background:#172033;color:#dbeafe;font-size:10px;font-weight:900}
 
+/* === v21 FIX23 === */
+.favorite-user-row{grid-template-columns:minmax(0,1fr) auto !important;}
+.favorite-user-row .remove{min-width:64px;}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2689,7 +2693,7 @@ html.ios-viewport-repair {
   <div class="intro-features">
     <div><strong>SKILL</strong><span>HOT / OTHERのスキル対象を自動集計</span></div>
     <div><strong>SYNC</strong><span>e-amusementのスキル対象をまとめて同期</span></div>
-    <div><strong>RIVAL</strong><span>ライバル登録・Rate比較・ユーザー検索</span></div>
+    <div><strong>RIVAL</strong><span>ライバル登録・達成率比較・ユーザー検索</span></div>
     <div><strong>SHARE</strong><span>スキル対象を画像にしてSNSへ共有</span></div>
   </div>
   <div class="intro-note">GITADORA公式サービスではありません。</div>
@@ -2725,7 +2729,7 @@ html.ios-viewport-repair {
       </div>
       <div class="header-account-controls">
         <button id="btnAdmin" class="admin-entry hidden">管理</button>
-        <span id="headerUsername" class="header-user"></span>
+        <span id="headerUsername" class="header-user hidden" aria-hidden="true"></span>
         <button id="btnMenu" type="button" class="menu-entry" aria-label="メニュー">☰</button>
       </div>
     </div>
@@ -2734,7 +2738,6 @@ html.ios-viewport-repair {
       <div class="score-cell border-r"><span class="score-lbl">HOT</span><span id="txtHotTotal" class="score-val">0.00</span></div>
       <div class="score-cell"><span class="score-lbl">OTHER</span><span id="txtOtherTotal" class="score-val">0.00</span></div>
     </div>
-    <div class="skill-share-bar"><button id="btnShareSkill" type="button">スキル対象を画像で共有</button></div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
       <div class="p-tab-btn" data-tab="RECORDS">登録</div>
@@ -2768,12 +2771,12 @@ html.ios-viewport-repair {
       <div class="users-toolbar">
         <input id="userSearch" placeholder="アカウント名を検索...">
         <select id="userSort" aria-label="ユーザー一覧の並び順">
-          <option value="gf_desc">GFスキル：高い順</option>
-          <option value="gf_asc">GFスキル：低い順</option>
-          <option value="dm_desc">DMスキル：高い順</option>
-          <option value="dm_asc">DMスキル：低い順</option>
-          <option value="date_desc">更新日：新しい順</option>
-          <option value="date_asc">更新日：古い順</option>
+          <option value="gf_desc">GFスキル順（高→低）</option>
+          <option value="gf_asc">GFスキル順（低→高）</option>
+          <option value="dm_desc">DMスキル順（高→低）</option>
+          <option value="dm_asc">DMスキル順（低→高）</option>
+          <option value="date_desc">更新日順（新→旧）</option>
+          <option value="date_asc">更新日順（旧→新）</option>
         </select>
       </div>
       <div id="userList"></div>
@@ -2883,8 +2886,8 @@ html.ios-viewport-repair {
       <section><b>1. GF / DMを切り替える</b><p>画面上部のGF / DMボタンで表示するスキルを切り替えます。</p></section>
       <section><b>2. スコアを登録する</b><p>「登録」→「＋登録」から曲名・Part・達成率を入力します。GFではFCとオプションも登録できます。</p></section>
       <section><b>3. スキル対象を同期する</b><p>MENU → マイページ →「スキル対象を同期する」から、e-amusementのHOT / OTHERをまとめて取得できます。</p></section>
-      <section><b>4. ライバルを登録する</b><p>ユーザー一覧からGF / DMそれぞれ最大5人まで登録できます。</p></section>
-      <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップするとRate比較や自己ベストを確認できます。</p></section>
+      <section><b>4. ライバルを登録する</b><p>ユーザー一覧からGF / DMそれぞれ最大10人まで登録できます。</p></section>
+      <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップすると達成率比較や自己ベストを確認できます。</p></section>
       <section><b>6. SNSへ共有する</b><p>「スキル対象を画像で共有」から現在のGF / DMスキル対象画像を作成し、端末の共有メニューからXやInstagramなどへ送れます。</p></section>
     </div>
   </div>
@@ -2914,14 +2917,19 @@ html.ios-viewport-repair {
       <div class="section-note">実行前にe-amusementにログインしてください。</div>
       <button id="btnOpenSkillSync" type="button" class="btn-skill-sync">スキル対象を同期する</button>
     </div>
+    <div class="mypage-sync-section">
+      <div class="mypage-section-title">SNS共有</div>
+      <div class="section-note">現在表示中のGF / DMスキル対象を画像にして共有します。</div>
+      <button id="btnShareSkill" type="button" class="btn-skill-sync">スキル対象を画像で共有</button>
+    </div>
 
     <div class="mypage-favorites">
       <div class="mypage-rival-block rival-gf">
-        <div class="mypage-section-title"><strong>GF</strong> ライバル登録 <span>最大5件</span></div>
+        <div class="mypage-section-title"><strong>GF</strong> ライバル登録 <span>最大10件</span></div>
         <div id="favoriteUserListGF" class="favorite-user-list"></div>
       </div>
       <div class="mypage-rival-block rival-dm">
-        <div class="mypage-section-title"><strong>DM</strong> ライバル登録 <span>最大5件</span></div>
+        <div class="mypage-section-title"><strong>DM</strong> ライバル登録 <span>最大10件</span></div>
         <div id="favoriteUserListDM" class="favorite-user-list"></div>
       </div>
     </div>
@@ -3093,6 +3101,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_22"></script>
+<script type="module" src="./js/app.js?v=21_23"></script>
 </body>
 </html>
