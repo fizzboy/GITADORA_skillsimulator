@@ -105,7 +105,15 @@ function installSkillColorCss() {
       `border-left:0!important;border-right:0!important;` +
       `box-sizing:border-box!important;}`;
 
-    return textRule + songBoxRule;
+    const borderPaint = row.type === 'solid'
+      ? row.color
+      : row.stops[Math.floor((row.stops.length - 1) / 2)][0];
+
+    const cardBorderRule =
+      `.skill-row-${row.rank}{border-color:${borderPaint}!important;}` +
+      `.m-card:has(.skill-box-${row.rank}){border-color:${borderPaint}!important;}`;
+
+    return textRule + songBoxRule + cardBorderRule;
   }).join('\n');
 
   document.head.appendChild(style);
@@ -138,12 +146,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_44';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_44';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_44';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_44';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_44';
-import { getGameVersions } from './versions.js?v=21_44';
+import { supabase } from './supabase.js?v=21_45b';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_45b';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_45b';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_45b';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_45b';
+import { getGameVersions } from './versions.js?v=21_45b';
 const {
   isAdmin,
   getAdminSongs,
@@ -384,8 +392,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_44';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_44';
+import * as adminApi from './admin.js?v=21_45b';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_45b';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -646,6 +654,13 @@ function shareSkillImage() {
   const songPaint = (value, left, top, width, height) =>
     skillColorCanvasPaint(x, getSkillColorRowByTotalValue((Number(value) || 0) * 50), left, top, width, height);
 
+  const songBorderColor = value => {
+    const row = getSkillColorRowByTotalValue((Number(value) || 0) * 50);
+    if (!row) return '#475569';
+    if (row.type === 'solid') return row.color;
+    return row.stops[Math.floor((row.stops.length - 1) / 2)][0];
+  };
+
   // background
   x.fillStyle = '#07101d';
   x.fillRect(0, 0, W, H);
@@ -709,11 +724,19 @@ function shareSkillImage() {
       x.fillStyle=i%2===0 ? '#111827' : '#0d1627';
       x.fillRect(left,y,tableW,rowH);
 
-      // FC / EXCバッジ描画でstrokeStyleが変更されても、
-      // 表の枠線は必ず同じシルバーへ戻してから描画する。
-      x.strokeStyle='#94a3b8';
-      x.lineWidth=1;
-      for(let c=0;c<widths.length;c++) x.strokeRect(pos[c],y,widths[c],rowH);
+      // 各曲の外枠は、その曲のSKILLカラーに合わせる。
+      // セル内部の縦線は控えめな共通色のままにして可読性を維持する。
+      x.strokeStyle = songBorderColor(r.skill);
+      x.lineWidth = 2;
+      x.strokeRect(left, y, tableW, rowH);
+      x.strokeStyle = '#475569';
+      x.lineWidth = 1;
+      for(let c=1;c<widths.length;c++) {
+        x.beginPath();
+        x.moveTo(pos[c], y);
+        x.lineTo(pos[c], y + rowH);
+        x.stroke();
+      }
 
       // No.
       x.fillStyle='#cbd5e1'; x.font='800 13px sans-serif';
@@ -989,8 +1012,8 @@ function createCard(record, index, mode = 'MANAGE') {
             <span class="opt-slot">${optionBadge}</span>
           </div>
           <div class="m-btn-group">
-            <button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button>
             <button class="m-action-btn btn-d" data-delete="${record.score_id}">削除</button>
+            <button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button>
           </div>
         </div>
       </div>
@@ -1647,19 +1670,28 @@ async function openRateComparison(songId, title, part) {
           `
           : '');
 
-    $('rateCompareBody').innerHTML = rows.map((row, index) => `
-      <div class="rate-row ${row.is_self ? 'self' : ''}">
-        <div class="rate-user">
-          <div>#${index + 1} ${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
-          <div class="rate-badges">
-            ${getFcBadgeMarkup(row.fc, row.achievement_rate)}
-            ${getOptionBadgeMarkup(row.play_option)}
-          </div>
-        </div>
-        <div class="rate-value">${formatRate(row.achievement_rate)}%</div>
-        <div class="rate-skill">${formatSkill(row.skill)}</div>
-      </div>`
-    ).join('') || '<div class="empty-state">比較できる記録がありません</div>';
+    $('rateCompareBody').innerHTML = rows.length ? `
+      <div class="rate-table-head">
+        <div>ユーザー</div>
+        <div>達成率</div>
+        <div>SKILL</div>
+      </div>
+      ${rows.map((row, index) => {
+        const compareSkillClass = `skill-box-${getSongSkillRank(Number(row.skill) || 0)}`;
+        return `
+          <div class="rate-row ${row.is_self ? 'self' : ''}">
+            <div class="rate-user">
+              <div class="rate-user-name">${esc(row.username)}${row.is_self ? '（自分）' : ''}</div>
+              <div class="rate-badges">
+                ${getFcBadgeMarkup(row.fc, row.achievement_rate)}
+                ${getOptionBadgeMarkup(row.play_option)}
+              </div>
+            </div>
+            <div class="rate-value">${formatRate(row.achievement_rate)}%</div>
+            <div class="rate-skill ${compareSkillClass}">${formatSkill(row.skill)}</div>
+          </div>`;
+      }).join('')}
+    ` : '<div class="empty-state">比較できる記録がありません</div>';
   } catch (e) {
     $('rateOptionSummary').innerHTML = '';
     $('rateCompareBody').innerHTML = `<div class="empty-state">比較データの取得に失敗しました: ${esc(e.message)}</div>`;
