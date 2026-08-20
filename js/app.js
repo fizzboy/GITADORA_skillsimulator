@@ -105,13 +105,11 @@ function installSkillColorCss() {
       `border-left:0!important;border-right:0!important;` +
       `box-sizing:border-box!important;}`;
 
-    const borderPaint = row.type === 'solid'
-      ? row.color
-      : row.stops[Math.floor((row.stops.length - 1) / 2)][0];
-
+    // 登録曲カードの外枠は曲別Skillと同じ配色。
+    // CSSのborder-color自体はgradient非対応なので、疑似要素用CSS変数に
+    // 同じsidePaintを渡して、本物のgradient borderとして描画する。
     const cardBorderRule =
-      `.skill-row-${row.rank}{border-color:${borderPaint}!important;}` +
-      `.m-card:has(.skill-box-${row.rank}){border-color:${borderPaint}!important;}`;
+      `.m-card:has(.skill-box-${row.rank}){--song-skill-border:${sidePaint};}`;
 
     return textRule + songBoxRule + cardBorderRule;
   }).join('\n');
@@ -146,12 +144,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_45b';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_45b';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_45b';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_45b';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_45b';
-import { getGameVersions } from './versions.js?v=21_45b';
+import { supabase } from './supabase.js?v=21_46';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_46';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_46';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_46';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_46';
+import { getGameVersions } from './versions.js?v=21_46';
 const {
   isAdmin,
   getAdminSongs,
@@ -392,8 +390,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_45b';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_45b';
+import * as adminApi from './admin.js?v=21_46';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_46';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -1012,7 +1010,6 @@ function createCard(record, index, mode = 'MANAGE') {
             <span class="opt-slot">${optionBadge}</span>
           </div>
           <div class="m-btn-group">
-            <button class="m-action-btn btn-d" data-delete="${record.score_id}">削除</button>
             <button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button>
           </div>
         </div>
@@ -1161,6 +1158,7 @@ function openScoreModal(score = null) {
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
   $('songSuggestions').innerHTML = '';
   $('btnSubmitForm').textContent = '保存する';
+  $('editDeleteArea').classList.toggle('hidden', !score);
   hide('masterRequestArea');
   hide('levelCorrectionArea');
   hide('levelCorrectionForm');
@@ -2154,6 +2152,29 @@ $('btnSubmitForm').addEventListener('click', async () => {
     }
   }
 });
+$('btnDeleteEditingScore').addEventListener('click', async () => {
+  if (!editingScoreId) return;
+
+  const ok = await showSiteConfirm(
+    'この登録データを削除しますか？\nこの操作は元に戻せません。',
+    '登録データの削除',
+    '削除する'
+  );
+  if (!ok) return;
+
+  const scoreId = editingScoreId;
+  try {
+    $('btnDeleteEditingScore').disabled = true;
+    await deleteScore(scoreId);
+    closeModal();
+    await loadScores();
+  } catch (e) {
+    await showSiteDialog('削除に失敗しました: ' + e.message, 'エラー');
+  } finally {
+    $('btnDeleteEditingScore').disabled = false;
+  }
+});
+
 $('btnCancelForm').addEventListener('click', closeModal);
 
 $('btnCloseMypage').addEventListener('click', closeMyPage);
