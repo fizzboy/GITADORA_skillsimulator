@@ -3405,6 +3405,81 @@ html.ios-viewport-repair {
   overflow: visible !important;
 }
 
+
+/* FIX73: MAS-G / HOT / 曲名を固定高さ1行の共通中央基準で揃える */
+
+/* スキル対象 */
+.sk-row .sk-title {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  overflow: visible !important;
+}
+
+/* 登録曲 */
+#viewAllManage .m-card .m-upper-row {
+  align-items: center !important;
+}
+#viewAllManage .m-card .m-title-text {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  overflow: visible !important;
+}
+
+/* PART / HOT / 曲名を同じ20px行の中央へ */
+.sk-row .p-badge,
+.sk-row .hot-tag,
+.sk-row .sk-title,
+#viewAllManage .m-card .p-badge,
+#viewAllManage .m-card .hot-tag,
+#viewAllManage .m-card .m-title-text {
+  align-self: center !important;
+}
+
+/* バッジは固定高さで中央揃え */
+.sk-row .p-badge,
+#viewAllManage .m-card .p-badge {
+  height: 20px !important;
+  min-height: 20px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  transform: none !important;
+  top: auto !important;
+}
+
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  height: 20px !important;
+  min-height: 20px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  padding: 0 5px !important;
+  transform: none !important;
+  top: auto !important;
+  position: static !important;
+}
+
+/* FIX67/FIX69/FIX70系の曲名微調整を無効化 */
+.sk-row .sk-title,
+#viewAllManage .m-card .m-title-text {
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
