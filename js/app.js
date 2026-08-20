@@ -5,9 +5,9 @@
 */
 const SKILL_COLOR_TABLE = Object.freeze([
   { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff2525',0],['#ff7b22',14],['#ffd900',28],['#22c94b',42],['#15d8d0',56],['#2588ff',70],['#6d39ff',84],['#e926d6',100]] },
+    stops: [['#ff1010',0],['#ff5a00',14],['#ffd000',28],['#00b83d',42],['#00bfc2',56],['#006fff',70],['#5520ff',84],['#e000c8',100]] },
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff7070',0],['#ffad66',14],['#ffe66a',28],['#7ee67a',42],['#64e6d9',56],['#70b8ff',70],['#9a7dff',84],['#f27ae7',100]] },
+    stops: [['#ff9b9b',0],['#ffc28a',14],['#fff08a',28],['#a7f0a0',42],['#9be9e5',56],['#9dcaff',70],['#bba8ff',84],['#f3a8ea',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
     stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
@@ -57,12 +57,21 @@ function installSkillColorCss() {
   const style = document.createElement('style');
   style.id = 'skill-color-table-style';
   style.textContent = SKILL_COLOR_TABLE.map(row => {
-    if (row.type === 'solid') {
-      return `.score-rank-${row.rank}{color:${row.color}!important;background:none!important;-webkit-text-fill-color:${row.color}!important;filter:none!important;}`;
-    }
-    const bg = skillColorCss(row);
-    return `.score-rank-${row.rank}{background:${bg}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
+    const paint = row.type === 'solid' ? row.color : skillColorCss(row);
+
+    const textRule = row.type === 'solid'
+      ? `.score-rank-${row.rank}{color:${row.color}!important;background:none!important;-webkit-text-fill-color:${row.color}!important;filter:none!important;}`
+      : `.score-rank-${row.rank}{background:${paint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
+
+    // 曲別Skillのボックスも同じSKILL_COLOR_TABLEを参照。
+    // 旧CSSにskill-box-*が残っていても、後から挿入するこのルールで統一する。
+    const boxText = row.type === 'solid'
+      ? `.skill-box-${row.rank}{background:${row.color}!important;color:${['white','yellow','yellow-grad','green','green-grad','gold','silver'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`
+      : `.skill-box-${row.rank}{background:${paint}!important;color:${['gold','silver','rainbow'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`;
+
+    return textRule + boxText;
   }).join('\n');
+
   document.head.appendChild(style);
 }
 installSkillColorCss();
@@ -79,12 +88,12 @@ function skillColorCanvasPaint(ctx, row, left, top, width, height) {
   row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
   return g;
 }
-import { supabase } from './supabase.js?v=21_29';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_29';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_29';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_29';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_29';
-import { getGameVersions } from './versions.js?v=21_29';
+import { supabase } from './supabase.js?v=21_30';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_30';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_30';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_30';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_30';
+import { getGameVersions } from './versions.js?v=21_30';
 const {
   isAdmin,
   getAdminSongs,
@@ -325,8 +334,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_29';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_29';
+import * as adminApi from './admin.js?v=21_30';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_30';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -591,7 +600,7 @@ function shareSkillImage() {
   x.fillStyle = '#0f1a2d';
   x.fillRect(28, 28, W - 56, H - 56);
 
-  // title
+  // header: 以前のシンプルなレイアウトに戻す
   x.fillStyle = '#f8fafc';
   x.font = '900 42px sans-serif';
   x.fillText(`GITADORA ${activeInstrument} SKILL`, 54, 82);
@@ -600,46 +609,27 @@ function shareSkillImage() {
   x.font = '700 20px sans-serif';
   x.fillText(activeVersion?.name || '', 54, 116);
 
-  const chipW = 86, chipH = 38;
-  x.fillStyle = activeInstrument === 'GF' ? '#e8336a' : '#3caa2a';
-  x.beginPath(); x.roundRect(W - 54 - chipW, 48, chipW, chipH, 8); x.fill();
-  x.fillStyle='#fff'; x.font='900 22px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-  x.fillText(activeInstrument, W - 54 - chipW / 2, 48 + chipH / 2);
-  x.textAlign='left'; x.textBaseline='alphabetic';
+  // TOTALを大きく表示
+  x.fillStyle = totalPaint(target.total,54,142,420,74);
+  x.font = '900 68px sans-serif';
+  x.fillText(Number(target.total).toFixed(2),54,205);
 
-  // summary
-  const sx=54, sy=142, sw=W-108, sh=142;
-  x.fillStyle='#0b1424'; x.fillRect(sx,sy,sw,sh);
-  x.strokeStyle='#334155'; x.lineWidth=2; x.strokeRect(sx,sy,sw,sh);
-
-  const cellW=sw/3;
-  const labels=['TOTAL','HOT','OTHER'];
-  const vals=[target.total,target.hot,target.other];
-
-  labels.forEach((label,i)=>{
-    if(i>0){
-      x.beginPath(); x.moveTo(sx+i*cellW,sy); x.lineTo(sx+i*cellW,sy+sh); x.stroke();
-    }
-    x.fillStyle='#94a3b8'; x.font='800 18px sans-serif'; x.textAlign='center';
-    x.fillText(label,sx+i*cellW+cellW/2,sy+34);
-    x.fillStyle=totalPaint(target.total,sx+i*cellW+36,sy+46,cellW-72,52);
-    x.font='900 36px sans-serif';
-    x.fillText(Number(vals[i]).toFixed(2),sx+i*cellW+cellW/2,sy+86);
-  });
-  x.textAlign='left';
+  x.fillStyle = '#94a3b8';
+  x.font = '800 23px sans-serif';
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,246);
 
   const gap = 24;
   const colW = (W - 108 - gap) / 2;
   const leftHot = 54;
   const leftOther = 54 + colW + gap;
-  const tableTop = 320;
+  const tableTop = 284;
 
   const drawTable = (sectionTitle, rows, left, accent) => {
     const tableW = colW;
     const titleH = 40;
     const headerH = 48;
     const rowH = 58;
-    const cols = [44, 300, 98, 132, 78]; // No / 譜面 / Skill / 達成率 / Lv
+    const cols = [44, 326, 104, 106, 78]; // No / 譜面 / Skill / 達成率 / Lv
     const scale = tableW / cols.reduce((a,b)=>a+b,0);
     const widths = cols.map(v => v*scale);
     const pos=[left];
