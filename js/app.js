@@ -1047,90 +1047,36 @@ function createCard(record, index, mode = 'MANAGE') {
   const boxColor = `skill-box-${songRank}`;
   const rowColor = `skill-row-${songRank}`;
 
-  if (mode === 'SKILL') {
+  const titleMarkup = `${pendingTag}${hotTag}<span class="dc-song-title">${esc(record.title)}</span>`;
+  const partMarkup = `<span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span>`;
 
+  if (mode === 'SKILL') {
     return `
-      <div class="sk-row ${rowColor}">
-        <div class="sk-badge-column">
-          <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
-          <div class="fc-zone">${fcBadge}</div>
-        </div>
-        <div class="sk-text-column">
-          <div class="sk-title smart-song-title" data-full-title="${esc(record.title)}">${pendingTag}${hotTag} <span class="song-title-text">${esc(record.title)}</span></div>
-          <div class="sk-meta">
-            <span class="sk-meta-lv">Lv: <strong>${formatLevel(record.level)}</strong></span>
-            <span class="sk-meta-rate">達成率: <strong>${formatRate(record.achievement_rate)}%</strong></span>
-            <span class="opt-slot">${optionBadge}</span>
-          </div>
-        </div>
-        <div class="sk-val-box ${boxColor}">${formatSkill(skill)}</div>
+      <div class="sk-row dc-card dc-card-skill ${rowColor}">
+        <div class="dc-part">${partMarkup}</div>
+        <div class="dc-title smart-song-title" data-full-title="${esc(record.title)}">${titleMarkup}</div>
+        <div class="dc-skill dc-skill-span ${boxColor}">${formatSkill(skill)}</div>
+
+        <div class="dc-fc">${fcBadge}</div>
+        <div class="dc-lv">Lv <strong>${formatLevel(record.level)}</strong></div>
+        <div class="dc-rate">達成率 <strong>${formatRate(record.achievement_rate)}%</strong></div>
+        <div class="dc-option">${optionBadge}</div>
       </div>`;
   }
 
   return `
-    <div class="m-card" ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
-<div class="m-main-area">
-        <div class="m-upper-row">
-          <div class="part-zone"><span class="p-badge ${getPartColorClass(record.part)}">${esc(record.part)}</span></div>
-          <div class="m-title-text smart-song-title" data-full-title="${esc(record.title)}">${pendingTag}${hotTag} <span class="song-title-text">${esc(record.title)}</span></div>
-          <div class="m-card-val-box ${boxColor}">${formatSkill(skill)}</div>
-        </div>
-        <div class="m-lower-row">
-          <div class="fc-zone">${fcBadge}</div>
-          <div class="m-flow-container">
-            <span class="m-txt-lv">Lv <strong>${formatLevel(record.level)}</strong></span>
-            <span class="m-txt-rate">達成率 <strong>${formatRate(record.achievement_rate)}%</strong></span>
-            <span class="opt-slot">${optionBadge}</span>
-          </div>
-          <div class="m-btn-group">
-            <button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button>
-          </div>
-        </div>
-      </div>
+    <div class="m-card dc-card dc-card-manage ${rowColor}"
+      ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
+      <div class="dc-part">${partMarkup}</div>
+      <div class="dc-title smart-song-title" data-full-title="${esc(record.title)}">${titleMarkup}</div>
+      <div class="dc-skill ${boxColor}">${formatSkill(skill)}</div>
+
+      <div class="dc-fc">${fcBadge}</div>
+      <div class="dc-lv">Lv <strong>${formatLevel(record.level)}</strong></div>
+      <div class="dc-rate">達成率 <strong>${formatRate(record.achievement_rate)}%</strong></div>
+      <div class="dc-option">${optionBadge}</div>
+      <div class="dc-edit"><button class="m-action-btn btn-e" data-edit="${record.score_id}">編集</button></div>
     </div>`;
-}
-
-
-function applySmartSongTitleEllipsis(root = document) {
-  const items = root.querySelectorAll('.smart-song-title');
-
-  items.forEach(el => {
-    const textEl = el.querySelector('.song-title-text');
-    const full = el.dataset.fullTitle || '';
-    if (!textEl || !full) return;
-
-    // First render full title. If it fits within 2 lines, do not append an ellipsis.
-    textEl.textContent = full;
-    el.classList.remove('is-truncated');
-
-    // scrollHeight comparison after layout tells us whether content is actually clipped.
-    if (el.scrollHeight <= el.clientHeight + 1) return;
-
-    // Only actually-overflowing titles receive "…".
-    let low = 0;
-    let high = full.length;
-    let best = '';
-
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const candidate = full.slice(0, mid).trimEnd() + '…';
-      textEl.textContent = candidate;
-
-      if (el.scrollHeight <= el.clientHeight + 1) {
-        best = candidate;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-
-    textEl.textContent = best || '…';
-    el.classList.add('is-truncated');
-  });
-}
-
-function scheduleSmartSongTitleEllipsis(root = document) {
-  requestAnimationFrame(() => applySmartSongTitleEllipsis(root));
 }
 
 function renderSkill() {
