@@ -171,10 +171,31 @@ export async function saveScore({
     return;
   }
 
-  // 申請中の曲は「ユーザー + 申請ID」で一意
+  // 申請中の曲:
+  // DBに (user_id, song_request_id) のUNIQUE制約が無い環境でも保存できるよう、
+  // upsert(onConflict) は使わず、既存確認 → update / insert を明示的に行う。
+  const { data: existingRequestScore, error: existingRequestError } = await supabase
+    .from('user_scores')
+    .select('id')
+    .eq('user_id', userData.user.id)
+    .eq('song_request_id', requestId)
+    .maybeSingle();
+
+  if (existingRequestError) throw existingRequestError;
+
+  if (existingRequestScore?.id) {
+    const { error } = await supabase
+      .from('user_scores')
+      .update(payload)
+      .eq('id', existingRequestScore.id);
+
+    if (error) throw error;
+    return;
+  }
+
   const { error } = await supabase
     .from('user_scores')
-    .upsert(row, { onConflict: 'user_id,song_request_id' });
+    .insert(row);
 
   if (error) throw error;
 }
