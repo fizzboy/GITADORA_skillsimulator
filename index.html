@@ -3368,6 +3368,42 @@ html.ios-viewport-repair {
   transform: translateY(-1px);
 }
 
+
+/* FIX71: HOTバッジの見切れ・Safari文字上寄りを解消 */
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  height: 18px !important;
+  min-height: 18px !important;
+  padding: 0 5px !important;
+  box-sizing: border-box !important;
+
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  overflow: visible !important;
+}
+
+/* Safariで文字のフォントメトリクスが上寄りに見える分を、文字だけ視覚補正 */
+.sk-row .hot-tag {
+  padding-top: 1px !important;
+}
+#viewAllManage .m-card .hot-tag {
+  padding-top: 1px !important;
+}
+
+/* HOTを含むタイトル行自体は中央揃えのまま、クリッピングさせない */
+.sk-row .sk-title,
+#viewAllManage .m-card .m-title-text {
+  overflow: visible !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
