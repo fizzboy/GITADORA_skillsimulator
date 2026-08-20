@@ -188,11 +188,11 @@
     .sk-val-box { font-size: 14px; font-weight: 900; color: #000000 !important; background: #ffffff; padding: 4px 0; border-radius: 3px; width: 65px; min-width: 65px; text-align: center; flex-shrink: 0; }
     
     .row-gold { background: linear-gradient(90deg, #2a1f00 0%, #111827 100%) !important; border: 1px solid #fbbf24 !important; }
-    .row-gold .sk-val-box { background: linear-gradient(135deg, #ffe066 0%, #f59e0b 100%) !important; }
+    
     .row-rainbow { background: linear-gradient(90deg, #1e112c 0%, #111827 100%) !important; border: 1px solid #c084fc !important; }
-    .row-rainbow .sk-val-box { background: linear-gradient(135deg, #a7f3d0 0%, #7dd3fc 33%, #fbcfe8 66%, #fef08a 100%) !important; }
+    
     .row-deep-rainbow { background: linear-gradient(90deg, #2e1035 0%, #111827 100%) !important; border: 1px solid #ec4899 !important; }
-    .row-deep-rainbow .sk-val-box { background: linear-gradient(135deg, #34d399 0%, #3b82f6 33%, #a855f7 66%, #ec4899 100%) !important; color: #ffffff !important; }
+    
 
     /* --- HOT/OTHER/ALL管理タブ用のデザイン --- */
     .m-card { background: #ffffff; color: #111827; border-radius: 4px; padding: 4px 6px; display: flex; align-items: center; gap: 6px; height: 72px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
@@ -504,108 +504,35 @@ body { background:#0b1220; }
 
 
 /* === v14.6 曲別Skillカラー === */
-.skill-box-white {
-  background:#ffffff !important;
-  color:#111827 !important;
-}
 
-.skill-box-orange {
-  background:#ff7a22 !important;
-  color:#ffffff !important;
-}
-.skill-box-orange-grad {
-  background:linear-gradient(135deg,#fff2e8 0%,#ff9b43 45%,#ff5a00 100%) !important;
-  color:#111827 !important;
-}
 
-.skill-box-yellow {
-  background:#ffe600 !important;
-  color:#111827 !important;
-}
-.skill-box-yellow-grad {
-  background:linear-gradient(135deg,#fffbd1 0%,#ffe94d 45%,#f5c400 100%) !important;
-  color:#111827 !important;
-}
 
-.skill-box-green {
-  background:#22d13b !important;
-  color:#071b0d !important;
-}
-.skill-box-green-grad {
-  background:linear-gradient(135deg,#d9ffe1 0%,#44e45b 45%,#0c9f2b 100%) !important;
-  color:#071b0d !important;
-}
 
-.skill-box-blue {
-  background:#2f91ff !important;
-  color:#ffffff !important;
-}
-.skill-box-blue-grad {
-  background:linear-gradient(135deg,#e2f3ff 0%,#53adff 45%,#0966d9 100%) !important;
-  color:#07111f !important;
-}
 
-.skill-box-purple {
-  background:#e02cff !important;
-  color:#ffffff !important;
-}
-.skill-box-purple-grad {
-  background:linear-gradient(135deg,#f9dcff 0%,#ea5cff 45%,#a400d2 100%) !important;
-  color:#ffffff !important;
-}
 
-.skill-box-red {
-  background:#ff1638 !important;
-  color:#ffffff !important;
-}
-.skill-box-red-grad {
-  background:linear-gradient(135deg,#ffd9df 0%,#ff4d68 45%,#c70023 100%) !important;
-  color:#ffffff !important;
-}
 
-.skill-box-bronze {
-  background:linear-gradient(135deg,#ffd0ad 0%,#c77b45 48%,#7d3f20 100%) !important;
-  color:#ffffff !important;
-}
 
-.skill-box-silver {
-  background:linear-gradient(135deg,#ffffff 0%,#d8dde3 45%,#8e99a5 100%) !important;
-  color:#111827 !important;
-}
 
-.skill-box-gold {
-  background:linear-gradient(135deg,#fff7b2 0%,#ffd83d 45%,#d89a00 100%) !important;
-  color:#111827 !important;
-}
 
-.skill-box-rainbow {
-  background:linear-gradient(
-    135deg,
-    #75f2dc 0%,
-    #44c8ff 20%,
-    #627cff 38%,
-    #b55cff 58%,
-    #f04acb 78%,
-    #ffd75a 100%
-  ) !important;
-  color:#ffffff !important;
-  text-shadow:0 1px 1px rgba(0,0,0,.35);
-}
 
-.skill-box-deep-rainbow {
-  background:linear-gradient(
-    135deg,
-    #00e7ff 0%,
-    #0077ff 18%,
-    #683cff 36%,
-    #d62cff 54%,
-    #ff2d8d 72%,
-    #ff6b24 88%,
-    #ffe600 100%
-  ) !important;
-  color:#ffffff !important;
-  text-shadow:0 1px 2px rgba(0,0,0,.55);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* 行側もSkill帯に合わせて薄く配色 */
 .skill-row-white { border-color:#374151 !important; }
@@ -1124,9 +1051,7 @@ body { background:#0b1220; }
 .sk-val-box.skill-box-silver,
 .sk-val-box.skill-box-gold,
 .sk-val-box.skill-box-rainbow,
-.sk-val-box.skill-box-deep-rainbow {
-  border: 0 !important;
-}
+.sk-val-box
 
 @media (max-width: 520px) {
   .user-list-row {
@@ -3100,6 +3025,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_29"></script>
+<script type="module" src="./js/app.js?v=21_30"></script>
 </body>
 </html>
