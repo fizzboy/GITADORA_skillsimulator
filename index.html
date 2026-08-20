@@ -3684,6 +3684,93 @@ html.ios-viewport-repair {
   }
 }
 
+
+/* FIX87: スキル対象 / 登録曲 / ユーザー詳細の上段バッジ寸法を完全共通化
+   HOTをPARTに合わせるのではなく、PART/HOT双方を同じ外寸へ固定する */
+#viewSkill .sk-row .p-badge,
+#viewSkill .sk-row .hot-tag,
+#userDetailSkill .sk-row .p-badge,
+#userDetailSkill .sk-row .hot-tag,
+#viewAllManage .m-card .p-badge,
+#viewAllManage .m-card .hot-tag {
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+#viewSkill .sk-row .p-badge,
+#userDetailSkill .sk-row .p-badge,
+#viewAllManage .m-card .p-badge {
+  padding: 0 !important;
+}
+
+#viewSkill .sk-row .hot-tag,
+#userDetailSkill .sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  padding: 0 7px !important;
+  border-width: 1px !important;
+  border-radius: 4px !important;
+}
+
+/* Safariはバッジ自体を動かさず、HOT文字だけを視覚補正 */
+@supports (-webkit-touch-callout: none) {
+  #viewSkill .sk-row .hot-tag,
+  #userDetailSkill .sk-row .hot-tag,
+  #viewAllManage .m-card .hot-tag {
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* スキル対象とユーザー詳細:
+   2行曲名とLv/達成率が接触しないよう、カード内部に明確な行間を確保 */
+#viewSkill .sk-row,
+#userDetailSkill .sk-row {
+  height: 66px !important;
+}
+
+#viewSkill .sk-row .sk-badge-column,
+#userDetailSkill .sk-row .sk-badge-column,
+#viewSkill .sk-row .sk-text-column,
+#userDetailSkill .sk-row .sk-text-column {
+  height: 50px !important;
+}
+
+#viewSkill .sk-row .sk-text-column,
+#userDetailSkill .sk-row .sk-text-column {
+  justify-content: flex-start !important;
+}
+
+#viewSkill .sk-row .sk-title,
+#userDetailSkill .sk-row .sk-title {
+  margin-top: 0 !important;
+  margin-bottom: 3px !important;
+  line-height: 1.2 !important;
+  max-height: 2.4em !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+#viewSkill .sk-row .sk-meta,
+#userDetailSkill .sk-row .sk-meta {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  height: 14px !important;
+  min-height: 14px !important;
+  line-height: 1 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4116,6 +4203,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_86"></script>
+<script type="module" src="./js/app.js?v=21_87"></script>
 </body>
 </html>
