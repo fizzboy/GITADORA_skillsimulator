@@ -3360,11 +3360,12 @@ html.ios-viewport-repair {
 }
 
 
-/* FIX69: HOTバッジの縦位置を1px上へ補正 */
+/* FIX70: HOTバッジを見切れさせず、曲名と上下中央を揃える */
 .sk-row .hot-tag,
 #viewAllManage .m-card .hot-tag {
   position: relative !important;
-  top: -1px !important;
+  top: 0 !important;
+  transform: translateY(-1px);
 }
 
 </style>
