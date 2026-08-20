@@ -163,7 +163,7 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
 }
 import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_62';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_57';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_83';
 import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_57';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_57';
 import { getGameVersions } from './versions.js?v=21_57';
@@ -468,15 +468,9 @@ async function showAuth(mode = 'login') {
   $('authPasswordConfirm').required = !isLogin;
   $('authPasswordConfirm').value = '';
 
-  // Turnstileトークンは1回限り。
-  // ログアウト→再ログイン時に「成功しました」と表示された古い使用済みトークンを
-  // 再利用しないよう、認証画面を開くたび必ずresetして新しいトークンを取得する。
-  try {
-    await resetAuthCaptcha();
-  } catch (error) {
-    console.warn('Turnstile reset:', error);
-  }
-
+  // 認証画面を開くたびにTurnstileを1回だけ準備する。
+  // prepareAuthCaptcha() 側が、既に描画済みなら reset を1回だけ実行する。
+  // reset→prepare の二重resetはトークン競合の原因になるため行わない。
   try {
     await prepareAuthCaptcha();
   } catch (error) {
@@ -2128,8 +2122,14 @@ $('authForm').addEventListener('submit', async e => {
         '新規登録できません'
       );
     } else if (lower.includes('captcha') || message.includes('セキュリティ確認')) {
+      const authCode = e?.code ? `\nエラーコード: ${e.code}` : '';
+      console.error('CAPTCHA認証エラー詳細:', {
+        code: e?.code,
+        message: e?.message,
+        status: e?.status
+      });
       await showSiteDialog(
-        'セキュリティ確認に失敗しました。ページを再読み込みするか、しばらくして再度お試しください。',
+        `セキュリティ確認に失敗しました。${authCode}\nCloudflareで成功表示でもこのエラーが続く場合は、Supabase側のCAPTCHA Secret Key設定を確認してください。`,
         'セキュリティ確認エラー'
       );
     } else {
