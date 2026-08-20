@@ -3413,6 +3413,21 @@ html.ios-viewport-repair {
   margin-bottom: 1px !important;
 }
 
+
+/* FIX76: 登録曲の曲名もスキル対象と同じく最大2行表示 */
+#viewAllManage .m-card .m-title-text {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  max-height: 2.4em !important;
+  word-break: break-word !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
