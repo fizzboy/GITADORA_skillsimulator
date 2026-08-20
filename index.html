@@ -3457,6 +3457,79 @@ html.ios-viewport-repair {
   }
 }
 
+
+/* FIX80: HOTの箱をPARTバッジと同じ高さに統一。ブラウザ別の位置移動は無効化 */
+.sk-row .p-badge,
+.sk-row .hot-tag,
+#viewAllManage .m-card .p-badge,
+#viewAllManage .m-card .hot-tag {
+  height: 20px !important;
+  min-height: 20px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  line-height: 1 !important;
+}
+
+.sk-row .p-badge,
+#viewAllManage .m-card .p-badge {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  padding: 0 5px !important;
+}
+
+/* Safariは文字の見え方だけ1px下げる。HOTの箱自体は動かさない */
+@supports (-webkit-touch-callout: none) {
+  .sk-row .hot-tag,
+  #viewAllManage .m-card .hot-tag {
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* 登録曲は1行固定にせず、必要な曲だけカード上段を広げて最大2行表示 */
+#viewAllManage .m-card {
+  height: auto !important;
+  min-height: 72px !important;
+}
+
+#viewAllManage .m-main-area {
+  height: auto !important;
+  min-height: 64px !important;
+}
+
+#viewAllManage .m-upper-row {
+  height: auto !important;
+  min-height: 34px !important;
+  align-items: center !important;
+}
+
+#viewAllManage .m-title-text {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  line-height: 1.2 !important;
+  max-height: 2.4em !important;
+  word-break: break-word !important;
+  position: static !important;
+  top: auto !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
