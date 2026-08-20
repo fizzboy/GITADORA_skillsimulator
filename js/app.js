@@ -165,7 +165,7 @@ import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
 import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
 import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_98';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_93';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_100';
 import { getGameVersions } from './versions.js?v=21_57';
 const {
   isAdmin,
@@ -431,6 +431,7 @@ let adminUsers = [];
 let adminSongPage = 0;
 const ADMIN_SONG_PAGE_SIZE = 100;
 let adminRequests = [];
+let adminFeedback = [];
 let adminEditingSongId = null;
 let publicUsers = [];
 let favoriteUsers = { GF: [], DM: [] };
@@ -657,6 +658,62 @@ function closeRivalManage() {
   $('rivalManageMask').style.display = 'none';
 }
 function closeMenu() { $('menuMask').style.display = 'none'; }
+
+function openFeedback() {
+  closeMenu();
+  $('feedbackCategory').value = 'request';
+  $('feedbackMessage').value = '';
+  $('feedbackStatus').textContent = '';
+  $('feedbackMask').style.display = 'flex';
+}
+function closeFeedback() {
+  $('feedbackMask').style.display = 'none';
+}
+
+async function submitFeedback() {
+  const category = $('feedbackCategory').value;
+  const message = $('feedbackMessage').value.trim();
+  if (!message) {
+    await showSiteDialog('内容を入力してください。', '入力エラー');
+    return;
+  }
+  if (message.length > 2000) {
+    await showSiteDialog('内容は2000文字以内で入力してください。', '入力エラー');
+    return;
+  }
+
+  const button = $('btnSubmitFeedback');
+  const original = button.textContent;
+  try {
+    button.disabled = true;
+    button.textContent = '送信中';
+    $('feedbackStatus').textContent = '';
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
+
+    const { error } = await supabase
+      .from('user_feedback')
+      .insert({
+        user_id: userData.user.id,
+        category,
+        message
+      });
+
+    if (error) throw error;
+
+    closeFeedback();
+    await showSiteDialog('送信しました。ありがとうございます。', '送信完了');
+  } catch (e) {
+    console.error('要望・不具合報告送信エラー:', e);
+    $('feedbackStatus').textContent = '送信に失敗しました。';
+    await showSiteDialog(e?.message || '送信に失敗しました。', 'エラー');
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
 function openHowTo() { closeMenu(); $('howToMask').style.display = 'flex'; }
 function closeHowTo() { $('howToMask').style.display = 'none'; }
 
@@ -1799,7 +1856,8 @@ async function switchAdminTab(tab) {
 
   if (tab === 'songs') await loadAdminSongs();
   else if (tab === 'requests') await loadAdminRequests();
-  else await loadAdminUsers();
+  else if (tab === 'users') await loadAdminUsers();
+  else if (tab === 'feedback') await loadAdminFeedback();
 }
 
 async function loadAdminSongs() {
@@ -1966,6 +2024,80 @@ async function loadAdminUsers() {
   } catch (e) {
     $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
   }
+}
+
+
+async function loadAdminFeedback() {
+  $('adminBody').classList.remove('admin-body-table');
+  $('adminBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
+
+  try {
+    const { data, error } = await supabase
+      .from('user_feedback')
+      .select('id,user_id,category,message,status,created_at,resolved_at')
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+    adminFeedback = data ?? [];
+
+    const userIds = [...new Set(adminFeedback.map(row => row.user_id).filter(Boolean))];
+    const usernameMap = new Map();
+
+    if (userIds.length) {
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id,username')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+      (profiles ?? []).forEach(profile => usernameMap.set(profile.id, profile.username));
+    }
+
+    $('adminBody').innerHTML = adminFeedback.map(item => {
+      const isDone = item.status === 'resolved';
+      const categoryLabel = item.category === 'bug' ? '不具合' : '要望';
+      return `
+        <div class="admin-card feedback-admin-card ${isDone ? 'resolved' : ''}">
+          <div class="admin-card-top">
+            <div class="admin-card-title">
+              <span class="feedback-category ${item.category === 'bug' ? 'bug' : 'request'}">${categoryLabel}</span>
+              ${esc(usernameMap.get(item.user_id) || 'ユーザー')}
+            </div>
+            <div class="admin-actions">
+              <button
+                class="${isDone ? 'admin-reset' : 'admin-edit'}"
+                data-admin-feedback-status="${item.id}"
+                data-feedback-next-status="${isDone ? 'new' : 'resolved'}">
+                ${isDone ? '未対応に戻す' : '対応済み'}
+              </button>
+            </div>
+          </div>
+          <div class="feedback-admin-message">${esc(item.message).replace(/\\n/g, '<br>')}</div>
+          <div class="admin-card-meta">
+            <span>${new Date(item.created_at).toLocaleString('ja-JP')}</span>
+            <span>${isDone ? '対応済み' : '未対応'}</span>
+          </div>
+        </div>`;
+    }).join('') || '<div class="empty-state">要望・不具合報告はありません</div>';
+  } catch (e) {
+    $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
+  }
+}
+
+async function updateAdminFeedbackStatus(id, status) {
+  const payload = {
+    status,
+    resolved_at: status === 'resolved' ? new Date().toISOString() : null
+  };
+
+  const { error } = await supabase
+    .from('user_feedback')
+    .update(payload)
+    .eq('id', id);
+
+  if (error) throw error;
+  await loadAdminFeedback();
 }
 
 function openAdminSongForm(song = null) {
@@ -2337,6 +2469,13 @@ $('btnChangePassword').addEventListener('click', async () => {
   }
 });
 
+$('btnMenuFeedback').addEventListener('click', openFeedback);
+$('btnCloseFeedback').addEventListener('click', closeFeedback);
+$('feedbackMask').addEventListener('click', e => {
+  if (e.target === $('feedbackMask')) closeFeedback();
+});
+$('btnSubmitFeedback').addEventListener('click', submitFeedback);
+
 $('btnAdmin').addEventListener('click', openAdmin);
 $('btnCloseAdmin').addEventListener('click', closeAdmin);
 
@@ -2432,6 +2571,21 @@ $('rateCompareMask').addEventListener('click', e => {
 });
 
 document.addEventListener('click', async e => {
+  const adminFeedbackStatus = e.target.closest('[data-admin-feedback-status]');
+  if (adminFeedbackStatus) {
+    try {
+      adminFeedbackStatus.disabled = true;
+      await updateAdminFeedbackStatus(
+        adminFeedbackStatus.dataset.adminFeedbackStatus,
+        adminFeedbackStatus.dataset.feedbackNextStatus
+      );
+    } catch (error) {
+      await showSiteDialog(error?.message || '更新に失敗しました。', 'エラー');
+      adminFeedbackStatus.disabled = false;
+    }
+    return;
+  }
+
   const suggestion = e.target.closest('.suggestion');
   const instrumentButton = e.target.closest('[data-instrument]');
   const edit = e.target.closest('[data-edit]');
