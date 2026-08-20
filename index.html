@@ -3771,6 +3771,111 @@ html.ios-viewport-repair {
   line-height: 1 !important;
 }
 
+
+/* FIX88: スキル対象 / 登録曲 / ユーザー詳細の曲名レイアウトを共通化
+   1行でも2行でもタイトル領域の上下中央に配置し、下段との余白も一定にする */
+
+/* --- スキル対象 / ユーザー詳細 --- */
+#viewSkill .sk-row .sk-text-column,
+#userDetailSkill .sk-row .sk-text-column {
+  display: grid !important;
+  grid-template-rows: 32px 14px !important;
+  row-gap: 4px !important;
+  align-content: center !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  justify-content: stretch !important;
+}
+
+#viewSkill .sk-row .sk-title,
+#userDetailSkill .sk-row .sk-title {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+
+  align-self: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: break-word !important;
+
+  line-height: 1.2 !important;
+  max-height: 2.4em !important;
+}
+
+#viewSkill .sk-row .sk-meta,
+#userDetailSkill .sk-row .sk-meta {
+  align-self: center !important;
+  margin: 0 !important;
+  height: 14px !important;
+  min-height: 14px !important;
+  line-height: 14px !important;
+}
+
+/* --- 登録曲 --- */
+/* 上段をタイトル用32px、下段を14px相当の情報行として扱い、
+   1行/2行どちらでもスキル対象と同じ見え方にする */
+#viewAllManage .m-card .m-main-area {
+  display: grid !important;
+  grid-template-rows: 32px 24px !important;
+  row-gap: 4px !important;
+  align-content: center !important;
+  height: auto !important;
+  min-height: 64px !important;
+}
+
+#viewAllManage .m-card .m-upper-row {
+  height: 32px !important;
+  min-height: 32px !important;
+  align-items: center !important;
+}
+
+#viewAllManage .m-card .m-title-text {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+
+  align-self: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-break: break-word !important;
+
+  line-height: 1.2 !important;
+  max-height: 2.4em !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+#viewAllManage .m-card .m-lower-row {
+  height: 24px !important;
+  min-height: 24px !important;
+  align-items: center !important;
+}
+
+#viewAllManage .m-card .m-flow-container {
+  align-items: center !important;
+}
+
+/* 1行タイトル時も2行時も、PART/HOT/曲名の上段は同じ中央基準 */
+#viewSkill .sk-row .p-badge,
+#viewSkill .sk-row .hot-tag,
+#userDetailSkill .sk-row .p-badge,
+#userDetailSkill .sk-row .hot-tag,
+#viewAllManage .m-card .p-badge,
+#viewAllManage .m-card .hot-tag {
+  align-self: center !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4203,6 +4308,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_87"></script>
+<script type="module" src="./js/app.js?v=21_88"></script>
 </body>
 </html>
