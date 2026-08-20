@@ -4508,6 +4508,20 @@ html.ios-viewport-repair {
   }
 }
 
+
+.site-dialog-input{
+  width:100%;
+  box-sizing:border-box;
+  margin-top:10px;
+  min-height:42px;
+  padding:8px 10px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#0f172a;
+  color:#f8fafc;
+  font:inherit;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4958,6 +4972,7 @@ html.ios-viewport-repair {
   <div class="site-dialog">
     <div id="siteDialogTitle" class="site-dialog-head">お知らせ</div>
     <div id="siteDialogMessage" class="site-dialog-message"></div>
+    <input id="siteDialogInput" class="site-dialog-input hidden" type="text" autocomplete="off">
     <div class="site-dialog-actions">
       <button id="siteDialogCancel" class="site-dialog-cancel hidden" type="button">キャンセル</button>
       <button id="siteDialogOk" class="site-dialog-ok" type="button">OK</button>
@@ -4965,6 +4980,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_110"></script>
+<script type="module" src="./js/app.js?v=21_111"></script>
 </body>
 </html>
