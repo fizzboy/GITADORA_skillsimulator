@@ -2926,6 +2926,50 @@ html.ios-viewport-repair {
   color:#64748b;
 }
 
+/* === v21 FIX43: 登録一覧をスキル対象カードと同系統に統一 === */
+#viewAllManage .m-card {
+  border: 1px solid #475569 !important;
+  border-radius: 8px !important;
+  background: #111827 !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+#viewAllManage .m-main-area {
+  padding: 0 !important;
+}
+#viewAllManage .m-upper-row {
+  min-height: 34px !important;
+  height: auto !important;
+  padding: 5px 6px 3px !important;
+  gap: 6px !important;
+}
+#viewAllManage .m-lower-row {
+  min-height: 28px !important;
+  height: auto !important;
+  padding: 2px 6px 5px !important;
+  border-top: 0 !important;
+  gap: 6px !important;
+}
+#viewAllManage .m-title-text {
+  color: #f8fafc !important;
+}
+#viewAllManage .m-card-val-box {
+  flex-shrink: 0;
+}
+#viewAllManage .m-flow-container {
+  color: #94a3b8 !important;
+}
+#viewAllManage .m-txt-lv strong,
+#viewAllManage .m-txt-rate strong {
+  color: #f8fafc !important;
+}
+#viewAllManage .m-btn-group {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -3354,6 +3398,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_42"></script>
+<script type="module" src="./js/app.js?v=21_44"></script>
 </body>
 </html>
