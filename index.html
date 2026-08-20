@@ -2656,11 +2656,44 @@ html.ios-viewport-repair {
   color: #ffcf5a;
 }
 
+/* === v21 FIX22: 導入 / MENU / SHARE === */
+.intro-screen{min-height:100dvh;background:radial-gradient(circle at 50% 0,#172554 0,#0b1220 42%,#060b14 100%);color:#f8fafc;padding:42px 20px 24px;box-sizing:border-box}
+.intro-hero{max-width:520px;margin:0 auto;text-align:center}.intro-logo{font-size:12px;letter-spacing:.35em;font-weight:900;color:#93c5fd}.intro-hero h1{font-size:34px;margin:6px 0 10px}.intro-hero p{font-size:13px;line-height:1.7;color:#cbd5e1;margin:0 auto 24px;max-width:360px}
+.intro-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.intro-actions button{min-height:48px;border-radius:10px;font-size:14px;font-weight:900}.intro-primary{border:0;background:#2563eb;color:#fff}.intro-secondary{border:1px solid #475569;background:#111827;color:#fff}
+.intro-features{max-width:520px;margin:28px auto 0;display:grid;gap:9px}.intro-features div{display:grid;grid-template-columns:64px 1fr;align-items:center;padding:13px;border:1px solid #1e293b;border-radius:10px;background:rgba(15,23,42,.78)}.intro-features strong{font-size:11px;color:#60a5fa}.intro-features span{font-size:12px;color:#e2e8f0}.intro-note{text-align:center;font-size:9px;color:#64748b;margin-top:24px}
+.menu-entry{border:1px solid #334155;background:#1e293b;color:#fff;border-radius:7px;min-width:38px;height:34px;font-size:20px;font-weight:900}
+.app-menu-sheet{width:min(88vw,380px);background:#0f172a;color:#fff;border:1px solid #334155;border-radius:14px;padding:14px;position:absolute;top:58px;right:10px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.app-menu-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.app-menu-head button{width:34px;height:34px;border:0;border-radius:8px;background:#1e293b;color:#fff;font-size:20px}
+.app-menu-item{width:100%;display:flex;justify-content:space-between;padding:14px 12px;margin:7px 0;border:1px solid #334155;border-radius:9px;background:#111827;color:#fff;font-weight:800;text-align:left}
+.app-menu-version{margin-top:12px;padding-top:12px;border-top:1px solid #334155}.app-menu-version label{display:block;font-size:9px;color:#94a3b8;font-weight:900;margin-bottom:5px}.app-menu-version select{width:100%;min-height:40px}
+.howto-dialog{width:min(92vw,520px);max-height:84dvh;overflow:auto;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:14px;padding:16px}.howto-body section{padding:12px 0;border-bottom:1px solid #1e293b}.howto-body b{font-size:13px}.howto-body p{font-size:11px;line-height:1.65;color:#cbd5e1;margin:5px 0 0}
+.skill-share-bar{padding:5px 6px 0;background:#0b1220}.skill-share-bar button{width:100%;min-height:34px;border:1px solid #334155;border-radius:6px;background:#172033;color:#dbeafe;font-size:10px;font-weight:900}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
 </head>
 <body>
+
+
+<div id="introScreen" class="intro-screen hidden">
+  <div class="intro-hero">
+    <div class="intro-logo">GITADORA</div>
+    <h1>Skill Simulator</h1>
+    <p>GF / DMのスキルを登録・管理・比較できる非公式スキルシミュレーター</p>
+    <div class="intro-actions">
+      <button id="btnIntroRegister" type="button" class="intro-primary">新規登録</button>
+      <button id="btnIntroLogin" type="button" class="intro-secondary">ログイン</button>
+    </div>
+  </div>
+  <div class="intro-features">
+    <div><strong>SKILL</strong><span>HOT / OTHERのスキル対象を自動集計</span></div>
+    <div><strong>SYNC</strong><span>e-amusementのスキル対象をまとめて同期</span></div>
+    <div><strong>RIVAL</strong><span>ライバル登録・Rate比較・ユーザー検索</span></div>
+    <div><strong>SHARE</strong><span>スキル対象を画像にしてSNSへ共有</span></div>
+  </div>
+  <div class="intro-note">GITADORA公式サービスではありません。</div>
+</div>
 
 <div id="authScreen" class="auth-screen hidden">
   <div class="auth-card">
@@ -2688,15 +2721,12 @@ html.ios-viewport-repair {
   <div class="p-header">
     <div class="user-header-row">
       <div class="header-mode-controls">
-        <div class="header-version-control">
-          <span class="version-bar-label">VERSION</span>
-          <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-        </div>
         <div class="instrument-switch" aria-label="ゲーム切替"><button class="instrument-btn active" data-instrument="GF">GF</button><button class="instrument-btn" data-instrument="DM">DM</button></div>
       </div>
       <div class="header-account-controls">
         <button id="btnAdmin" class="admin-entry hidden">管理</button>
         <span id="headerUsername" class="header-user"></span>
+        <button id="btnMenu" type="button" class="menu-entry" aria-label="メニュー">☰</button>
       </div>
     </div>
     <div class="score-row">
@@ -2704,6 +2734,7 @@ html.ios-viewport-repair {
       <div class="score-cell border-r"><span class="score-lbl">HOT</span><span id="txtHotTotal" class="score-val">0.00</span></div>
       <div class="score-cell"><span class="score-lbl">OTHER</span><span id="txtOtherTotal" class="score-val">0.00</span></div>
     </div>
+    <div class="skill-share-bar"><button id="btnShareSkill" type="button">スキル対象を画像で共有</button></div>
     <div class="p-tabs">
       <div class="p-tab-btn active" data-tab="SKILL">スキル対象</div>
       <div class="p-tab-btn" data-tab="RECORDS">登録</div>
@@ -2828,6 +2859,33 @@ html.ios-viewport-repair {
     <div class="btn-block">
       <button id="btnCancelForm" class="btn-cancel">戻る</button>
       <button id="btnSubmitForm" class="btn-submit">保存する</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="menuMask" class="site-dialog-mask">
+  <div class="app-menu-sheet">
+    <div class="app-menu-head"><strong>MENU</strong><button id="btnCloseMenu" type="button">×</button></div>
+    <button id="btnMenuMypage" type="button" class="app-menu-item">マイページ <span>›</span></button>
+    <button id="btnMenuHowTo" type="button" class="app-menu-item">How to use <span>›</span></button>
+    <div class="app-menu-version">
+      <label>VERSION</label>
+      <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
+    </div>
+  </div>
+</div>
+
+<div id="howToMask" class="site-dialog-mask">
+  <div class="howto-dialog">
+    <div class="app-menu-head"><strong>How to use</strong><button id="btnCloseHowTo" type="button">×</button></div>
+    <div class="howto-body">
+      <section><b>1. GF / DMを切り替える</b><p>画面上部のGF / DMボタンで表示するスキルを切り替えます。</p></section>
+      <section><b>2. スコアを登録する</b><p>「登録」→「＋登録」から曲名・Part・達成率を入力します。GFではFCとオプションも登録できます。</p></section>
+      <section><b>3. スキル対象を同期する</b><p>MENU → マイページ →「スキル対象を同期する」から、e-amusementのHOT / OTHERをまとめて取得できます。</p></section>
+      <section><b>4. ライバルを登録する</b><p>ユーザー一覧からGF / DMそれぞれ最大5人まで登録できます。</p></section>
+      <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップするとRate比較や自己ベストを確認できます。</p></section>
+      <section><b>6. SNSへ共有する</b><p>「スキル対象を画像で共有」から現在のGF / DMスキル対象画像を作成し、端末の共有メニューからXやInstagramなどへ送れます。</p></section>
     </div>
   </div>
 </div>
@@ -3035,6 +3093,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_21"></script>
+<script type="module" src="./js/app.js?v=21_22"></script>
 </body>
 </html>
