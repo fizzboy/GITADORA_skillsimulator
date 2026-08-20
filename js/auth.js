@@ -3,7 +3,7 @@ import { supabase } from './supabase.js';
 const USERNAME_DOMAIN = 'users.gd-pocket-board.local';
 
 export function normalizeUsername(username) {
-  return String(username ?? '').normalize('NFKC').trim();
+  return String(username ?? '').trim();
 }
 
 export function validateUsername(username) {
@@ -29,7 +29,7 @@ async function hashedUsernameToEmail(username) {
   return `u_${hex}@${USERNAME_DOMAIN}`;
 }
 
-export async function register(username, password, captchaToken) {
+export async function register(username, password) {
   const clean = normalizeUsername(username);
   if (!validateUsername(clean)) {
     throw new Error('アカウント名は1〜32文字で入力してください。日本語も使用できます。');
@@ -39,51 +39,32 @@ export async function register(username, password, captchaToken) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      data: { username: clean },
-      captchaToken
-    }
+    options: { data: { username: clean } }
   });
 
   if (error) throw error;
   return data;
 }
 
-export async function login(username, password, getCaptchaToken, resetCaptcha) {
+export async function login(username, password) {
   const clean = normalizeUsername(username);
   if (!validateUsername(clean)) {
     throw new Error('アカウント名を入力してください。');
   }
 
-  const isCaptchaError = error => {
-    const text = `${error?.message || ''} ${error?.code || ''}`.toLowerCase();
-    return text.includes('captcha');
-  };
-
-  const signIn = async email => {
-    const captchaToken = await getCaptchaToken();
-    const result = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      options: { captchaToken }
-    });
-
-    if (result.error && resetCaptcha) {
-      await resetCaptcha();
-    }
-    return result;
-  };
-
   // v15.3以降: 大文字小文字を区別したアカウント
   const hashedEmail = await hashedUsernameToEmail(clean);
-  let result = await signIn(hashedEmail);
+  let result = await supabase.auth.signInWithPassword({
+    email: hashedEmail,
+    password
+  });
+
   if (!result.error) return result.data;
-  if (isCaptchaError(result.error)) throw result.error;
 
   const firstError = result.error;
 
   // v13〜v15.2で作成した「大文字小文字を区別しないhash」アカウントとの互換性
-  const oldCaseInsensitive = normalizeUsername(clean).toLowerCase();
+  const oldCaseInsensitive = String(clean ?? '').normalize('NFKC').trim().toLowerCase();
   const bytes = new TextEncoder().encode(oldCaseInsensitive);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   const hex = Array.from(new Uint8Array(digest))
@@ -92,17 +73,21 @@ export async function login(username, password, getCaptchaToken, resetCaptcha) {
   const oldHashedEmail = `u_${hex}@${USERNAME_DOMAIN}`;
 
   if (oldHashedEmail !== hashedEmail) {
-    result = await signIn(oldHashedEmail);
+    result = await supabase.auth.signInWithPassword({
+      email: oldHashedEmail,
+      password
+    });
     if (!result.error) return result.data;
-    if (isCaptchaError(result.error)) throw result.error;
   }
 
   // v9以前に作った半角英数字ユーザーとの互換性
   if (/^[A-Za-z0-9_]{3,32}$/.test(clean)) {
     const legacyEmail = legacyUsernameToEmail(clean);
-    result = await signIn(legacyEmail);
+    result = await supabase.auth.signInWithPassword({
+      email: legacyEmail,
+      password
+    });
     if (!result.error) return result.data;
-    if (isCaptchaError(result.error)) throw result.error;
   }
 
   throw firstError;
