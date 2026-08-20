@@ -10,14 +10,85 @@ export const formatRate = value => Number(value).toFixed(2);
 export const formatSkill = value => Number(value).toFixed(2);
 
 export async function getMyScores(versionId = null) {
-  const { data, error } = await supabase
-    .from('my_score_details')
-    .select('*')
-    .eq('version_id', versionId)
-    .order('skill', { ascending: false });
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    throw new Error('ログイン情報を取得できません。');
+  }
 
-  if (error) throw error;
-  return data ?? [];
+  const { data: scoreRows, error: scoreError } = await supabase
+    .from('user_scores')
+    .select('id,user_id,song_id,song_request_id,achievement_rate,fc,play_option,created_at,updated_at')
+    .eq('user_id', userData.user.id)
+    .order('updated_at', { ascending: false });
+
+  if (scoreError) throw scoreError;
+
+  const rows = scoreRows ?? [];
+  if (!rows.length) return [];
+
+  const songIds = [...new Set(rows.map(r => r.song_id).filter(Boolean))];
+  const requestIds = [...new Set(rows.map(r => r.song_request_id).filter(Boolean))];
+
+  let songs = [];
+  let requests = [];
+
+  if (songIds.length) {
+    const { data, error } = await supabase
+      .from('songs')
+      .select('id,is_hot,title,part,level,version_id')
+      .in('id', songIds);
+    if (error) throw error;
+    songs = data ?? [];
+  }
+
+  if (requestIds.length) {
+    const { data, error } = await supabase
+      .from('song_requests')
+      .select('id,title,part,proposed_level,status,version_id')
+      .in('id', requestIds);
+    if (error) throw error;
+    requests = data ?? [];
+  }
+
+  const songMap = new Map(songs.map(row => [row.id, row]));
+  const requestMap = new Map(requests.map(row => [row.id, row]));
+
+  const result = [];
+
+  for (const row of rows) {
+    const song = row.song_id ? songMap.get(row.song_id) : null;
+    const request = row.song_request_id ? requestMap.get(row.song_request_id) : null;
+
+    const rowVersionId = song?.version_id ?? request?.version_id ?? null;
+    if (versionId && rowVersionId !== versionId) continue;
+
+    const level = Number(song?.level ?? request?.proposed_level);
+    const rate = Number(row.achievement_rate);
+
+    if (!Number.isFinite(level) || !Number.isFinite(rate)) continue;
+
+    result.push({
+      score_id: row.id,
+      user_id: row.user_id,
+      song_id: row.song_id,
+      song_request_id: row.song_request_id,
+      is_hot: Boolean(song?.is_hot),
+      title: song?.title ?? request?.title ?? '',
+      part: song?.part ?? request?.part ?? '',
+      level,
+      achievement_rate: rate,
+      fc: row.fc,
+      play_option: row.play_option,
+      skill: calcSkill(level, rate),
+      pending_master: Boolean(row.song_request_id),
+      request_status: request?.status ?? null,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      version_id: rowVersionId
+    });
+  }
+
+  return result.sort((a, b) => Number(b.skill) - Number(a.skill));
 }
 
 export async function saveScore({
