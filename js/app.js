@@ -158,12 +158,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_53';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_53';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_53';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_53';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_53';
-import { getGameVersions } from './versions.js?v=21_53';
+import { supabase } from './supabase.js?v=21_56';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_56';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_56';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_56';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_56';
+import { getGameVersions } from './versions.js?v=21_56';
 const {
   isAdmin,
   getAdminSongs,
@@ -404,8 +404,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_53';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_53';
+import * as adminApi from './admin.js?v=21_56';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_56';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -694,28 +694,45 @@ function shareSkillImage() {
   x.font = '700 20px sans-serif';
   x.fillText(activeVersion?.name || '', 54, 116);
 
-  // ユーザー名：TOTALと同じスキルカラーに準拠。
+  // ユーザー名 + TOTALスキルを横並び。
+  // 旧ユーザー名(22px)と旧TOTAL(68px)の中間程度として42pxに統一。
+  // 両方ともTOTALスキルカラーに準拠する。
   const shareUsername = String($('headerUsername')?.textContent || '').trim();
-  if (shareUsername) {
-    x.fillStyle = totalPaint(target.total, 54, 126, 620, 28);
-    x.font = '900 22px sans-serif';
-    x.fillText(shareUsername, 54, 151);
+  const shareTotal = Number(target.total).toFixed(2);
+  const shareLineY = 174;
+  const shareFontSize = 42;
+  const shareGap = 28;
+
+  x.font = `900 ${shareFontSize}px sans-serif`;
+  x.textAlign = 'left';
+  x.textBaseline = 'alphabetic';
+
+  let shareNameText = shareUsername || 'USER';
+  const maxNameWidth = 700;
+  while (x.measureText(shareNameText).width > maxNameWidth && shareNameText.length > 2) {
+    shareNameText = shareNameText.slice(0, -1);
+  }
+  if (shareNameText !== (shareUsername || 'USER')) {
+    shareNameText = shareNameText.slice(0, -1) + '…';
   }
 
-  // TOTALを大きく表示
-  x.fillStyle = totalPaint(target.total,54,158,420,74);
-  x.font = '900 68px sans-serif';
-  x.fillText(Number(target.total).toFixed(2),54,221);
+  const nameWidth = x.measureText(shareNameText).width;
+  const totalX = 54 + nameWidth + shareGap;
+  const linePaintWidth = Math.min(W - 108, nameWidth + shareGap + x.measureText(shareTotal).width);
+
+  x.fillStyle = totalPaint(target.total, 54, 132, linePaintWidth, 52);
+  x.fillText(shareNameText, 54, shareLineY);
+  x.fillText(shareTotal, totalX, shareLineY);
 
   x.fillStyle = '#94a3b8';
   x.font = '800 23px sans-serif';
-  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,262);
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,54,218);
 
   const gap = 24;
   const colW = (W - 108 - gap) / 2;
   const leftHot = 54;
   const leftOther = 54 + colW + gap;
-  const tableTop = 300;
+  const tableTop = 256;
 
   const drawTable = (sectionTitle, rows, left, accent) => {
     const tableW = colW;
