@@ -2867,6 +2867,65 @@ html.ios-viewport-repair {
   }
 }
 
+/* === v21 FIX41: ユーザーリスト縦幅コンパクト化 === */
+.user-list-row {
+  min-height: 58px !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+  margin-bottom: 6px !important;
+}
+.user-list-skill {
+  min-height: 26px !important;
+}
+.favorite-toggle {
+  width: 34px !important;
+  height: 34px !important;
+}
+@media (max-width: 430px) {
+  .user-list-row {
+    min-height: 54px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 5px !important;
+  }
+  .user-list-skill {
+    min-height: 24px !important;
+  }
+  .favorite-toggle {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* === v21 FIX42: ユーザーリスト ページ切替 === */
+.user-list-pager {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:48px;
+  padding:8px 6px 14px;
+  color:#94a3b8;
+  font-size:10px;
+  font-weight:900;
+}
+.user-list-pager button {
+  min-width:78px;
+  min-height:34px;
+  padding:5px 10px;
+  border:1px solid #334155;
+  border-radius:7px;
+  background:#172033;
+  color:#e2e8f0;
+  font-weight:900;
+}
+.user-list-pager button:disabled {
+  opacity:.35;
+}
+.user-list-page-summary {
+  color:#64748b;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -2973,6 +3032,7 @@ html.ios-viewport-repair {
         <span class="user-list-rival-head">RIVAL</span>
       </div>
       <div id="userList"></div>
+      <div id="userListPager" class="user-list-pager"></div>
     </div>
   </div>
 </div>
@@ -3294,6 +3354,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_40"></script>
+<script type="module" src="./js/app.js?v=21_42"></script>
 </body>
 </html>
