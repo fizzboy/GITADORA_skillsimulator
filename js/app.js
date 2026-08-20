@@ -5,9 +5,9 @@
 */
 const SKILL_COLOR_TABLE = Object.freeze([
   { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff0000',0],['#ff4a00',14],['#ffc400',28],['#00a92f',42],['#00aeb8',56],['#005ee8',70],['#4614e6',84],['#c900b7',100]] },
+    stops: [['#ff2020',0],['#ff7a18',14.2857],['#ffd31a',28.5714],['#33c94b',42.8571],['#23cfd0',57.1429],['#357dff',71.4286],['#8d38ef',85.7143],['#df35cf',100]] },
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff8b8b',0],['#ffb065',14],['#f6df56',28],['#75df82',42],['#67dbd2',56],['#77b0ff',70],['#9d82ff',84],['#e77bdb',100]] },
+    stops: [['#ff7676',0],['#ffa45f',14.2857],['#f3da55',28.5714],['#71d67d',42.8571],['#62d3d1',57.1429],['#6fa4ff',71.4286],['#a47cf0',85.7143],['#e57bd8',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
     stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
@@ -126,12 +126,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_38';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_38';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_38';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_38';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_38';
-import { getGameVersions } from './versions.js?v=21_38';
+import { supabase } from './supabase.js?v=21_39';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_39';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_39';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_39';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_39';
+import { getGameVersions } from './versions.js?v=21_39';
 const {
   isAdmin,
   getAdminSongs,
@@ -372,8 +372,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_38';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_38';
+import * as adminApi from './admin.js?v=21_39';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_39';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -446,7 +446,7 @@ async function showApp(session) {
     session?.user?.user_metadata?.username ||
     session?.user?.email?.split('@')[0] || '';
 
-  // アカウント名変更後も常にprofiles側の最新値を表示
+  // ユーザー名変更後も常にprofiles側の最新値を表示
   try {
     const { data: profile } = await supabase
       .from('profiles')
@@ -1426,7 +1426,7 @@ function renderUsers() {
         <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
         <div class="user-list-skill user-list-gf"><div class="user-list-skill-value ${gfClass}">${formatSkill(gf)}</div></div>
         <div class="user-list-skill user-list-dm"><div class="user-list-skill-value ${dmClass}">${formatSkill(dm)}</div></div>
-        <div class="user-list-total-skill ${totalClass}">${formatSkill(combined)}</div>
+        <div class="user-list-total-skill"><span class="user-list-total-value ${totalClass}">${formatSkill(combined)}</span></div>
         ${user.is_self
           ? '<div></div>'
           : `<button class="favorite-toggle ${user.is_favorite ? 'active' : ''}"
@@ -1643,13 +1643,13 @@ async function openMyPage() {
 
 async function changeOwnUsername() {
   const username = $('mypageUsernameInput').value.trim();
-  if (!username) throw new Error('アカウント名を入力してください。');
+  if (!username) throw new Error('ユーザー名を入力してください。');
 
   const data = await accountAdmin('rename_self', { username });
   $('mypageUsernameInput').value = data.username;
   $('headerUsername').textContent = data.username;
   $('authUsername').value = data.username;
-  await showSiteDialog('アカウント名を変更しました。\n次回から新しいアカウント名でログインしてください。', '変更完了');
+  await showSiteDialog('ユーザー名を変更しました。\n次回から新しいユーザー名でログインしてください。', '変更完了');
 }
 
 function closeMyPage() {
@@ -1657,7 +1657,7 @@ function closeMyPage() {
 }
 
 async function deleteOwnAccount() {
-  const ok1 = confirm('アカウントを削除します。登録したスコアもすべて削除されます。よろしいですか？');
+  const ok1 = confirm('ユーザーを削除します。登録したスコアもすべて削除されます。よろしいですか？');
   if (!ok1) return;
   const typed = prompt('確認のため「削除」と入力してください。');
   if (typed !== '削除') return;
@@ -1669,9 +1669,9 @@ async function deleteOwnAccount() {
     closeMyPage();
     scores = [];
     showAuth('login');
-    alert('アカウントを削除しました。');
+    alert('ユーザーを削除しました。');
   } catch (e) {
-    alert('アカウント削除に失敗しました: ' + e.message);
+    alert('ユーザー削除に失敗しました: ' + e.message);
   } finally {
     $('btnDeleteAccount').disabled = false;
   }
@@ -1946,7 +1946,7 @@ $('authForm').addEventListener('submit', async e => {
 
     if (mode === 'register') {
       if (!validateUsername(username)) {
-        throw new Error('アカウント名は1〜32文字で入力してください。日本語も使用できます。');
+        throw new Error('ユーザー名は1〜32文字で入力してください。日本語も使用できます。');
       }
       if (password.length < 8) throw new Error('パスワードは8文字以上で設定してください。');
       if (password !== $('authPasswordConfirm').value) {
@@ -1979,7 +1979,7 @@ $('authForm').addEventListener('submit', async e => {
       message.includes('すでに登録されています')
     ) {
       await showSiteDialog(
-        'そのアカウント名は既に登録されています。',
+        'そのユーザー名は既に登録されています。',
         '新規登録できません'
       );
     } else if (lower.includes('captcha') || message.includes('セキュリティ確認')) {
@@ -1991,7 +1991,7 @@ $('authForm').addEventListener('submit', async e => {
       await showSiteDialog(
         mode === 'register'
           ? '新規登録に失敗しました。入力内容を確認して再度お試しください。'
-          : 'ログインに失敗しました。アカウント名またはパスワードを確認してください。',
+          : 'ログインに失敗しました。ユーザー名またはパスワードを確認してください。',
         'エラー'
       );
       console.error(
@@ -2170,12 +2170,12 @@ $('btnChangeUsername').addEventListener('click', async () => {
       message.includes('duplicate')
     ) {
       await showSiteDialog(
-        'そのアカウント名は既に登録されています。',
-        'アカウント名を変更できません'
+        'そのユーザー名は既に登録されています。',
+        'ユーザー名を変更できません'
       );
     } else {
-      await showSiteDialog('アカウント名の変更に失敗しました。', 'エラー');
-      console.error('アカウント名変更エラー:', e);
+      await showSiteDialog('ユーザー名の変更に失敗しました。', 'エラー');
+      console.error('ユーザー名変更エラー:', e);
     }
   } finally {
     button.disabled = false;
