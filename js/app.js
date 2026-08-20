@@ -446,7 +446,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
 function show(id) { $(id).classList.remove('hidden'); }
 function hide(id) { $(id).classList.add('hidden'); }
 
-function showAuth(mode = 'login') {
+async function showAuth(mode = 'login') {
   hide('introScreen');
   currentAuthMode = mode;
   hide('appScreen');
@@ -468,9 +468,20 @@ function showAuth(mode = 'login') {
   $('authPasswordConfirm').required = !isLogin;
   $('authPasswordConfirm').value = '';
 
-  prepareAuthCaptcha().catch(error => {
+  // Turnstileトークンは1回限り。
+  // ログアウト→再ログイン時に「成功しました」と表示された古い使用済みトークンを
+  // 再利用しないよう、認証画面を開くたび必ずresetして新しいトークンを取得する。
+  try {
+    await resetAuthCaptcha();
+  } catch (error) {
+    console.warn('Turnstile reset:', error);
+  }
+
+  try {
+    await prepareAuthCaptcha();
+  } catch (error) {
     console.error('Turnstile初期化エラー:', error);
-  });
+  }
 }
 
 async function showApp(session) {
@@ -2144,7 +2155,7 @@ $('authForm').addEventListener('submit', async e => {
   }
 });
 
-$('authSwitch').addEventListener('click', () => showAuth($('authSwitch').dataset.mode));
+$('authSwitch').addEventListener('click', () => { showAuth($('authSwitch').dataset.mode).catch(console.error); });
 
 document.querySelectorAll('.p-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -2660,8 +2671,8 @@ document.addEventListener('click', async e => {
 
 
 
-$('btnIntroLogin').addEventListener('click', () => showAuth('login'));
-$('btnIntroRegister').addEventListener('click', () => showAuth('register'));
+$('btnIntroLogin').addEventListener('click', () => { showAuth('login').catch(console.error); });
+$('btnIntroRegister').addEventListener('click', () => { showAuth('register').catch(console.error); });
 $('btnMenu').addEventListener('click', openMenu);
 $('btnCloseMenu').addEventListener('click', closeMenu);
 $('menuMask').addEventListener('click', e => { if (e.target === $('menuMask')) closeMenu(); });
