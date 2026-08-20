@@ -168,7 +168,7 @@ import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
 import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
 import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_98';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_100';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_110';
 import { getGameVersions } from './versions.js?v=21_57';
 const {
   isAdmin,
@@ -2385,7 +2385,10 @@ $('btnSubmitForm').addEventListener('click', async () => {
 
     await submitScore();
   } catch (e) {
-    alert('保存に失敗しました: ' + e.message);
+    await showSiteDialog(
+      e?.message || '保存に失敗しました。',
+      '保存エラー'
+    );
   } finally {
     button.disabled = false;
 
