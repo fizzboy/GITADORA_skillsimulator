@@ -195,8 +195,8 @@ export async function saveScore({
   };
 
   if (songId) {
-    // 同一曲名でもPartごとにsongs.idは別。
-    // 同じsong_idだけ更新し、別Partは別レコードとして追加する。
+    // 新規登録時に同じ曲・同じパートがすでに登録済みなら上書きしない。
+    // 既存レコードは保持し、サイト共通モーダルで明確にエラー表示する。
     const { data: existing, error: existingError } = await supabase
       .from('user_scores')
       .select('id')
@@ -207,13 +207,16 @@ export async function saveScore({
     if (existingError) throw existingError;
 
     if (existing?.id) {
-      const { error } = await supabase
-        .from('user_scores')
-        .update(payload)
-        .eq('id', existing.id);
+      const { data: targetSong, error: targetSongError } = await supabase
+        .from('songs')
+        .select('part')
+        .eq('id', songId)
+        .single();
 
-      if (error) throw error;
-      return;
+      if (targetSongError) throw targetSongError;
+
+      const displayPart = targetSong?.part || '選択したパート';
+      throw new Error(`この曲の${displayPart}は既に登録されています`);
     }
 
     const { error } = await supabase
@@ -237,13 +240,16 @@ export async function saveScore({
   if (existingRequestError) throw existingRequestError;
 
   if (existingRequestScore?.id) {
-    const { error } = await supabase
-      .from('user_scores')
-      .update(payload)
-      .eq('id', existingRequestScore.id);
+    const { data: targetRequest, error: targetRequestError } = await supabase
+      .from('song_requests')
+      .select('part')
+      .eq('id', requestId)
+      .single();
 
-    if (error) throw error;
-    return;
+    if (targetRequestError) throw targetRequestError;
+
+    const displayPart = targetRequest?.part || '選択したパート';
+    throw new Error(`この曲の${displayPart}は既に登録されています`);
   }
 
   const { error } = await supabase
