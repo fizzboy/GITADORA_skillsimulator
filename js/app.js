@@ -9,28 +9,28 @@ const SKILL_COLOR_TABLE = Object.freeze([
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
     stops: [['#ff8787',0],['#ffad6f',14.2857],['#f0d967',28.5714],['#7bd889',42.8571],['#6fd3d0',57.1429],['#7ca9f5',71.4286],['#aa88eb',85.7143],['#df82d4',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
-    stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
+    stops: [['#d89a00',0],['#ffd83d',58],['#ffffff',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
-    stops: [['#ffffff',0],['#d8dde3',42],['#8e99a5',100]] },
+    stops: [['#8e99a5',0],['#d8dde3',58],['#ffffff',100]] },
   { min: 7000, rank: 'bronze', type: 'gradient', direction: '180deg',
-    stops: [['#ffd0ad',0],['#c77b45',48],['#7d3f20',100]] },
+    stops: [['#7d3f20',0],['#c77b45',52],['#ffffff',100]] },
   { min: 6500, rank: 'red-grad', type: 'gradient', direction: '180deg',
-    stops: [['#ffd9df',0],['#ff4d68',42],['#c70023',100]] },
+    stops: [['#c70023',0],['#ff4d68',58],['#ffffff',100]] },
   { min: 6000, rank: 'red', type: 'solid', color: '#ff1638' },
   { min: 5500, rank: 'purple-grad', type: 'gradient', direction: '180deg',
-    stops: [['#f9dcff',0],['#ea5cff',42],['#a400d2',100]] },
+    stops: [['#a400d2',0],['#ea5cff',58],['#ffffff',100]] },
   { min: 5000, rank: 'purple', type: 'solid', color: '#e02cff' },
   { min: 4500, rank: 'blue-grad', type: 'gradient', direction: '180deg',
-    stops: [['#e2f3ff',0],['#53adff',42],['#0966d9',100]] },
+    stops: [['#0966d9',0],['#53adff',58],['#ffffff',100]] },
   { min: 4000, rank: 'blue', type: 'solid', color: '#2f91ff' },
   { min: 3500, rank: 'green-grad', type: 'gradient', direction: '180deg',
-    stops: [['#d9ffe1',0],['#44e45b',45],['#0c9f2b',100]] },
+    stops: [['#0c9f2b',0],['#44e45b',55],['#ffffff',100]] },
   { min: 3000, rank: 'green', type: 'solid', color: '#22d13b' },
   { min: 2500, rank: 'yellow-grad', type: 'gradient', direction: '180deg',
-    stops: [['#fffbd1',0],['#ffe94d',45],['#f5c400',100]] },
+    stops: [['#f5c400',0],['#ffe94d',55],['#ffffff',100]] },
   { min: 2000, rank: 'yellow', type: 'solid', color: '#ffe600' },
   { min: 1500, rank: 'orange-grad', type: 'gradient', direction: '180deg',
-    stops: [['#fff2e8',0],['#ff9b43',42],['#ff5a00',100]] },
+    stops: [['#ff5a00',0],['#ff9b43',58],['#ffffff',100]] },
   { min: 1000, rank: 'orange', type: 'solid', color: '#ff7a22' },
   { min: 0, rank: 'white', type: 'solid', color: '#ffffff' }
 ]);
@@ -59,15 +59,9 @@ function skillColorVerticalCss(row) {
     return `linear-gradient(180deg, ${row.color} 0%, #ffffff 100%)`;
   }
 
-  // 文字はline-box全高を塗りつぶさないため、0～100%をそのまま使うと
-  // 上下端の色が見えにくい。色位置を14～86%へ圧縮して、
-  // 赤～紫まで一文字の高さの中で見えるようにする。
-  const stops = row.stops.map(([color,pos]) => {
-    const mapped = 14 + (Number(pos) / 100) * 72;
-    return `${color} ${mapped}%`;
-  });
-
-  return `linear-gradient(180deg, ${stops.join(', ')})`;
+  // 縦グラデーションは全表示箇所で同一条件。
+  // 0%=上、100%=下。単色系グラデーションは必ず下端が白になる。
+  return `linear-gradient(180deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
 }
 
 function installSkillColorCss() {
@@ -148,17 +142,16 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   }
 
   row.stops.forEach(([color,pos]) => {
-    const mapped = 0.14 + (Number(pos) / 100) * 0.72;
-    g.addColorStop(mapped, color);
+    g.addColorStop(Number(pos) / 100, color);
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_49';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_49';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_49';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_49';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_49';
-import { getGameVersions } from './versions.js?v=21_49';
+import { supabase } from './supabase.js?v=21_50';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_50';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_50';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_50';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_50';
+import { getGameVersions } from './versions.js?v=21_50';
 const {
   isAdmin,
   getAdminSongs,
@@ -399,8 +392,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_49';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_49';
+import * as adminApi from './admin.js?v=21_50';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_50';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
