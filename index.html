@@ -4467,6 +4467,47 @@ html.ios-viewport-repair {
   flex-shrink:0;
 }
 
+
+/* FIX108: iPhone SafariでもライバルTOTALスキル欄の横幅を固定 */
+.favorite-user-open{
+  grid-template-columns:minmax(0,1fr) 76px 12px !important;
+}
+
+.favorite-user-skill-label{
+  width:76px !important;
+  min-width:76px !important;
+  max-width:76px !important;
+  box-sizing:border-box !important;
+  text-align:center !important;
+  justify-self:center !important;
+}
+
+.favorite-user-skill{
+  width:76px !important;
+  min-width:76px !important;
+  max-width:76px !important;
+  box-sizing:border-box !important;
+  display:inline-block !important;
+  justify-self:center !important;
+  text-align:center !important;
+  font-variant-numeric:tabular-nums lining-nums !important;
+  font-feature-settings:"tnum" 1, "lnum" 1 !important;
+  white-space:nowrap !important;
+}
+
+@media(max-width:520px){
+  .favorite-user-open{
+    grid-template-columns:minmax(0,1fr) 72px 12px !important;
+  }
+
+  .favorite-user-skill-label,
+  .favorite-user-skill{
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4924,6 +4965,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_102"></script>
+<script type="module" src="./js/app.js?v=21_108"></script>
 </body>
 </html>
