@@ -3405,6 +3405,14 @@ html.ios-viewport-repair {
   overflow: visible !important;
 }
 
+
+/* FIX75: HOTだけを1px上へ。行の高さは変えない */
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  margin-top: -1px !important;
+  margin-bottom: 1px !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
