@@ -56,22 +56,28 @@ function installSkillColorCss() {
 
   const style = document.createElement('style');
   style.id = 'skill-color-table-style';
+
   style.textContent = SKILL_COLOR_TABLE.map(row => {
     const paint = row.type === 'solid' ? row.color : skillColorCss(row);
 
+    // TOTAL / HOT / OTHER / ユーザーリスト等の文字色
     const textRule = row.type === 'solid'
       ? `.score-rank-${row.rank}{color:${row.color}!important;background:none!important;-webkit-text-fill-color:${row.color}!important;filter:none!important;}`
       : `.score-rank-${row.rank}{background:${paint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
 
-    // 曲別Skillのボックスも同じSKILL_COLOR_TABLEを参照。
-    // 旧CSSにskill-box-*が残っていても、後から挿入するこのルールで統一する。
-    const boxText = row.type === 'solid'
-      ? `.skill-box-${row.rank}{background:${row.color}!important;color:${['white','yellow','yellow-grad','green','green-grad','gold','silver'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`
-      : `.skill-box-${row.rank}{background:${paint}!important;color:${['gold','silver','rainbow'].includes(row.rank) ? '#111827' : '#ffffff'}!important;-webkit-text-fill-color:initial!important;}`;
+    // 曲別Skillは数字を白で固定し、左右の帯だけをスキルカラーにする。
+    // 配色の参照元は同じSKILL_COLOR_TABLE。
+    const songBoxRule =
+      `.skill-box-${row.rank}{` +
+      `background:${paint} left/5px 100% no-repeat,${paint} right/5px 100% no-repeat,#101827!important;` +
+      `color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;` +
+      `font-weight:900!important;` +
+      `text-shadow:0 1px 2px rgba(0,0,0,.95)!important;` +
+      `border-top:1px solid #334155!important;border-bottom:1px solid #334155!important;` +
+      `border-left:0!important;border-right:0!important;` +
+      `box-sizing:border-box!important;}`;
 
-    const readableSkillValue = `.skill-box-${row.rank}{font-weight:900!important;color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;text-shadow:-1px -1px 0 #111827,1px -1px 0 #111827,-1px 1px 0 #111827,1px 1px 0 #111827,0 2px 3px rgba(0,0,0,.9)!important;}`;
-
-    return textRule + boxText + readableSkillValue;
+    return textRule + songBoxRule;
   }).join('\n');
 
   document.head.appendChild(style);
@@ -90,12 +96,12 @@ function skillColorCanvasPaint(ctx, row, left, top, width, height) {
   row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
   return g;
 }
-import { supabase } from './supabase.js?v=21_34';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_34';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_34';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_34';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_34';
-import { getGameVersions } from './versions.js?v=21_34';
+import { supabase } from './supabase.js?v=21_35';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_35';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_35';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_35';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_35';
+import { getGameVersions } from './versions.js?v=21_35';
 const {
   isAdmin,
   getAdminSongs,
@@ -336,8 +342,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_34';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_34';
+import * as adminApi from './admin.js?v=21_35';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_35';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -675,11 +681,34 @@ function shareSkillImage() {
       x.fillStyle='#94a3b8'; x.font='700 11px sans-serif';
       x.fillText(r.part,pos[1]+8,y+43);
 
-      // skill
+      // SKILL:
+      // 数字は白固定。左右の帯だけを、その曲のスキルカラーで表示する。
       const sv=Number(r.skill)||0;
-      x.fillStyle=songPaint(sv,pos[2]+6,y+8,widths[2]-12,rowH-16);
-      x.font='900 15px sans-serif'; x.textAlign='center'; x.textBaseline='middle';
-      x.fillText(sv.toFixed(2),pos[2]+widths[2]/2,y+rowH/2);
+      const skillCellX=pos[2];
+      const skillCellW=widths[2];
+      const barW=6;
+      const barY=y+5;
+      const barH=rowH-10;
+      const songRow=getSkillColorRowByTotalValue(sv*50);
+
+      x.fillStyle='#101827';
+      x.fillRect(skillCellX+1,y+1,skillCellW-2,rowH-2);
+
+      x.fillStyle=skillColorCanvasPaint(x,songRow,skillCellX,barY,barW,barH);
+      x.fillRect(skillCellX+2,barY,barW,barH);
+
+      x.fillStyle=skillColorCanvasPaint(x,songRow,skillCellX+skillCellW-barW-2,barY,barW,barH);
+      x.fillRect(skillCellX+skillCellW-barW-2,barY,barW,barH);
+
+      x.fillStyle='#ffffff';
+      x.font='900 15px sans-serif';
+      x.textAlign='center';
+      x.textBaseline='middle';
+      x.shadowColor='rgba(0,0,0,.9)';
+      x.shadowBlur=2;
+      x.fillText(sv.toFixed(2),skillCellX+skillCellW/2,y+rowH/2);
+      x.shadowBlur=0;
+      x.shadowColor='transparent';
 
       // achievement + badge
       x.fillStyle='#f8fafc'; x.font='900 13px sans-serif';
