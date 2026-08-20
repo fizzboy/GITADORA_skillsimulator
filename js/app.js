@@ -5,9 +5,9 @@
 */
 const SKILL_COLOR_TABLE = Object.freeze([
   { min: 9000, rank: 'deep-rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff2020',0],['#ff7a18',14.2857],['#ffd31a',28.5714],['#33c94b',42.8571],['#23cfd0',57.1429],['#357dff',71.4286],['#8d38ef',85.7143],['#df35cf',100]] },
+    stops: [['#e60000',0],['#f05a00',14.2857],['#e6b800',28.5714],['#12a936',42.8571],['#00aeb5',57.1429],['#1559e6',71.4286],['#681fd1',85.7143],['#bf16ad',100]] },
   { min: 8500, rank: 'rainbow', type: 'gradient', direction: '90deg',
-    stops: [['#ff7676',0],['#ffa45f',14.2857],['#f3da55',28.5714],['#71d67d',42.8571],['#62d3d1',57.1429],['#6fa4ff',71.4286],['#a47cf0',85.7143],['#e57bd8',100]] },
+    stops: [['#ff8787',0],['#ffad6f',14.2857],['#f0d967',28.5714],['#7bd889',42.8571],['#6fd3d0',57.1429],['#7ca9f5',71.4286],['#aa88eb',85.7143],['#df82d4',100]] },
   { min: 8000, rank: 'gold', type: 'gradient', direction: '180deg',
     stops: [['#fff7b2',0],['#ffd83d',42],['#d89a00',100]] },
   { min: 7500, rank: 'silver', type: 'gradient', direction: '180deg',
@@ -126,12 +126,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_39';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_39';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_39';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_39';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_39';
-import { getGameVersions } from './versions.js?v=21_39';
+import { supabase } from './supabase.js?v=21_40';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_40';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_40';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_40';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_40';
+import { getGameVersions } from './versions.js?v=21_40';
 const {
   isAdmin,
   getAdminSongs,
@@ -372,8 +372,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_39';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_39';
+import * as adminApi from './admin.js?v=21_40';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_40';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -1426,7 +1426,7 @@ function renderUsers() {
         <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
         <div class="user-list-skill user-list-gf"><div class="user-list-skill-value ${gfClass}">${formatSkill(gf)}</div></div>
         <div class="user-list-skill user-list-dm"><div class="user-list-skill-value ${dmClass}">${formatSkill(dm)}</div></div>
-        <div class="user-list-total-skill"><span class="user-list-total-value ${totalClass}">${formatSkill(combined)}</span></div>
+        <div class="user-list-skill user-list-total"><span class="user-list-skill-value ${totalClass}">${formatSkill(combined)}</span></div>
         ${user.is_self
           ? '<div></div>'
           : `<button class="favorite-toggle ${user.is_favorite ? 'active' : ''}"
