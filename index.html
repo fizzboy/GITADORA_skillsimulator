@@ -4304,6 +4304,97 @@ html.ios-viewport-repair {
   padding-bottom: 6px !important;
 }
 
+
+/* === FIX99: 要望・不具合報告 === */
+.feedback-dialog{
+  width:min(92vw,520px);
+  max-height:calc(100dvh - 32px);
+  overflow:auto;
+  background:#0f172a;
+  color:#f8fafc;
+  border:1px solid #334155;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+}
+.feedback-body label{
+  display:block;
+  margin:10px 0 5px;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:900;
+}
+.feedback-body select,
+.feedback-body textarea{
+  width:100%;
+  box-sizing:border-box;
+  background:#111827;
+  color:#f8fafc;
+  border:1px solid #334155;
+  border-radius:8px;
+  font:inherit;
+}
+.feedback-body select{
+  min-height:44px;
+  padding:8px 10px;
+}
+.feedback-body textarea{
+  min-height:180px;
+  resize:vertical;
+  padding:10px;
+  line-height:1.5;
+}
+.feedback-body .btn-submit{
+  width:100%;
+  margin-top:12px;
+  min-height:44px;
+}
+.feedback-status{
+  min-height:18px;
+  margin-top:8px;
+  color:#fca5a5;
+  font-size:11px;
+}
+.feedback-admin-card.resolved{
+  opacity:.65;
+}
+.feedback-category{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:38px;
+  padding:2px 5px;
+  margin-right:5px;
+  border-radius:4px;
+  font-size:10px;
+  font-weight:900;
+}
+.feedback-category.request{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+.feedback-category.bug{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+.feedback-admin-message{
+  margin-top:8px;
+  padding:8px;
+  border-radius:6px;
+  background:#f8fafc;
+  color:#1e293b;
+  font-size:12px;
+  line-height:1.5;
+  white-space:normal;
+  word-break:break-word;
+}
+@media(max-width:520px){
+  .admin-tabs{
+    display:grid !important;
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4510,9 +4601,33 @@ html.ios-viewport-repair {
     <button id="btnMenuShareSkill" type="button" class="app-menu-item">スキル画像共有 <span>›</span></button>
     <button id="btnMenuRivals" type="button" class="app-menu-item">ライバル管理 <span>›</span></button>
     <button id="btnMenuHowTo" type="button" class="app-menu-item">How to use <span>›</span></button>
+    <button id="btnMenuFeedback" type="button" class="app-menu-item">要望・不具合報告 <span>›</span></button>
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
+    </div>
+  </div>
+</div>
+
+
+<div id="feedbackMask" class="site-dialog-mask">
+  <div class="feedback-dialog">
+    <div class="app-menu-head">
+      <strong>要望・不具合報告</strong>
+      <button id="btnCloseFeedback" type="button">×</button>
+    </div>
+    <div class="feedback-body">
+      <label for="feedbackCategory">種類</label>
+      <select id="feedbackCategory">
+        <option value="request">要望</option>
+        <option value="bug">不具合報告</option>
+      </select>
+
+      <label for="feedbackMessage">内容</label>
+      <textarea id="feedbackMessage" maxlength="2000" placeholder="内容を入力してください"></textarea>
+
+      <div id="feedbackStatus" class="feedback-status"></div>
+      <button id="btnSubmitFeedback" type="button" class="btn-submit">送信する</button>
     </div>
   </div>
 </div>
@@ -4668,6 +4783,7 @@ html.ios-viewport-repair {
       <button class="admin-tab active" data-admin-tab="songs">曲マスター</button>
       <button class="admin-tab" data-admin-tab="requests">登録依頼</button>
       <button class="admin-tab" data-admin-tab="users">ユーザー</button>
+      <button class="admin-tab" data-admin-tab="feedback">要望・不具合</button>
     </div>
     <div id="adminSongToolbar" class="admin-toolbar">
       <input id="adminSongSearch" placeholder="曲名を検索...">
@@ -4736,6 +4852,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_98"></script>
+<script type="module" src="./js/app.js?v=21_100"></script>
 </body>
 </html>
