@@ -3210,6 +3210,41 @@ html.ios-viewport-repair {
 
 
 /* v21 FIX54: ヘッダーとユーザーリストは同一のscore-rank配色を使用 */
+/* === v21 FIX55: ヘッダー/ユーザー詳細のスキル表示を統一 === */
+
+/* ユーザーリストの数値と同じく、文字そのものの高さをgradient描画領域にする。
+   これで8500～/9000～の縦RAINBOWの見える色配分を揃える。 */
+.score-cell .score-val {
+  display: inline-block !important;
+  width: max-content !important;
+  height: auto !important;
+  line-height: 1 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* ユーザー詳細のTOTAL/HOT/OTHERは、自分のヘッダーと同じ数字フォントへ統一 */
+.user-detail-skill-value {
+  display: inline-block !important;
+  width: max-content !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: normal !important;
+  font-feature-settings: normal !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
