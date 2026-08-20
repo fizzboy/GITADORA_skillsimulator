@@ -3285,6 +3285,34 @@ html.ios-viewport-repair {
   margin-top: 2px !important;
 }
 
+
+/* FIX65: パート / HOT / 曲名の上下位置を中央揃え */
+.m-card .m-title,
+.sk-row .sk-title {
+  display: flex;
+  align-items: center;
+}
+
+.m-card .m-title > *,
+.sk-row .sk-title > * {
+  align-self: center;
+}
+
+.m-card .m-title .tag,
+.m-card .m-title .badge,
+.m-card .m-title .part,
+.sk-row .sk-title .tag,
+.sk-row .sk-title .badge,
+.sk-row .sk-title .part {
+  vertical-align: middle;
+}
+
+/* 曲名側もバッジと同じ行ボックス基準にする */
+.m-card .m-title,
+.sk-row .sk-title {
+  line-height: 1.2;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
