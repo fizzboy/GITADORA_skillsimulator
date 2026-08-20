@@ -1121,7 +1121,6 @@ function renderManage() {
   $('viewAllManage').innerHTML =
     data.map((r,i) => createCard(r,i+1)).join('') ||
     '<div class="empty-state">条件に一致する登録データがありません</div>';
-  scheduleSmartSongTitleEllipsis($('viewAllManage'));
 }
 
 function render() {
@@ -1546,7 +1545,6 @@ async function openUserDetail(userId, username) {
       <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
         ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
       </div></div>`;
-    scheduleSmartSongTitleEllipsis($('userDetailSkill'));
   } catch (e) {
     $('userDetailSkill').innerHTML = `<div class="empty-state">取得に失敗しました: ${esc(e.message)}</div>`;
   }
