@@ -3359,6 +3359,14 @@ html.ios-viewport-repair {
   vertical-align: middle !important;
 }
 
+
+/* FIX69: HOTバッジの縦位置を1px上へ補正 */
+.sk-row .hot-tag,
+#viewAllManage .m-card .hot-tag {
+  position: relative !important;
+  top: -1px !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
