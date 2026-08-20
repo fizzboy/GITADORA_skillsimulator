@@ -53,14 +53,26 @@ function skillColorCss(row) {
 function skillColorVerticalCss(row) {
   if (!row) return '#ffffff';
 
-  // 単色ランクも縦グラデーションで統一:
+  // 単色ランク:
   // 上 = ランク色 / 下 = 白
   if (row.type === 'solid') {
     return `linear-gradient(180deg, ${row.color} 0%, #ffffff 100%)`;
   }
 
-  // 縦グラデーションは全表示箇所で同一条件。
-  // 0%=上、100%=下。単色系グラデーションは必ず下端が白になる。
+  // RAINBOW文字だけは、CSSのline-box内で文字そのものが占める高さが狭いため、
+  // 0～100%をそのまま使うと中央の緑～青付近しか見えない。
+  // 色・順番は左右帯と完全に同じまま、停止位置だけ12～88%へ圧縮して
+  // 赤～紫まで文字の中に見えるようにする。
+  if (row.rank === 'rainbow' || row.rank === 'deep-rainbow') {
+    const stops = row.stops.map(([color,pos]) => {
+      const mapped = 12 + (Number(pos) / 100) * 76;
+      return `${color} ${mapped}%`;
+    });
+    return `linear-gradient(180deg, ${stops.join(', ')})`;
+  }
+
+  // それ以外のグラデーションは0%=上、100%=下。
+  // 下端の白を必ず維持する。
   return `linear-gradient(180deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
 }
 
@@ -146,12 +158,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_50';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_50';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_50';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_50';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_50';
-import { getGameVersions } from './versions.js?v=21_50';
+import { supabase } from './supabase.js?v=21_51';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_51';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_51';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_51';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_51';
+import { getGameVersions } from './versions.js?v=21_51';
 const {
   isAdmin,
   getAdminSongs,
@@ -392,8 +404,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_50';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_50';
+import * as adminApi from './admin.js?v=21_51';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_51';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
