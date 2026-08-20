@@ -3530,6 +3530,34 @@ html.ios-viewport-repair {
   top: auto !important;
 }
 
+
+/* FIX82: スキル対象側のHOTをMAS-Gと同じ見た目の縦幅へ統一 */
+#viewSkill .sk-row .hot-tag {
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 5px !important;
+  margin: 0 !important;
+  border-width: 1px !important;
+  line-height: 1 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* Safariは文字だけを1px下げ、箱の高さは20pxのまま */
+@supports (-webkit-touch-callout: none) {
+  #viewSkill .sk-row .hot-tag {
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
