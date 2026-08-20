@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_22';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_22';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_22';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_22';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_22';
-import { getGameVersions } from './versions.js?v=21_22';
+import { supabase } from './supabase.js?v=21_23';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_23';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_23';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_23';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_23';
+import { getGameVersions } from './versions.js?v=21_23';
 const {
   isAdmin,
   getAdminSongs,
@@ -244,8 +244,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_22';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite, reorderFavorites } from './users.js?v=21_22';
+import * as adminApi from './admin.js?v=21_23';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_23';
 
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
@@ -486,37 +486,89 @@ function shareSkillImage() {
   c.width = W; c.height = H;
   const x = c.getContext('2d');
 
-  x.fillStyle = '#08111f'; x.fillRect(0,0,W,H);
-  x.fillStyle = '#111c30'; x.fillRect(42,42,W-84,H-84);
-  x.fillStyle = '#f8fafc'; x.font = '900 48px sans-serif';
-  x.fillText(`GITADORA ${activeInstrument} SKILL`,72,112);
-  x.fillStyle = '#94a3b8'; x.font = '700 23px sans-serif';
-  x.fillText(activeVersion?.name || '',72,150);
+  const rankColor = value => {
+    const rank = getTotalSkillRank(value);
+    const solid = {
+      white:'#f8fafc', orange:'#f97316', yellow:'#facc15', green:'#22c55e',
+      blue:'#3b82f6', purple:'#a855f7', red:'#ef4444',
+      bronze:'#cd7f32', silver:'#d1d5db', gold:'#fbbf24'
+    };
+    if (rank.includes('rainbow')) return null;
+    if (rank.includes('orange')) return solid.orange;
+    if (rank.includes('yellow')) return solid.yellow;
+    if (rank.includes('green')) return solid.green;
+    if (rank.includes('blue')) return solid.blue;
+    if (rank.includes('purple')) return solid.purple;
+    if (rank.includes('red')) return solid.red;
+    return solid[rank] || solid.white;
+  };
 
-  x.fillStyle = '#f8fafc'; x.font = '900 78px sans-serif';
-  x.fillText(Number(target.total).toFixed(2),72,245);
-  x.font = '800 26px sans-serif'; x.fillStyle='#94a3b8';
-  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,72,292);
+  const skillPaint = (value, left, width) => {
+    const color = rankColor(value);
+    if (color) return color;
+    const g = x.createLinearGradient(left,0,left+width,0);
+    g.addColorStop(0,'#22e6ff'); g.addColorStop(.22,'#3b82f6');
+    g.addColorStop(.45,'#8b5cf6'); g.addColorStop(.68,'#ec4899');
+    g.addColorStop(.86,'#f97316'); g.addColorStop(1,'#fde047');
+    return g;
+  };
+
+  x.fillStyle='#08111f'; x.fillRect(0,0,W,H);
+  x.fillStyle='#101a2d'; x.fillRect(34,34,W-68,H-68);
+
+  x.fillStyle='#f8fafc'; x.font='900 46px sans-serif';
+  x.fillText(`GITADORA ${activeInstrument} SKILL`,64,102);
+  x.fillStyle='#94a3b8'; x.font='700 22px sans-serif';
+  x.fillText(activeVersion?.name || '',64,138);
+
+  x.fillStyle=skillPaint(target.total,64,420); x.font='900 76px sans-serif';
+  x.fillText(Number(target.total).toFixed(2),64,230);
+  x.fillStyle='#94a3b8'; x.font='800 25px sans-serif';
+  x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,64,276);
 
   const drawColumn=(title,rows,left)=>{
-    x.fillStyle='#60a5fa'; x.font='900 26px sans-serif'; x.fillText(title,left,355);
+    const colW=462, rowH=55, startY=355;
+    x.fillStyle='#60a5fa'; x.font='900 25px sans-serif'; x.fillText(title,left,startY);
+
     rows.slice(0,25).forEach((r,i)=>{
-      const y=405+i*55;
-      x.fillStyle='#64748b'; x.font='700 18px sans-serif'; x.fillText(String(i+1).padStart(2,'0'),left,y);
-      x.fillStyle='#f8fafc'; x.font='700 18px sans-serif';
+      const y=startY+24+i*58;
+      x.fillStyle='#16233a';
+      x.strokeStyle='#334155';
+      x.lineWidth=1;
+      x.beginPath(); x.roundRect(left,y,colW,52,7); x.fill(); x.stroke();
+
+      x.fillStyle='#64748b'; x.font='700 16px sans-serif';
+      x.fillText(String(i+1).padStart(2,'0'),left+9,y+21);
+
+      x.fillStyle='#f8fafc'; x.font='700 16px sans-serif';
       let name=String(r.title||'');
-      while(x.measureText(name).width>300 && name.length>4) name=name.slice(0,-1);
+      while(x.measureText(name).width>255 && name.length>4) name=name.slice(0,-1);
       if(name!==String(r.title||'')) name=name.slice(0,-1)+'…';
-      x.fillText(name,left+38,y);
-      x.fillStyle='#94a3b8'; x.font='700 16px sans-serif'; x.fillText(`${r.part}  ${Number(r.achievement_rate).toFixed(2)}%`,left+38,y+22);
-      x.fillStyle='#f8fafc'; x.font='900 18px sans-serif'; x.textAlign='right'; x.fillText(Number(r.skill).toFixed(2),left+440,y); x.textAlign='left';
+      x.fillText(name,left+38,y+20);
+
+      x.fillStyle='#94a3b8'; x.font='700 14px sans-serif';
+      x.fillText(`${r.part}  達成率 ${Number(r.achievement_rate).toFixed(2)}%`,left+38,y+41);
+
+      const badge = Number(r.achievement_rate) === 100 ? 'EXC' : (String(r.fc||'').toUpperCase()==='FC' ? 'FC' : '');
+      if (badge) {
+        x.fillStyle = badge==='EXC' ? '#f59e0b' : '#2563eb';
+        x.beginPath(); x.roundRect(left+326,y+28,48,18,5); x.fill();
+        x.fillStyle='#fff'; x.font='900 11px sans-serif'; x.textAlign='center';
+        x.fillText(badge,left+350,y+41); x.textAlign='left';
+      }
+
+      const sv=Number(r.skill)||0;
+      x.fillStyle=skillPaint(sv*50,left+378,72);
+      x.font='900 17px sans-serif'; x.textAlign='right';
+      x.fillText(sv.toFixed(2),left+451,y+21); x.textAlign='left';
     });
   };
-  drawColumn('HOT TOP 25',rowsHot,72);
-  drawColumn('OTHER TOP 25',rowsOther,568);
+
+  drawColumn('HOT TOP 25',rowsHot,64);
+  drawColumn('OTHER TOP 25',rowsOther,554);
 
   x.fillStyle='#64748b'; x.font='700 18px sans-serif';
-  x.fillText('GITADORA Skill Simulator',72,1865);
+  x.fillText('GITADORA Skill Simulator',64,1864);
 
   c.toBlob(async blob=>{
     if(!blob) return;
@@ -701,7 +753,7 @@ function createCard(record, index, mode = 'MANAGE') {
           <div class="sk-title smart-song-title" data-full-title="${esc(record.title)}">${pendingTag}${hotTag} <span class="song-title-text">${esc(record.title)}</span></div>
           <div class="sk-meta">
             <span class="sk-meta-lv">Lv: <strong>${formatLevel(record.level)}</strong></span>
-            <span class="sk-meta-rate">Rate: <strong>${formatRate(record.achievement_rate)}%</strong></span>
+            <span class="sk-meta-rate">達成率: <strong>${formatRate(record.achievement_rate)}%</strong></span>
             <span class="opt-slot">${optionBadge}</span>
           </div>
         </div>
@@ -721,7 +773,7 @@ function createCard(record, index, mode = 'MANAGE') {
           <div class="fc-zone">${fcBadge}</div>
           <div class="m-flow-container">
             <span class="m-txt-lv">Lv <strong>${formatLevel(record.level)}</strong></span>
-            <span class="m-txt-rate">Rate <strong>${formatRate(record.achievement_rate)}%</strong></span>
+            <span class="m-txt-rate">達成率 <strong>${formatRate(record.achievement_rate)}%</strong></span>
             <span class="opt-slot">${optionBadge}</span>
           </div>
           <div class="m-btn-group">
@@ -1237,8 +1289,8 @@ async function toggleFavorite(userId, instrument = activeInstrument) {
     await Promise.all([loadUsers(), loadFavorites()]);
   } catch (e) {
     const message = String(e?.message || e);
-    if (message.includes('5件')) {
-      await showSiteDialog(`${instrument}のライバル登録は5件までです。`, 'ライバル登録');
+    if (message.includes('10件')) {
+      await showSiteDialog(`${instrument}のライバル登録は10件までです。`, 'ライバル登録');
     } else {
       await showSiteDialog('ライバル登録の更新に失敗しました。', 'エラー');
       console.error(e);
@@ -1265,17 +1317,9 @@ function renderFavoriteList(instrument) {
   const rows = favoriteUsers[instrument] || [];
   const target = $(`favoriteUserList${instrument}`);
 
-  target.innerHTML = rows.map((fav, index) => `
+  target.innerHTML = rows.map(fav => `
     <div class="favorite-user-row" data-favorite-row="${fav.favorite_user_id}">
-      <div class="name">${index + 1}. ${esc(fav.username)}</div>
-      <button type="button"
-        data-favorite-up="${fav.favorite_user_id}"
-        data-favorite-instrument="${instrument}"
-        ${index === 0 ? 'disabled' : ''}>↑</button>
-      <button type="button"
-        data-favorite-down="${fav.favorite_user_id}"
-        data-favorite-instrument="${instrument}"
-        ${index === rows.length - 1 ? 'disabled' : ''}>↓</button>
+      <div class="name">${esc(fav.username)}</div>
       <button type="button"
         class="remove"
         data-favorite-remove="${fav.favorite_user_id}"
@@ -2056,8 +2100,6 @@ document.addEventListener('click', async e => {
   const adminRejectRequest = e.target.closest('[data-admin-reject-request]');
   const userOpen = e.target.closest('[data-user-open]');
   const favoriteToggle = e.target.closest('[data-favorite-user]');
-  const favoriteUp = e.target.closest('[data-favorite-up]');
-  const favoriteDown = e.target.closest('[data-favorite-down]');
   const favoriteRemove = e.target.closest('[data-favorite-remove]');
   const compareCard = e.target.closest('[data-compare-song]');
   const adminSaveMasterRow = e.target.closest('[data-admin-save-master-row]');
@@ -2076,17 +2118,6 @@ document.addEventListener('click', async e => {
     await openUserDetail(userOpen.dataset.userOpen, userOpen.dataset.userName);
     return;
   }
-
-  if (favoriteUp) {
-    await moveFavorite(favoriteUp.dataset.favoriteUp, -1, favoriteUp.dataset.favoriteInstrument || 'GF');
-    return;
-  }
-
-  if (favoriteDown) {
-    await moveFavorite(favoriteDown.dataset.favoriteDown, 1, favoriteDown.dataset.favoriteInstrument || 'GF');
-    return;
-  }
-
   if (favoriteRemove) {
     await removeFavorite(
       favoriteRemove.dataset.favoriteRemove,
