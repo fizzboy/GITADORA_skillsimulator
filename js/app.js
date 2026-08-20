@@ -109,7 +109,8 @@ function installSkillColorCss() {
     // CSSのborder-color自体はgradient非対応なので、疑似要素用CSS変数に
     // 同じsidePaintを渡して、本物のgradient borderとして描画する。
     const cardBorderRule =
-      `.m-card:has(.skill-box-${row.rank}){--song-skill-border:${sidePaint};}`;
+      `.m-card:has(.skill-box-${row.rank}),` +
+      `.sk-row:has(.skill-box-${row.rank}){--song-skill-border:${sidePaint};}`;
 
     return textRule + songBoxRule + cardBorderRule;
   }).join('\n');
@@ -144,12 +145,12 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
   });
   return g;
 }
-import { supabase } from './supabase.js?v=21_46';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_46';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_46';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_46';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_46';
-import { getGameVersions } from './versions.js?v=21_46';
+import { supabase } from './supabase.js?v=21_48';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_48';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_48';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_48';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_48';
+import { getGameVersions } from './versions.js?v=21_48';
 const {
   isAdmin,
   getAdminSongs,
@@ -390,8 +391,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_46';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_46';
+import * as adminApi from './admin.js?v=21_48';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_48';
 
 let userListSort = { key: 'total', dir: 'desc' };
 const USER_LIST_PAGE_SIZE = 30;
@@ -652,12 +653,18 @@ function shareSkillImage() {
   const songPaint = (value, left, top, width, height) =>
     skillColorCanvasPaint(x, getSkillColorRowByTotalValue((Number(value) || 0) * 50), left, top, width, height);
 
-  const songBorderColor = value => {
-    const row = getSkillColorRowByTotalValue((Number(value) || 0) * 50);
-    if (!row) return '#475569';
-    if (row.type === 'solid') return row.color;
-    return row.stops[Math.floor((row.stops.length - 1) / 2)][0];
-  };
+  // 共有画像の外枠も画面上の登録曲一覧と同じスキルカラーを使う。
+  // CanvasのstrokeStyleにはCanvasGradientを直接渡せるため、
+  // RAINBOW等を代表色1色へ潰さず、そのままグラデーション枠として描画する。
+  const songBorderPaint = (value, left, top, width, height) =>
+    skillColorCanvasPaint(
+      x,
+      getSkillColorRowByTotalValue((Number(value) || 0) * 50),
+      left,
+      top,
+      width,
+      height
+    );
 
   // background
   x.fillStyle = '#07101d';
@@ -724,7 +731,7 @@ function shareSkillImage() {
 
       // 各曲の外枠は、その曲のSKILLカラーに合わせる。
       // セル内部の縦線は控えめな共通色のままにして可読性を維持する。
-      x.strokeStyle = songBorderColor(r.skill);
+      x.strokeStyle = songBorderPaint(r.skill, left, y, tableW, rowH);
       x.lineWidth = 2;
       x.strokeRect(left, y, tableW, rowH);
       x.strokeStyle = '#475569';
