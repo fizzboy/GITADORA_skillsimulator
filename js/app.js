@@ -50,6 +50,12 @@ function skillColorCss(row) {
   return `linear-gradient(${row.direction || '90deg'}, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
 }
 
+function skillColorVerticalCss(row) {
+  if (!row) return '#ffffff';
+  if (row.type === 'solid') return row.color;
+  return `linear-gradient(180deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
+}
+
 function installSkillColorCss() {
   const old = document.getElementById('skill-color-table-style');
   if (old) old.remove();
@@ -66,10 +72,12 @@ function installSkillColorCss() {
       : `.score-rank-${row.rank}{background:${paint}!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;filter:none!important;}`;
 
     // 曲別Skillは数字を白で固定し、左右の帯だけをスキルカラーにする。
-    // 配色の参照元は同じSKILL_COLOR_TABLE。
+    // 左右帯は「上→下」の縦グラデーションに統一する。
+    // 配色そのものは同じSKILL_COLOR_TABLEを参照。
+    const sidePaint = skillColorVerticalCss(row);
     const songBoxRule =
       `.skill-box-${row.rank}{` +
-      `background:${paint} left/5px 100% no-repeat,${paint} right/5px 100% no-repeat,#101827!important;` +
+      `background:${sidePaint} left/5px 100% no-repeat,${sidePaint} right/5px 100% no-repeat,#101827!important;` +
       `color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;` +
       `font-weight:900!important;` +
       `text-shadow:0 1px 2px rgba(0,0,0,.95)!important;` +
@@ -96,12 +104,21 @@ function skillColorCanvasPaint(ctx, row, left, top, width, height) {
   row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
   return g;
 }
-import { supabase } from './supabase.js?v=21_35';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_35';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_35';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_35';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_35';
-import { getGameVersions } from './versions.js?v=21_35';
+
+function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
+  if (!row) return '#ffffff';
+  if (row.type === 'solid') return row.color;
+
+  const g = ctx.createLinearGradient(left, top, left, top + height);
+  row.stops.forEach(([color,pos]) => g.addColorStop(pos / 100, color));
+  return g;
+}
+import { supabase } from './supabase.js?v=21_36';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_36';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_36';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_36';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_36';
+import { getGameVersions } from './versions.js?v=21_36';
 const {
   isAdmin,
   getAdminSongs,
@@ -342,8 +359,8 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_35';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_35';
+import * as adminApi from './admin.js?v=21_36';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_36';
 
 let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
@@ -664,6 +681,11 @@ function shareSkillImage() {
       const y=headTop+headerH+i*rowH;
       x.fillStyle=i%2===0 ? '#111827' : '#0d1627';
       x.fillRect(left,y,tableW,rowH);
+
+      // FC / EXCバッジ描画でstrokeStyleが変更されても、
+      // 表の枠線は必ず同じシルバーへ戻してから描画する。
+      x.strokeStyle='#94a3b8';
+      x.lineWidth=1;
       for(let c=0;c<widths.length;c++) x.strokeRect(pos[c],y,widths[c],rowH);
 
       // No.
@@ -694,10 +716,10 @@ function shareSkillImage() {
       x.fillStyle='#101827';
       x.fillRect(skillCellX+1,y+1,skillCellW-2,rowH-2);
 
-      x.fillStyle=skillColorCanvasPaint(x,songRow,skillCellX,barY,barW,barH);
+      x.fillStyle=skillColorCanvasVerticalPaint(x,songRow,skillCellX,barY,barW,barH);
       x.fillRect(skillCellX+2,barY,barW,barH);
 
-      x.fillStyle=skillColorCanvasPaint(x,songRow,skillCellX+skillCellW-barW-2,barY,barW,barH);
+      x.fillStyle=skillColorCanvasVerticalPaint(x,songRow,skillCellX+skillCellW-barW-2,barY,barW,barH);
       x.fillRect(skillCellX+skillCellW-barW-2,barY,barW,barH);
 
       x.fillStyle='#ffffff';
