@@ -1,9 +1,9 @@
-import { supabase } from './supabase.js?v=21_23';
-import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_23';
-import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_23';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_23';
-import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_23';
-import { getGameVersions } from './versions.js?v=21_23';
+import { supabase } from './supabase.js?v=21_26';
+import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_26';
+import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_26';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_26';
+import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_26';
+import { getGameVersions } from './versions.js?v=21_26';
 const {
   isAdmin,
   getAdminSongs,
@@ -244,9 +244,10 @@ async function deleteMasterSongTitle(title) {
   if (error) throw error;
 }
 
-import * as adminApi from './admin.js?v=21_23';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_23';
+import * as adminApi from './admin.js?v=21_26';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_26';
 
+let userListSort = { key: 'total', dir: 'desc' };
 let activeTabName = 'SKILL';
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let gameVersions = [];
@@ -424,7 +425,6 @@ function applyInstrumentUI() {
   document.querySelectorAll('[data-instrument]').forEach(b => b.classList.toggle('active', b.dataset.instrument === activeInstrument));
   $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
   if ($('instrumentLabel')) $('instrumentLabel').textContent = activeInstrument;
-  if ($('userSort')) $('userSort').value = activeInstrument === 'DM' ? 'dm_desc' : 'gf_desc';
 
   document.body.classList.toggle('dm-mode', activeInstrument === 'DM');
   if (activeInstrument === 'DM' && $('formOption')) {
@@ -473,6 +473,14 @@ async function init() {
 
 
 function openMenu() { $('menuMask').style.display = 'flex'; }
+function openRivalManage() {
+  closeMenu();
+  $('rivalManageMask').style.display = 'flex';
+  loadFavorites().catch(console.error);
+}
+function closeRivalManage() {
+  $('rivalManageMask').style.display = 'none';
+}
 function closeMenu() { $('menuMask').style.display = 'none'; }
 function openHowTo() { closeMenu(); $('howToMask').style.display = 'flex'; }
 function closeHowTo() { $('howToMask').style.display = 'none'; }
@@ -486,32 +494,45 @@ function shareSkillImage() {
   c.width = W; c.height = H;
   const x = c.getContext('2d');
 
-  const rankColor = value => {
-    const rank = getTotalSkillRank(value);
-    const solid = {
-      white:'#f8fafc', orange:'#f97316', yellow:'#facc15', green:'#22c55e',
-      blue:'#3b82f6', purple:'#a855f7', red:'#ef4444',
-      bronze:'#cd7f32', silver:'#d1d5db', gold:'#fbbf24'
+  // サイト上のTOTAL / 曲別Skillと同じランク定義・配色をCanvasでも使う。
+  const rankPaint = (rank, left, top, width, height) => {
+    const solids = {
+      white:'#ffffff', orange:'#ff7a22', yellow:'#ffe600',
+      green:'#22d13b', blue:'#2f91ff', purple:'#e02cff', red:'#ff1638'
     };
-    if (rank.includes('rainbow')) return null;
-    if (rank.includes('orange')) return solid.orange;
-    if (rank.includes('yellow')) return solid.yellow;
-    if (rank.includes('green')) return solid.green;
-    if (rank.includes('blue')) return solid.blue;
-    if (rank.includes('purple')) return solid.purple;
-    if (rank.includes('red')) return solid.red;
-    return solid[rank] || solid.white;
-  };
+    if (solids[rank]) return solids[rank];
 
-  const skillPaint = (value, left, width) => {
-    const color = rankColor(value);
-    if (color) return color;
-    const g = x.createLinearGradient(left,0,left+width,0);
-    g.addColorStop(0,'#22e6ff'); g.addColorStop(.22,'#3b82f6');
-    g.addColorStop(.45,'#8b5cf6'); g.addColorStop(.68,'#ec4899');
-    g.addColorStop(.86,'#f97316'); g.addColorStop(1,'#fde047');
+    const stops = {
+      'orange-grad': [['#fff2e8',0],['#ff9b43',.42],['#ff5a00',1]],
+      'yellow-grad': [['#fffbd1',0],['#ffe94d',.45],['#f5c400',1]],
+      'green-grad':  [['#d9ffe1',0],['#44e45b',.45],['#0c9f2b',1]],
+      'blue-grad':   [['#e2f3ff',0],['#53adff',.42],['#0966d9',1]],
+      'purple-grad': [['#f9dcff',0],['#ea5cff',.42],['#a400d2',1]],
+      'red-grad':    [['#ffd9df',0],['#ff4d68',.42],['#c70023',1]],
+      bronze:        [['#ffd0ad',0],['#c77b45',.48],['#7d3f20',1]],
+      silver:        [['#ffffff',0],['#d8dde3',.42],['#8e99a5',1]],
+      gold:          [['#fff7b2',0],['#ffd83d',.42],['#d89a00',1]]
+    };
+
+    if (rank === 'rainbow' || rank === 'deep-rainbow') {
+      const g = x.createLinearGradient(left, top, left + width, top);
+      const colors = rank === 'deep-rainbow'
+        ? [['#00f0ff',0],['#006cff',.15],['#5b21ff',.30],['#c000ff',.45],['#ff008c',.60],['#ff3b00',.76],['#ffb800',.89],['#fff200',1]]
+        : [['#57e6ff',0],['#4aa3ff',.26],['#7d75ff',.48],['#c56dff',.72],['#ff8fd8',1]];
+      colors.forEach(([color,pos]) => g.addColorStop(pos,color));
+      return g;
+    }
+
+    const colors = stops[rank] || [['#ffffff',0],['#ffffff',1]];
+    const g = x.createLinearGradient(left, top, left, top + height);
+    colors.forEach(([color,pos]) => g.addColorStop(pos,color));
     return g;
   };
+
+  const totalSkillPaint = (value,left,top,width,height) =>
+    rankPaint(getTotalSkillRank(value),left,top,width,height);
+  const songSkillPaint = (value,left,top,width,height) =>
+    rankPaint(getSongSkillRank(value),left,top,width,height);
 
   x.fillStyle='#08111f'; x.fillRect(0,0,W,H);
   x.fillStyle='#101a2d'; x.fillRect(34,34,W-68,H-68);
@@ -521,25 +542,32 @@ function shareSkillImage() {
   x.fillStyle='#94a3b8'; x.font='700 22px sans-serif';
   x.fillText(activeVersion?.name || '',64,138);
 
-  x.fillStyle=skillPaint(target.total,64,420); x.font='900 76px sans-serif';
+  // TOTALはTOTALスキル帯そのものを使用
+  x.fillStyle=totalSkillPaint(target.total,64,164,420,78);
+  x.font='900 76px sans-serif';
   x.fillText(Number(target.total).toFixed(2),64,230);
   x.fillStyle='#94a3b8'; x.font='800 25px sans-serif';
   x.fillText(`HOT ${Number(target.hot).toFixed(2)}   OTHER ${Number(target.other).toFixed(2)}`,64,276);
 
   const drawColumn=(title,rows,left)=>{
-    const colW=462, rowH=55, startY=355;
+    const colW=462, startY=355;
     x.fillStyle='#60a5fa'; x.font='900 25px sans-serif'; x.fillText(title,left,startY);
 
     rows.slice(0,25).forEach((r,i)=>{
       const y=startY+24+i*58;
+      const rowMid=y+26;
+
       x.fillStyle='#16233a';
       x.strokeStyle='#334155';
       x.lineWidth=1;
       x.beginPath(); x.roundRect(left,y,colW,52,7); x.fill(); x.stroke();
 
+      // 左端ナンバリング：上下中央
       x.fillStyle='#64748b'; x.font='700 16px sans-serif';
-      x.fillText(String(i+1).padStart(2,'0'),left+9,y+21);
+      x.textAlign='left'; x.textBaseline='middle';
+      x.fillText(String(i+1).padStart(2,'0'),left+9,rowMid);
 
+      x.textBaseline='alphabetic';
       x.fillStyle='#f8fafc'; x.font='700 16px sans-serif';
       let name=String(r.title||'');
       while(x.measureText(name).width>255 && name.length>4) name=name.slice(0,-1);
@@ -549,18 +577,31 @@ function shareSkillImage() {
       x.fillStyle='#94a3b8'; x.font='700 14px sans-serif';
       x.fillText(`${r.part}  達成率 ${Number(r.achievement_rate).toFixed(2)}%`,left+38,y+41);
 
+      // FC=銀、EXC=金
       const badge = Number(r.achievement_rate) === 100 ? 'EXC' : (String(r.fc||'').toUpperCase()==='FC' ? 'FC' : '');
       if (badge) {
-        x.fillStyle = badge==='EXC' ? '#f59e0b' : '#2563eb';
+        const bg=x.createLinearGradient(left+326,y+28,left+326,y+46);
+        if (badge==='EXC') {
+          bg.addColorStop(0,'#fff7b2'); bg.addColorStop(.45,'#ffd83d'); bg.addColorStop(1,'#d89a00');
+        } else {
+          bg.addColorStop(0,'#ffffff'); bg.addColorStop(.45,'#d8dde3'); bg.addColorStop(1,'#8e99a5');
+        }
+        x.fillStyle=bg;
         x.beginPath(); x.roundRect(left+326,y+28,48,18,5); x.fill();
-        x.fillStyle='#fff'; x.font='900 11px sans-serif'; x.textAlign='center';
-        x.fillText(badge,left+350,y+41); x.textAlign='left';
+        x.strokeStyle=badge==='EXC' ? '#9a6700' : '#66717d';
+        x.lineWidth=1; x.stroke();
+        x.fillStyle='#182033'; x.font='900 11px sans-serif'; x.textAlign='center';
+        x.textBaseline='middle'; x.fillText(badge,left+350,y+37);
+        x.textAlign='left'; x.textBaseline='alphabetic';
       }
 
+      // 曲別Skillは曲別Skill帯（Skill×50）を使用。TOTAL値は参照しない。
       const sv=Number(r.skill)||0;
-      x.fillStyle=skillPaint(sv*50,left+378,72);
-      x.font='900 17px sans-serif'; x.textAlign='right';
-      x.fillText(sv.toFixed(2),left+451,y+21); x.textAlign='left';
+      x.fillStyle=songSkillPaint(sv,left+378,y+7,73,38);
+      x.font='900 17px sans-serif';
+      x.textAlign='right'; x.textBaseline='middle';
+      x.fillText(sv.toFixed(2),left+451,rowMid);
+      x.textAlign='left'; x.textBaseline='alphabetic';
     });
   };
 
@@ -1182,50 +1223,57 @@ async function loadUsers() {
     publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument, activeVersionId);
     renderUsers();
   } catch (e) {
-    $('userList').innerHTML = `<div class="empty-state">ユーザー一覧の取得に失敗しました: ${esc(e.message)}</div>`;
+    $('userList').innerHTML = `<div class="empty-state">ユーザーリストの取得に失敗しました: ${esc(e.message)}</div>`;
   }
 }
 
 function renderUsers() {
-  const sort = $('userSort')?.value || 'gf_desc';
+  const { key, dir } = userListSort;
+  const sign = dir === 'asc' ? 1 : -1;
+
+  document.querySelectorAll('[data-user-sort]').forEach(btn => {
+    const active = btn.dataset.userSort === key;
+    btn.classList.toggle('active', active);
+    if (active) btn.dataset.sortDir = dir;
+    else delete btn.dataset.sortDir;
+  });
+
   const users = [...publicUsers].sort((a, b) => {
-    const gfA = Number(a.gf_skill) || 0;
-    const gfB = Number(b.gf_skill) || 0;
-    const dmA = Number(a.dm_skill) || 0;
-    const dmB = Number(b.dm_skill) || 0;
-    const nameA = String(a.username || '');
-    const nameB = String(b.username || '');
+    const gfA = Number(a.gf_skill) || 0, gfB = Number(b.gf_skill) || 0;
+    const dmA = Number(a.dm_skill) || 0, dmB = Number(b.dm_skill) || 0;
+    const totalA = gfA + dmA, totalB = gfB + dmB;
+    const nameA = String(a.username || ''), nameB = String(b.username || '');
     const dateA = a.last_recorded_at ? new Date(a.last_recorded_at).getTime() : 0;
     const dateB = b.last_recorded_at ? new Date(b.last_recorded_at).getTime() : 0;
 
-    switch (sort) {
-      case 'gf_asc': return gfA - gfB || nameA.localeCompare(nameB, 'ja');
-      case 'dm_desc': return dmB - dmA || gfB - gfA || nameA.localeCompare(nameB, 'ja');
-      case 'dm_asc': return dmA - dmB || gfB - gfA || nameA.localeCompare(nameB, 'ja');
-      case 'name_asc': return nameA.localeCompare(nameB, 'ja');
-      case 'name_desc': return nameB.localeCompare(nameA, 'ja');
-      case 'date_desc': return dateB - dateA || gfB - gfA;
-      case 'date_asc': return dateA - dateB || gfB - gfA;
-      case 'gf_desc':
-      default: return gfB - gfA || dmB - dmA || nameA.localeCompare(nameB, 'ja');
-    }
+    let result = 0;
+    if (key === 'gf') result = gfA - gfB;
+    else if (key === 'dm') result = dmA - dmB;
+    else if (key === 'total') result = totalA - totalB;
+    else if (key === 'date') result = dateA - dateB;
+    else if (key === 'name') return dir === 'asc'
+      ? nameA.localeCompare(nameB, 'ja')
+      : nameB.localeCompare(nameA, 'ja');
+
+    return result * sign || nameA.localeCompare(nameB, 'ja');
   });
 
   $('userList').innerHTML = users.map(user => {
-    const gfClass = `score-rank-${getTotalSkillRank(user.gf_skill)}`;
-    const dmClass = `score-rank-${getTotalSkillRank(user.dm_skill)}`;
+    const gf = Number(user.gf_skill) || 0;
+    const dm = Number(user.dm_skill) || 0;
+    const combined = gf + dm;
+    const gfClass = `score-rank-${getTotalSkillRank(gf)}`;
+    const dmClass = `score-rank-${getTotalSkillRank(dm)}`;
+    // TOTALの色はGF/DMのうち高い方のスキルカラーを採用する。
+    const totalClass = `score-rank-${getTotalSkillRank(Math.max(gf, dm))}`;
     const rivalLabel = `${activeInstrument}ライバル`;
 
     return `
       <div class="user-list-row" data-user-open="${user.user_id}" data-user-name="${esc(user.username)}">
         <div class="user-list-name">${esc(user.username)}${user.is_self ? '（自分）' : ''}</div>
-        ${activeInstrument === 'DM' ? `
-          <div class="user-list-skill user-list-dm"><div class="user-list-skill-label">DM</div><div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div></div>
-          <div class="user-list-skill user-list-gf"><div class="user-list-skill-label">GF</div><div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div></div>
-        ` : `
-          <div class="user-list-skill user-list-gf"><div class="user-list-skill-label">GF</div><div class="user-list-skill-value ${gfClass}">${formatSkill(user.gf_skill)}</div></div>
-          <div class="user-list-skill user-list-dm"><div class="user-list-skill-label">DM</div><div class="user-list-skill-value ${dmClass}">${formatSkill(user.dm_skill)}</div></div>
-        `}
+        <div class="user-list-skill user-list-gf"><div class="user-list-skill-value ${gfClass}">${formatSkill(gf)}</div></div>
+        <div class="user-list-skill user-list-dm"><div class="user-list-skill-value ${dmClass}">${formatSkill(dm)}</div></div>
+        <div class="user-list-total-skill ${totalClass}">${formatSkill(combined)}</div>
         <div class="user-list-date">${formatDateOnly(user.last_recorded_at)}</div>
         ${user.is_self
           ? '<div></div>'
@@ -1439,7 +1487,6 @@ async function openMyPage() {
   $('mypageUsernameInput').value = data.user?.user_metadata?.username || $('headerUsername').textContent || '';
   $('newPassword').value = '';
   $('mypageModal').style.display = 'flex';
-  await loadFavorites();
 }
 
 async function changeOwnUsername() {
@@ -1902,13 +1949,14 @@ function renderSkillSyncBrowserGuide() {
     '③ 作成した同期用ブックマークを実行';
 }
 
-$('btnOpenSkillSync').addEventListener('click', () => {
+function openSkillSyncDialog() {
+  closeMenu();
   renderSkillSyncBrowserGuide();
   setSkillSyncStatus('待機中');
   $('skillSyncMask').style.display = 'flex';
   const dialog = document.querySelector('.skill-sync-dialog');
   if (dialog) dialog.scrollTop = 0;
-});
+}
 
 $('btnCloseSkillSync').addEventListener('click', () => {
   if (!skillSyncInProgress) $('skillSyncMask').style.display = 'none';
@@ -2077,7 +2125,18 @@ $('userSearch').addEventListener('input', () => {
   userSearchTimer = setTimeout(loadUsers, 250);
 });
 
-$('userSort').addEventListener('change', renderUsers);
+document.querySelector('.user-list-header')?.addEventListener('click', e => {
+  const button = e.target.closest('[data-user-sort]');
+  if (!button) return;
+  const key = button.dataset.userSort;
+  if (userListSort.key === key) {
+    userListSort.dir = userListSort.dir === 'desc' ? 'asc' : 'desc';
+  } else {
+    userListSort.key = key;
+    userListSort.dir = key === 'name' ? 'asc' : 'desc';
+  }
+  renderUsers();
+});
 $('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
 
 $('btnCloseUserDetail').addEventListener('click', closeUserDetail);
@@ -2282,10 +2341,14 @@ $('btnMenu').addEventListener('click', openMenu);
 $('btnCloseMenu').addEventListener('click', closeMenu);
 $('menuMask').addEventListener('click', e => { if (e.target === $('menuMask')) closeMenu(); });
 $('btnMenuMypage').addEventListener('click', async () => { closeMenu(); await openMyPage(); });
+$('btnMenuSkillSync').addEventListener('click', openSkillSyncDialog);
+$('btnMenuShareSkill').addEventListener('click', () => { closeMenu(); shareSkillImage(); });
+$('btnMenuRivals').addEventListener('click', openRivalManage);
 $('btnMenuHowTo').addEventListener('click', openHowTo);
 $('btnCloseHowTo').addEventListener('click', closeHowTo);
 $('howToMask').addEventListener('click', e => { if (e.target === $('howToMask')) closeHowTo(); });
-$('btnShareSkill').addEventListener('click', shareSkillImage);
+$('btnCloseRivalManage').addEventListener('click', closeRivalManage);
+$('rivalManageMask').addEventListener('click', e => { if (e.target === $('rivalManageMask')) closeRivalManage(); });
 
 $('siteDialogOk').addEventListener('click', () => closeSiteDialog(true));
 $('siteDialogCancel').addEventListener('click', () => closeSiteDialog(false));
