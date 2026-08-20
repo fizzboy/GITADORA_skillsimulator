@@ -75,6 +75,10 @@ export async function requestSongMaster({ title, part, proposedLevel, versionId 
     proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100
   };
 
+  if (!payload.version_id) {
+    throw new Error('バージョン情報を取得できませんでした。ページを再読み込みして再度お試しください。');
+  }
+
   const { data, error } = await supabase
     .from('song_requests')
     .insert(payload)
@@ -102,7 +106,7 @@ export async function requestSongMaster({ title, part, proposedLevel, versionId 
 }
 
 
-export async function requestSongLevelCorrection({ songId, proposedLevel }) {
+export async function requestSongLevelCorrection({ songId, proposedLevel, versionId = null }) {
   const numericLevel = Number(proposedLevel);
   if (!songId) throw new Error('対象譜面を取得できません。');
   if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 99.99) {
@@ -123,7 +127,7 @@ export async function requestSongLevelCorrection({ songId, proposedLevel }) {
     requester_id: userData.user.id,
     title: song.title,
     part: song.part,
-    version_id: song.version_id,
+    version_id: song.version_id || versionId,
     proposed_level: Math.floor((numericLevel + Number.EPSILON) * 100) / 100,
     request_type: 'level_correction',
     current_song_id: song.id
