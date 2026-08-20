@@ -164,7 +164,7 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
 import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
 import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_97';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_98';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_93';
 import { getGameVersions } from './versions.js?v=21_57';
 const {
@@ -2138,7 +2138,8 @@ $('btnSendLevelCorrection').addEventListener('click', async () => {
     button.textContent = '送信中';
     await requestSongLevelCorrection({
       songId: selectedSong.id,
-      proposedLevel
+      proposedLevel,
+      versionId: activeVersionId
     });
     hide('levelCorrectionForm');
     await showSiteDialog('難易度修正依頼を送信しました。', '送信完了');
