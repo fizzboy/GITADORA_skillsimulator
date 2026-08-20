@@ -97,7 +97,9 @@ function installSkillColorCss() {
     // background-position / background-size を使うため、単色もgradient image化する。
     // これで WHITE / ORANGE / YELLOW / GREEN / BLUE / PURPLE / RED など
     // 非グラデーション帯も、グラデーション帯と同じ左右カラー帯になる。
-    const sidePaint = skillColorVerticalCss(row);
+    const sidePaint = row.type === 'solid'
+      ? row.color
+      : skillColorVerticalCss(row);
 
     const songBoxRule =
       `.skill-box-${row.rank}{` +
@@ -116,8 +118,8 @@ function installSkillColorCss() {
     // スキル対象・登録曲の「外枠だけ」は45度グラデーションにする。
     // スキル値の左右帯、ヘッダー、共有画像には sidePaint をそのまま使うため影響しない。
     const borderPaint = row.type === 'solid'
-      ? `linear-gradient(135deg, ${row.color} 0%, #ffffff 100%)`
-      : `linear-gradient(135deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
+      ? row.color
+      : `linear-gradient(170deg, ${row.stops.map(([color,pos]) => `${color} ${pos}%`).join(', ')})`;
 
     const cardBorderRule =
       `.m-card:has(.skill-box-${row.rank}),` +
