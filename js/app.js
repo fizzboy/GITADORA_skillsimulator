@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_143';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_148';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -1616,8 +1616,15 @@ function closeModal() {
   setTimeout(repairViewport, 120);
 }
 
+let songSuggestRequestSeq = 0;
+let songSuggestTimer = null;
+
 async function suggestSongs() {
+  const requestSeq = ++songSuggestRequestSeq;
   const title = $('formTitle').value.trim();
+  const currentPart = $('partSelect').value;
+  const versionId = activeVersionId;
+  const instrument = activeInstrument;
 
   selectedSong = null;
   $('formLevel').value = '';
@@ -1633,23 +1640,42 @@ async function suggestSongs() {
   }
 
   try {
-    const rows = await searchSongTitles(title, activeInstrument, activeVersionId);
+    // 候補検索と完全一致確認を並列で実行して待ち時間を短縮する。
+    const [rows, exactCurrentSong] = await Promise.all([
+      searchSongTitles(title, instrument, versionId),
+      currentPart
+        ? getSongByTitleAndPart(title, currentPart, versionId)
+        : Promise.resolve(null)
+    ]);
 
-    // サジェスト候補が存在していても、現在入力中の「曲名 + Part」が
-    // 曲マスターに完全一致しない場合は登録依頼への導線を必ず表示する。
-    // 例: 「as」と入力して Ascetic 等が候補に出ても「as」の登録依頼が可能。
-    const currentPart = $('partSelect').value;
-    const exactCurrentSong = currentPart
-      ? await getSongByTitleAndPart(title, currentPart, activeVersionId)
-      : null;
+    // 文字入力中に古い検索結果が後から返ってきても画面へ反映しない。
+    // 例：「一網」検索の応答が「一網打尽」検索より後に返るケースを防止。
+    if (
+      requestSeq !== songSuggestRequestSeq ||
+      $('formTitle').value.trim() !== title ||
+      $('partSelect').value !== currentPart ||
+      activeVersionId !== versionId ||
+      activeInstrument !== instrument
+    ) {
+      return;
+    }
 
-    const suggestionHtml = rows.map(r => `
+    // 完全一致する曲名は候補の先頭へ。
+    const sortedRows = [...(rows ?? [])].sort((a, b) => {
+      const aExact = String(a.title || '') === title ? 1 : 0;
+      const bExact = String(b.title || '') === title ? 1 : 0;
+      return bExact - aExact;
+    });
+
+    const suggestionHtml = sortedRows.map(r => `
       <button class="suggestion"
         data-title="${esc(r.title)}"
         data-is-hot="${r.is_hot ? '1':'0'}">
         <span>${r.is_hot ? '[HOT] ' : ''}${esc(r.title)}</span>
       </button>`).join('');
 
+    // 現在の「曲名 + Part」がマスターに完全一致している場合は
+    // 新規登録依頼を絶対に表示しない。
     const requestHtml = exactCurrentSong ? '' : `
       <button class="suggestion request-suggestion"
         data-request-title="${esc(title)}">
@@ -1658,10 +1684,8 @@ async function suggestSongs() {
 
     $('songSuggestions').innerHTML = suggestionHtml + requestHtml;
 
-    // 入力中は完全一致しても自動確定しない。
-    // 候補をユーザーがタップした時だけ曲名を確定する。
-    // これにより「Flow」入力時にFlowが存在していても
-    // 「Flower remix」まで続けて入力できる。
+    // 入力途中の完全一致では自動確定しない。
+    // Flow → Flower のように続けて入力できる仕様を維持する。
     selectedSong = null;
     $('formLevel').value = '';
     $('formLevel').readOnly = true;
@@ -1670,8 +1694,17 @@ async function suggestSongs() {
     hide('masterRequestArea');
     updateSkillPreview();
   } catch (e) {
-    console.error(e);
+    if (requestSeq === songSuggestRequestSeq) {
+      console.error(e);
+    }
   }
+}
+
+function scheduleSongSuggestions() {
+  clearTimeout(songSuggestTimer);
+  songSuggestTimer = setTimeout(() => {
+    suggestSongs();
+  }, 60);
 }
 
 async function selectSongTitle(title) {
@@ -2877,8 +2910,20 @@ $('btnSendLevelCorrection').addEventListener('click', async () => {
   }
 });
 $('btnHeaderAdd').addEventListener('click', () => openScoreModal());
-$('formTitle').addEventListener('input', suggestSongs);
-$('partSelect').addEventListener('change', refreshSelectedPart);
+$('formTitle').addEventListener('input', scheduleSongSuggestions);
+
+// IME変換確定時は待ち時間なしで最新候補を再取得する。
+// iPhone/日本語入力で入力完了後に候補が追いつかないケースを減らす。
+$('formTitle').addEventListener('compositionend', () => {
+  clearTimeout(songSuggestTimer);
+  suggestSongs();
+});
+$('partSelect').addEventListener('change', async () => {
+  ++songSuggestRequestSeq;
+  clearTimeout(songSuggestTimer);
+  await refreshSelectedPart();
+  if ($('formTitle').value.trim()) await suggestSongs();
+});
 $('formLevel').addEventListener('input', updateSkillPreview);
 $('formRate').addEventListener('input', updateSkillPreview);
 $('btnSubmitForm').addEventListener('click', async () => {
