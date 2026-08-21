@@ -5789,63 +5789,6 @@ body.light-mode #versionSelect option{
 }
 
 
-/* === FIX128: ライトモード ユーザーリスト / ユーザー詳細 === */
-
-/* 白・銀・金・虹は明るい背景上で埋もれやすいため、
-   元のスキルカラーは維持したまま濃い輪郭だけ追加する */
-body.light-mode .score-rank-white{
-  -webkit-text-stroke:.65px #475569 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.20) !important;
-}
-body.light-mode .score-rank-silver{
-  -webkit-text-stroke:.55px #475569 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.18) !important;
-}
-body.light-mode .score-rank-gold{
-  -webkit-text-stroke:.50px #78350f !important;
-  text-shadow:0 1px 1px rgba(120,53,15,.16) !important;
-}
-body.light-mode .score-rank-rainbow,
-body.light-mode .score-rank-deep-rainbow{
-  -webkit-text-stroke:.48px #334155 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.18) !important;
-}
-
-/* ユーザーリスト側は小さい文字なので少しだけ輪郭を強める */
-body.light-mode .user-list-skill-value.score-rank-white,
-body.light-mode .user-list-total-skill.score-rank-white{
-  -webkit-text-stroke:.75px #475569 !important;
-}
-body.light-mode .user-list-skill-value.score-rank-silver,
-body.light-mode .user-list-total-skill.score-rank-silver{
-  -webkit-text-stroke:.65px #475569 !important;
-}
-body.light-mode .user-list-skill-value.score-rank-gold,
-body.light-mode .user-list-total-skill.score-rank-gold{
-  -webkit-text-stroke:.60px #78350f !important;
-}
-body.light-mode .user-list-skill-value.score-rank-rainbow,
-body.light-mode .user-list-skill-value.score-rank-deep-rainbow,
-body.light-mode .user-list-total-skill.score-rank-rainbow,
-body.light-mode .user-list-total-skill.score-rank-deep-rainbow{
-  -webkit-text-stroke:.58px #334155 !important;
-}
-
-/* ユーザー詳細ヘッダーのスキル値も同じ視認性ルールを使用 */
-body.light-mode .user-detail-summary strong.score-rank-white{
-  -webkit-text-stroke:.70px #475569 !important;
-}
-body.light-mode .user-detail-summary strong.score-rank-silver{
-  -webkit-text-stroke:.60px #475569 !important;
-}
-body.light-mode .user-detail-summary strong.score-rank-gold{
-  -webkit-text-stroke:.55px #78350f !important;
-}
-body.light-mode .user-detail-summary strong.score-rank-rainbow,
-body.light-mode .user-detail-summary strong.score-rank-deep-rainbow{
-  -webkit-text-stroke:.52px #334155 !important;
-}
-
 /* ユーザー詳細の戻るボタンをライトテーマ化 */
 body.light-mode .user-detail-back{
   background:#f8fafc !important;
@@ -5860,56 +5803,33 @@ body.light-mode .user-detail-back:active{
 }
 
 
-/* === FIX129: ライトモード ユーザーリストのスキルカラー再調整 ===
-   太い輪郭は廃止。文字サイズを戻し、ライト背景用に明度だけ補正する。 */
 
-/* ユーザーリストの数値を少し大きく */
+
+
+/* === FIX130: ライトモード ユーザーリスト背景調整 ===
+   スキルカラーはダーク/ライトで完全共通。
+   ライト専用の色置換・輪郭は行わず、背景側でコントラストを確保する。 */
+body.light-mode .user-list-row,
+body.light-mode .user-list-row:active{
+  background:#d8dde5 !important;
+  color:#111827 !important;
+  border-color:#8b98aa !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.06) !important;
+}
+
+/* 数値色はSKILL_COLOR_TABLEの出力をそのまま使う */
 body.light-mode .user-list-skill-value{
   font-size:12px !important;
   -webkit-text-stroke:0 !important;
   text-shadow:none !important;
+  filter:none !important;
 }
 
-/* 白ランクはライト背景では白のままだと読めないため濃いグレーへ。
-   「白ランク」の意味は維持しつつ、ライトテーマ用の表示色として補正。 */
-body.light-mode .user-list-skill-value.score-rank-white,
-body.light-mode .user-detail-summary strong.score-rank-white{
-  background:none !important;
-  color:#475569 !important;
-  -webkit-text-fill-color:#475569 !important;
-  -webkit-background-clip:border-box !important;
-  background-clip:border-box !important;
-  -webkit-text-stroke:0 !important;
-  text-shadow:none !important;
-}
-
-/* 銀は白より一段明るいグレーで区別 */
-body.light-mode .user-list-skill-value.score-rank-silver,
-body.light-mode .user-detail-summary strong.score-rank-silver{
-  background:none !important;
-  color:#64748b !important;
-  -webkit-text-fill-color:#64748b !important;
-  -webkit-background-clip:border-box !important;
-  background-clip:border-box !important;
-  -webkit-text-stroke:0 !important;
-  text-shadow:none !important;
-}
-
-/* 金・虹は元の色/グラデーションをそのまま見せる */
-body.light-mode .user-list-skill-value.score-rank-gold,
-body.light-mode .user-list-skill-value.score-rank-rainbow,
-body.light-mode .user-list-skill-value.score-rank-deep-rainbow,
-body.light-mode .user-detail-summary strong.score-rank-gold,
-body.light-mode .user-detail-summary strong.score-rank-rainbow,
-body.light-mode .user-detail-summary strong.score-rank-deep-rainbow{
-  -webkit-text-stroke:0 !important;
-  text-shadow:none !important;
-}
-
-/* ユーザー詳細ヘッダーはサイズを維持しつつ輪郭だけ除去 */
+/* ユーザー詳細ヘッダーもライト専用の色加工をしない */
 body.light-mode .user-detail-summary strong.user-detail-skill-value{
   -webkit-text-stroke:0 !important;
   text-shadow:none !important;
+  filter:none !important;
 }
 
 </style>
@@ -6356,7 +6276,7 @@ body.light-mode .user-detail-summary strong.user-detail-skill-value{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX129</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX130</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
