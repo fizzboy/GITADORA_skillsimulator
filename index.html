@@ -6589,6 +6589,57 @@ body.light-mode .rate-compare-body .rate-row:first-child:has(.rate-user-header){
   z-index:1 !important;
 }
 
+
+/* === FIX150: 曲詳細の項目行をスクロール領域の外へ分離 === */
+/* stickyを使わず、ヘッダー自体をスクロール要素の外に置く。
+   これでiPhone Safariでもユーザー行が項目行を貫通しない。 */
+.rate-table-head-fixed{
+  flex:0 0 auto !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 82px 70px !important;
+  gap:7px !important;
+  align-items:center !important;
+  padding:7px 8px !important;
+  margin:0 8px !important;
+  position:relative !important;
+  z-index:10 !important;
+  border:1px solid #334155 !important;
+  border-radius:6px !important;
+  background:#111827 !important;
+  color:#94a3b8 !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  box-sizing:border-box !important;
+}
+
+.rate-compare-body{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+  isolation:auto !important;
+}
+
+/* FIX147/149のsticky指定を完全解除 */
+.rate-compare-body .rate-table-head,
+.rate-compare-body .rate-header,
+.rate-compare-body .rate-row-header,
+.rate-compare-body > [class*="rate-"][class*="head"]:not(.rate-compare-head){
+  position:static !important;
+  top:auto !important;
+  z-index:auto !important;
+}
+
+body.light-mode .rate-table-head-fixed{
+  background:#dfe5ec !important;
+  color:#475569 !important;
+  -webkit-text-fill-color:#475569 !important;
+  border-color:#94a3b8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7035,6 +7086,11 @@ body.light-mode .rate-compare-body .rate-row:first-child:has(.rate-user-header){
     </div>
     <div id="ratePersonalBest" class="rate-personal-best hidden"></div>
     <div id="rateOptionSummary" class="rate-option-summary"></div>
+    <div id="rateCompareColumns" class="rate-table-head rate-table-head-fixed">
+      <div>ユーザー</div>
+      <div>達成率</div>
+      <div>SKILL</div>
+    </div>
     <div id="rateCompareBody" class="rate-compare-body"></div>
   </div>
 </div>
@@ -7042,7 +7098,7 @@ body.light-mode .rate-compare-body .rate-row:first-child:has(.rate-user-header){
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX149</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX150</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7119,6 +7175,6 @@ body.light-mode .rate-compare-body .rate-row:first-child:has(.rate-user-header){
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_148"></script>
+<script type="module" src="./js/app.js?v=21_150"></script>
 </body>
 </html>
