@@ -5508,6 +5508,116 @@ body.light-mode .site-dialog{
   border-color:#94a3b8 !important;
 }
 
+
+/* === FIX124: ライトモード 登録画面の視認性調整 === */
+
+/* ヘッダーのTOTAL/HOT/OTHER値を読みやすくする */
+body.light-mode .score-val{
+  -webkit-text-stroke:.65px #334155 !important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.9),
+    1px 0 0 rgba(51,65,85,.22),
+    -1px 0 0 rgba(51,65,85,.22),
+    0 1px 1px rgba(15,23,42,.2) !important;
+}
+
+/* タブを「ボタン」と認識しやすくする */
+body.light-mode .p-tabs{
+  background:#eef0f3 !important;
+  gap:6px !important;
+  padding:6px !important;
+}
+body.light-mode .p-tab-btn{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  border-radius:7px !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.05) !important;
+}
+body.light-mode .p-tab-btn.active{
+  background:#2563eb !important;
+  color:#ffffff !important;
+  border-color:#2563eb !important;
+}
+
+/* RAN等は淡い文字ではなく濃い色で */
+body.light-mode #viewAllManage .opt-ran,
+body.light-mode #userDetailRecords .opt-ran,
+body.light-mode .dc-card .opt-ran{
+  color:#15803d !important;
+  -webkit-text-fill-color:#15803d !important;
+  border-color:#15803d !important;
+  background:#ecfdf5 !important;
+  font-weight:900 !important;
+}
+body.light-mode #viewAllManage .opt-sra,
+body.light-mode #userDetailRecords .opt-sra,
+body.light-mode .dc-card .opt-sra{
+  color:#c2410c !important;
+  -webkit-text-fill-color:#c2410c !important;
+  border-color:#c2410c !important;
+  background:#fff7ed !important;
+  font-weight:900 !important;
+}
+body.light-mode #viewAllManage .opt-ran-plus,
+body.light-mode #userDetailRecords .opt-ran-plus,
+body.light-mode .dc-card .opt-ran-plus{
+  color:#0369a1 !important;
+  -webkit-text-fill-color:#0369a1 !important;
+  border-color:#0369a1 !important;
+  background:#f0f9ff !important;
+  font-weight:900 !important;
+}
+body.light-mode #viewAllManage .opt-sra-plus,
+body.light-mode #userDetailRecords .opt-sra-plus,
+body.light-mode .dc-card .opt-sra-plus{
+  color:#be123c !important;
+  -webkit-text-fill-color:#be123c !important;
+  border-color:#be123c !important;
+  background:#fff1f2 !important;
+  font-weight:900 !important;
+}
+
+/* 編集欄の謎の白い横長領域を消し、青い独立ボタンにする */
+body.light-mode #viewAllManage .dc-edit{
+  background:transparent !important;
+  padding:0 !important;
+  margin:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  min-width:0 !important;
+  width:auto !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body.light-mode #viewAllManage .dc-edit::before,
+body.light-mode #viewAllManage .dc-edit::after{
+  display:none !important;
+  content:none !important;
+}
+body.light-mode #viewAllManage .dc-edit .m-action-btn.btn-e{
+  min-width:48px !important;
+  width:auto !important;
+  min-height:30px !important;
+  height:30px !important;
+  padding:0 10px !important;
+  margin:0 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:1px solid #1d4ed8 !important;
+  border-radius:6px !important;
+  background:#2563eb !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  font-weight:900 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.18) !important;
+}
+body.light-mode #viewAllManage .dc-edit .m-action-btn.btn-e:active{
+  background:#1d4ed8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5952,7 +6062,7 @@ body.light-mode .site-dialog{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX123</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX124</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
