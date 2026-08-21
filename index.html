@@ -5833,69 +5833,33 @@ body.light-mode .user-detail-summary strong.user-detail-skill-value{
 }
 
 
-/* === FIX131: ライトモード スキル値の視認性改善 ===
-   スキルカラー自体はダーク/ライト共通のまま。
-   文字色を変えず、背面の薄い帯 + ごく弱い影で読みやすくする。 */
 
-/* ユーザーリストの各スキル値 */
-body.light-mode .user-list-skill-value{
-  position:relative !important;
-  isolation:isolate !important;
-  box-sizing:border-box !important;
-  padding:2px 4px !important;
-  border-radius:5px !important;
-  -webkit-text-stroke:0 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.28) !important;
-}
-body.light-mode .user-list-skill-value::before{
-  content:"" !important;
-  position:absolute !important;
-  inset:0 !important;
-  z-index:-1 !important;
-  border-radius:5px !important;
-  background:rgba(15,23,42,.13) !important;
-  box-shadow:0 1px 2px rgba(15,23,42,.12) !important;
-  pointer-events:none !important;
-}
+/* === FIX132: ライトモード スキル値視認性 / 影のみ ===
+   スキルカラーはダーク/ライトで完全共通。
+   背景帯・黒フチ・色置換は使わず、弱い影だけで分離する。 */
 
-/* 自分のヘッダー TOTAL/HOT/OTHER */
-body.light-mode .score-val{
-  position:relative !important;
-  isolation:isolate !important;
-  padding:2px 5px !important;
-  border-radius:6px !important;
-  -webkit-text-stroke:0 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.25) !important;
-}
-body.light-mode .score-val::before{
-  content:"" !important;
-  position:absolute !important;
-  inset:0 !important;
-  z-index:-1 !important;
-  border-radius:6px !important;
-  background:rgba(15,23,42,.10) !important;
-  box-shadow:0 1px 2px rgba(15,23,42,.10) !important;
-  pointer-events:none !important;
-}
-
-/* 他ユーザー詳細ヘッダー TOTAL/HOT/OTHER */
+body.light-mode .score-val,
+body.light-mode .user-list-skill-value,
 body.light-mode .user-detail-summary strong.user-detail-skill-value{
-  position:relative !important;
-  isolation:isolate !important;
-  padding:2px 5px !important;
-  border-radius:6px !important;
   -webkit-text-stroke:0 !important;
-  text-shadow:0 1px 1px rgba(15,23,42,.25) !important;
+  filter:none !important;
+  text-shadow:
+    0 1px 1px rgba(15,23,42,.24),
+    0 0 1px rgba(15,23,42,.14) !important;
 }
-body.light-mode .user-detail-summary strong.user-detail-skill-value::before{
-  content:"" !important;
-  position:absolute !important;
-  inset:0 !important;
-  z-index:-1 !important;
-  border-radius:6px !important;
-  background:rgba(15,23,42,.10) !important;
-  box-shadow:0 1px 2px rgba(15,23,42,.10) !important;
-  pointer-events:none !important;
+
+/* ユーザーリストは数値が小さいので少しだけサイズを確保 */
+body.light-mode .user-list-skill-value{
+  font-size:12px !important;
+}
+
+/* 背景はFIX130の少し濃いグレーを維持 */
+body.light-mode .user-list-row,
+body.light-mode .user-list-row:active{
+  background:#d8dde5 !important;
+  color:#111827 !important;
+  border-color:#8b98aa !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.05) !important;
 }
 
 </style>
@@ -6342,7 +6306,7 @@ body.light-mode .user-detail-summary strong.user-detail-skill-value::before{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX131</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX132</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
