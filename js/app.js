@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_148';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_150';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -2219,6 +2219,7 @@ async function openRateComparison(songId, title, part) {
   $('rateOptionSummary').innerHTML = part.endsWith('-D')
     ? ''
     : '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
+  $('rateCompareColumns').classList.add('hidden');
   $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   $('rateCompareMask').style.display = 'flex';
 
@@ -2258,12 +2259,9 @@ async function openRateComparison(songId, title, part) {
           `
           : '');
 
+    $('rateCompareColumns').classList.toggle('hidden', !rows.length);
+
     $('rateCompareBody').innerHTML = rows.length ? `
-      <div class="rate-table-head">
-        <div>ユーザー</div>
-        <div>達成率</div>
-        <div>SKILL</div>
-      </div>
       ${rows.map((row, index) => {
         const compareSkillClass = `skill-box-${getSongSkillRank(Number(row.skill) || 0)}`;
         return `
@@ -2282,6 +2280,7 @@ async function openRateComparison(songId, title, part) {
     ` : '<div class="empty-state">比較できる記録がありません</div>';
   } catch (e) {
     $('rateOptionSummary').innerHTML = '';
+    $('rateCompareColumns').classList.add('hidden');
     $('rateCompareBody').innerHTML = `<div class="empty-state">比較データの取得に失敗しました: ${esc(e.message)}</div>`;
   }
 }
