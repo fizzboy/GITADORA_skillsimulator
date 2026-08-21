@@ -114,6 +114,18 @@ function installSkillColorCss() {
       `text-shadow:0 1px 2px rgba(0,0,0,.95)!important;` +
       `border-top:1px solid #334155!important;border-bottom:1px solid #334155!important;` +
       `border-left:0!important;border-right:0!important;` +
+      `box-sizing:border-box!important;}` +
+      `body.light-mode .skill-box-${row.rank}{` +
+      `background-image:${sidePaint},${sidePaint}!important;` +
+      `background-position:left top,right top!important;` +
+      `background-size:5px 100%,5px 100%!important;` +
+      `background-repeat:no-repeat,no-repeat!important;` +
+      `background-color:#f3f4f6!important;` +
+      `color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;` +
+      `-webkit-text-stroke:.45px #111827!important;` +
+      `text-shadow:0 1px 2px rgba(0,0,0,.9)!important;` +
+      `border-top:1px solid #cbd5e1!important;border-bottom:1px solid #cbd5e1!important;` +
+      `border-left:0!important;border-right:0!important;` +
       `box-sizing:border-box!important;}`;
 
     // スキル対象・登録曲の「外枠だけ」は45度グラデーションにする。
