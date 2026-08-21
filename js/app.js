@@ -472,6 +472,7 @@ async function showAuth(mode = 'login') {
   $('authPasswordConfirmGroup').classList.toggle('hidden', isLogin);
   $('authPasswordConfirm').required = !isLogin;
   $('authPasswordConfirm').value = '';
+  $('authRegisterNotice').classList.toggle('hidden', isLogin);
 
   // 認証画面を開くたびにTurnstileを1回だけ準備する。
   // prepareAuthCaptcha() 側が、既に描画済みなら reset を1回だけ実行する。
