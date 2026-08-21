@@ -6699,6 +6699,14 @@ body.light-mode #viewUsers .user-list-sticky::before{
   background:#f3f4f6 !important;
 }
 
+
+/* === FIX152: ユーザーリスト固定ブロックの初期位置を維持 ===
+   p-container の上余白(6px)をsticky位置にも含め、
+   スクロール開始時に検索窓が数px上へ動くのを防ぐ。 */
+#viewUsers .user-list-sticky{
+  top:calc(var(--app-sticky-header-height) + 6px) !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7159,7 +7167,7 @@ body.light-mode #viewUsers .user-list-sticky::before{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX151</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX152</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
