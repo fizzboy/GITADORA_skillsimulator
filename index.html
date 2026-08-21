@@ -233,6 +233,10 @@
 .auth-card label { display:block; font-size:12px; font-weight:bold; color:#9ca3af; margin:10px 0 4px; }
 .auth-card input { width:100%; padding:10px; border:1px solid #4b5563; border-radius:4px; background:#111827; color:#fff; font-size:16px; }
 .auth-card button { width:100%; margin-top:14px; padding:10px; border:0; border-radius:4px; background:#2563eb; color:#fff; font-weight:bold; }
+
+.auth-register-notice { margin:12px 0 2px; padding:10px 11px; border:1px solid #f59e0b; border-radius:6px; background:rgba(245,158,11,.08); color:#e5e7eb; font-size:12px; line-height:1.65; }
+.auth-register-notice strong { display:block; margin-bottom:3px; color:#fbbf24; font-size:13px; }
+.auth-register-notice a { color:#60a5fa; font-weight:bold; text-decoration:underline; overflow-wrap:anywhere; }
 .auth-switch { margin-top:12px; text-align:center; color:#60a5fa; font-size:13px; cursor:pointer; }
 .header-user { margin-left:auto; font-size:11px; color:#93c5fd; cursor:pointer; padding:5px 8px; }
 .user-header-row { display:flex; align-items:center; padding:0 6px; min-height:30px; background:#111827; }
@@ -4590,6 +4594,12 @@ html.ios-viewport-repair {
         <label>パスワード（確認）</label>
         <input id="authPasswordConfirm" type="password" autocomplete="new-password" placeholder="もう一度入力">
       </div>
+      <div id="authRegisterNotice" class="auth-register-notice hidden">
+        <strong>パスワードについての重要なお知らせ</strong>
+        このサイトではメールアドレスなどの個人情報を取得していないため、通常のパスワード再発行はできません。<br>
+        パスワードは忘れないように保管してください。原則、パスワードを忘れた場合は再登録が必要です。<br>
+        どうしてもパスワードの再発行が必要な場合は、管理者の <a href="https://x.com/fizz_rky" target="_blank" rel="noopener noreferrer">X（旧Twitter）</a> へ直接ご連絡ください。
+      </div>
       <div class="auth-captcha-wrap">
         <div id="authTurnstile"></div>
         <div id="authCaptchaStatus" class="auth-captcha-status" aria-live="polite"></div>
@@ -4933,7 +4943,7 @@ html.ios-viewport-repair {
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX113</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX114</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
