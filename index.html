@@ -5710,6 +5710,57 @@ body.light-mode #domModal .suggestion:active{
   background:#e2e8f0 !important;
 }
 
+
+/* === FIX126: ライトモード 難易度修正エリア === */
+body.light-mode #domModal .level-correction-area{
+  background:#eef2f7 !important;
+  color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  border-radius:8px !important;
+}
+
+body.light-mode #domModal .level-correction-head{
+  background:transparent !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+
+body.light-mode #domModal .level-correction-title{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
+body.light-mode #domModal .level-correction-note{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+
+body.light-mode #domModal #btnOpenLevelCorrection,
+body.light-mode #domModal #btnSendLevelCorrection{
+  background:#2563eb !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  border:1px solid #1d4ed8 !important;
+}
+
+body.light-mode #domModal .level-correction-form{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  border-top:1px solid #cbd5e1 !important;
+}
+
+body.light-mode #domModal .level-correction-form label{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
+body.light-mode #domModal #correctionLevel{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5866,7 +5917,7 @@ body.light-mode #domModal .suggestion:active{
       <div id="levelCorrectionForm" class="level-correction-form hidden">
         <label>正しい難易度</label>
         <div class="level-correction-input-row">
-          <input id="correctionLevel" type="number" min="0.01" max="99.99" step="0.01" inputmode="decimal" placeholder="例 9.30">
+          <input id="correctionLevel" type="number" min="0.01" max="9.99" step="0.01" inputmode="decimal" placeholder="例 9.30">
           <button id="btnSendLevelCorrection" type="button">修正依頼を送信</button>
         </div>
       </div>
@@ -6154,7 +6205,7 @@ body.light-mode #domModal .suggestion:active{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX125</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX126</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
