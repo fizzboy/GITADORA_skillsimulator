@@ -6202,6 +6202,80 @@ body.light-mode .rival-manage-dialog .btn-submit{
   -webkit-text-fill-color:#ffffff !important;
 }
 
+
+/* === FIX135: ライトモード 登録曲詳細スキル / ライバル管理 === */
+
+/* 登録曲詳細のSKILLは登録曲一覧と同じく黒文字に統一。
+   左右のスキルカラー帯は skill-box-* 側の背景画像をそのまま維持。 */
+body.light-mode .rate-compare-dialog .rate-skill[class*="skill-box-"]{
+  background-color:#e9edf2 !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  -webkit-text-stroke:0 !important;
+  text-shadow:none !important;
+  border-top-color:#cbd5e1 !important;
+  border-bottom-color:#cbd5e1 !important;
+}
+
+/* ライバル管理：カード内のダーク固定をライト化 */
+body.light-mode .rival-manage-dialog .favorite-user-row{
+  background:#e9edf2 !important;
+  border:1px solid #cbd5e1 !important;
+  color:#111827 !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-open{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #cbd5e1 !important;
+  box-shadow:none !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-open:active{
+  background:#e2e8f0 !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-open .name{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-skill-label{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-arrow{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+
+/* スキルカラー自体はダーク/ライト共通 */
+body.light-mode .rival-manage-dialog .favorite-user-skill{
+  -webkit-text-stroke:0 !important;
+  text-shadow:none !important;
+  filter:none !important;
+}
+
+/* 削除ボタン */
+body.light-mode .rival-manage-dialog .favorite-user-row > .remove{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  -webkit-text-fill-color:#b91c1c !important;
+  border:1px solid #ef4444 !important;
+  border-radius:7px !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-row > .remove:active{
+  background:#fecaca !important;
+}
+
+/* セクション境界 */
+body.light-mode .rival-manage-dialog .rival-manage-block + .rival-manage-block{
+  border-top-color:#94a3b8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6646,7 +6720,7 @@ body.light-mode .rival-manage-dialog .btn-submit{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX134</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX135</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
