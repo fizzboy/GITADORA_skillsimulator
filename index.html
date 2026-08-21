@@ -6515,6 +6515,31 @@ body.light-mode .feedback-history-reply-message{
   }
 }
 
+
+/* === FIX147: 登録曲詳細の一覧ヘッダーをスクロール時も固定 === */
+.rate-compare-body .rate-table-head,
+.rate-compare-body .rate-header,
+.rate-compare-body .rate-row-header,
+.rate-compare-body > [class*="rate-"][class*="head"]:not(.rate-compare-head){
+  position:sticky !important;
+  top:0 !important;
+  z-index:20 !important;
+}
+
+/* 実際の「ユーザー / 達成率 / SKILL」行を固定 */
+.rate-compare-body .rate-row:first-of-type:has(.rate-user-header),
+.rate-compare-body .rate-row:first-child:has(.rate-user-header){
+  position:sticky !important;
+  top:0 !important;
+  z-index:20 !important;
+}
+
+/* FIX146のスクロール領域は維持 */
+.rate-compare-body{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6968,7 +6993,7 @@ body.light-mode .feedback-history-reply-message{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX146</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX147</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
