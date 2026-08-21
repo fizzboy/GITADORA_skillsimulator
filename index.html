@@ -5788,6 +5788,77 @@ body.light-mode #versionSelect option{
   color:#111827 !important;
 }
 
+
+/* === FIX128: ライトモード ユーザーリスト / ユーザー詳細 === */
+
+/* 白・銀・金・虹は明るい背景上で埋もれやすいため、
+   元のスキルカラーは維持したまま濃い輪郭だけ追加する */
+body.light-mode .score-rank-white{
+  -webkit-text-stroke:.65px #475569 !important;
+  text-shadow:0 1px 1px rgba(15,23,42,.20) !important;
+}
+body.light-mode .score-rank-silver{
+  -webkit-text-stroke:.55px #475569 !important;
+  text-shadow:0 1px 1px rgba(15,23,42,.18) !important;
+}
+body.light-mode .score-rank-gold{
+  -webkit-text-stroke:.50px #78350f !important;
+  text-shadow:0 1px 1px rgba(120,53,15,.16) !important;
+}
+body.light-mode .score-rank-rainbow,
+body.light-mode .score-rank-deep-rainbow{
+  -webkit-text-stroke:.48px #334155 !important;
+  text-shadow:0 1px 1px rgba(15,23,42,.18) !important;
+}
+
+/* ユーザーリスト側は小さい文字なので少しだけ輪郭を強める */
+body.light-mode .user-list-skill-value.score-rank-white,
+body.light-mode .user-list-total-skill.score-rank-white{
+  -webkit-text-stroke:.75px #475569 !important;
+}
+body.light-mode .user-list-skill-value.score-rank-silver,
+body.light-mode .user-list-total-skill.score-rank-silver{
+  -webkit-text-stroke:.65px #475569 !important;
+}
+body.light-mode .user-list-skill-value.score-rank-gold,
+body.light-mode .user-list-total-skill.score-rank-gold{
+  -webkit-text-stroke:.60px #78350f !important;
+}
+body.light-mode .user-list-skill-value.score-rank-rainbow,
+body.light-mode .user-list-skill-value.score-rank-deep-rainbow,
+body.light-mode .user-list-total-skill.score-rank-rainbow,
+body.light-mode .user-list-total-skill.score-rank-deep-rainbow{
+  -webkit-text-stroke:.58px #334155 !important;
+}
+
+/* ユーザー詳細ヘッダーのスキル値も同じ視認性ルールを使用 */
+body.light-mode .user-detail-summary strong.score-rank-white{
+  -webkit-text-stroke:.70px #475569 !important;
+}
+body.light-mode .user-detail-summary strong.score-rank-silver{
+  -webkit-text-stroke:.60px #475569 !important;
+}
+body.light-mode .user-detail-summary strong.score-rank-gold{
+  -webkit-text-stroke:.55px #78350f !important;
+}
+body.light-mode .user-detail-summary strong.score-rank-rainbow,
+body.light-mode .user-detail-summary strong.score-rank-deep-rainbow{
+  -webkit-text-stroke:.52px #334155 !important;
+}
+
+/* ユーザー詳細の戻るボタンをライトテーマ化 */
+body.light-mode .user-detail-back{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  border-radius:7px !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.06) !important;
+}
+body.light-mode .user-detail-back:active{
+  background:#e2e8f0 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6232,7 +6303,7 @@ body.light-mode #versionSelect option{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX127</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX128</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
