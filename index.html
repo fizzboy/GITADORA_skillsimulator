@@ -6640,6 +6640,65 @@ body.light-mode .rate-table-head-fixed{
   border-color:#94a3b8 !important;
 }
 
+
+/* === FIX151: ユーザーリスト固定領域を検索窓～項目行まで一体化 === */
+:root{
+  --app-sticky-header-height:0px;
+}
+
+/* 旧個別stickyを解除。2要素を別々に固定しない */
+#viewUsers .users-toolbar,
+#viewUsers .user-list-header{
+  position:relative !important;
+  top:auto !important;
+  z-index:auto !important;
+}
+
+/* 検索窓 + 項目行を1つの固定ブロックとして扱う */
+#viewUsers .user-list-sticky{
+  position:sticky !important;
+  top:var(--app-sticky-header-height) !important;
+  z-index:90 !important;
+  padding:0 0 5px !important;
+  background:#030712 !important;
+  isolation:isolate !important;
+}
+
+#viewUsers .user-list-sticky .users-toolbar{
+  padding:8px 3px 5px !important;
+  margin:0 !important;
+  background:#030712 !important;
+}
+
+#viewUsers .user-list-sticky .user-list-header{
+  margin:0 !important;
+  background:#0b1220 !important;
+}
+
+/* スクロールした行が固定領域へ透けたり重ならないよう不透明化 */
+#viewUsers .user-list-sticky::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:#030712;
+  pointer-events:none;
+}
+
+/* ライトモードも同じ構造 */
+body.light-mode #viewUsers .user-list-sticky,
+body.light-mode #viewUsers .user-list-sticky .users-toolbar{
+  background:#f3f4f6 !important;
+}
+
+body.light-mode #viewUsers .user-list-sticky .user-list-header{
+  background:#e2e8f0 !important;
+}
+
+body.light-mode #viewUsers .user-list-sticky::before{
+  background:#f3f4f6 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6741,15 +6800,17 @@ body.light-mode .rate-table-head-fixed{
     <div id="viewSkill"></div>
     <div id="viewAllManage" class="list-container hidden"></div>
     <div id="viewUsers" class="hidden">
-      <div class="users-toolbar">
-        <input id="userSearch" placeholder="ユーザー名を検索...">
-      </div>
-      <div class="user-list-header" aria-label="ユーザーリストの並び替え">
-        <button type="button" class="user-sort-head name" data-user-sort="name">ユーザー名 <span class="sort-arrow"></span></button>
-        <button type="button" class="user-sort-head" data-user-sort="gf">GF <span class="sort-arrow"></span></button>
-        <button type="button" class="user-sort-head" data-user-sort="dm">DM <span class="sort-arrow"></span></button>
-        <button type="button" class="user-sort-head" data-user-sort="total">TOTAL <span class="sort-arrow"></span></button>
-        <span class="user-list-rival-head">RIVAL</span>
+      <div class="user-list-sticky">
+        <div class="users-toolbar">
+          <input id="userSearch" placeholder="ユーザー名を検索...">
+        </div>
+        <div class="user-list-header" aria-label="ユーザーリストの並び替え">
+          <button type="button" class="user-sort-head name" data-user-sort="name">ユーザー名 <span class="sort-arrow"></span></button>
+          <button type="button" class="user-sort-head" data-user-sort="gf">GF <span class="sort-arrow"></span></button>
+          <button type="button" class="user-sort-head" data-user-sort="dm">DM <span class="sort-arrow"></span></button>
+          <button type="button" class="user-sort-head" data-user-sort="total">TOTAL <span class="sort-arrow"></span></button>
+          <span class="user-list-rival-head">RIVAL</span>
+        </div>
       </div>
       <div id="userList"></div>
       <div id="userListPager" class="user-list-pager"></div>
@@ -7098,7 +7159,7 @@ body.light-mode .rate-table-head-fixed{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX150</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX151</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7175,6 +7236,6 @@ body.light-mode .rate-table-head-fixed{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_150"></script>
+<script type="module" src="./js/app.js?v=21_151"></script>
 </body>
 </html>
