@@ -6276,6 +6276,16 @@ body.light-mode .rival-manage-dialog .rival-manage-block + .rival-manage-block{
   border-top-color:#94a3b8 !important;
 }
 
+
+/* === FIX136: ライバル管理スキル値にもユーザーリストと同じ弱い影 === */
+body.light-mode .rival-manage-dialog .favorite-user-skill{
+  -webkit-text-stroke:0 !important;
+  filter:none !important;
+  text-shadow:
+    0 1px 1px rgba(15,23,42,.24),
+    0 0 1px rgba(15,23,42,.14) !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6720,7 +6730,7 @@ body.light-mode .rival-manage-dialog .rival-manage-block + .rival-manage-block{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX135</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX136</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
