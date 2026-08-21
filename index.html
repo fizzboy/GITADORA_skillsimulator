@@ -5618,6 +5618,98 @@ body.light-mode #viewAllManage .dc-edit .m-action-btn.btn-e:active{
   background:#1d4ed8 !important;
 }
 
+
+/* === FIX125: ライトモード 登録画面追加調整 === */
+
+/* TOTAL / HOT / OTHER:
+   スキルカラーそのものを優先し、黒縁でグラデーションを潰さない */
+body.light-mode .score-val{
+  -webkit-text-stroke:0 !important;
+  text-shadow:none !important;
+  filter:none !important;
+}
+
+/* 登録フィルタ: Safari/Chrome共通で濃い矢印を明示 */
+body.light-mode #recordTypeFilter,
+body.light-mode #recordFcFilter{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  padding-right:38px !important;
+  background-color:#f8fafc !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #334155 50%),
+    linear-gradient(135deg, #334155 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50% !important;
+  background-size:6px 6px,6px 6px !important;
+  background-repeat:no-repeat !important;
+}
+
+/* スコア登録/編集モーダル:
+   ダーク固定されていた部品をライト用に上書き */
+body.light-mode #domModal .skill-preview{
+  background:#e5e7eb !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  text-shadow:none !important;
+  -webkit-text-stroke:0 !important;
+}
+
+body.light-mode #domModal .btn-cancel{
+  background:#e2e8f0 !important;
+  color:#334155 !important;
+  -webkit-text-fill-color:#334155 !important;
+  border:1px solid #cbd5e1 !important;
+}
+
+body.light-mode #domModal .master-request-area{
+  background:#fffbeb !important;
+  color:#78350f !important;
+  border-color:#f59e0b !important;
+}
+body.light-mode #domModal .master-request-title{
+  color:#78350f !important;
+  -webkit-text-fill-color:#78350f !important;
+}
+body.light-mode #domModal .master-request-note{
+  color:#92400e !important;
+  -webkit-text-fill-color:#92400e !important;
+}
+
+/* 難易度報告ボタンは青のまま、周囲だけライト化 */
+body.light-mode #domModal .btn-request-master,
+body.light-mode #domModal [data-request-level-correction]{
+  background:#2563eb !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+/* 編集時の削除エリアもライトテーマに合わせる */
+body.light-mode #domModal .edit-delete-area{
+  border-top-color:#cbd5e1 !important;
+}
+body.light-mode #domModal .btn-delete-editing-score{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  -webkit-text-fill-color:#b91c1c !important;
+  border-color:#ef4444 !important;
+}
+
+/* 候補一覧にダーク指定が残っている場合の最終上書き */
+body.light-mode #domModal .suggestion-list,
+body.light-mode #domModal .suggestion{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+body.light-mode #domModal .suggestion:hover,
+body.light-mode #domModal .suggestion:active{
+  background:#e2e8f0 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6062,7 +6154,7 @@ body.light-mode #viewAllManage .dc-edit .m-action-btn.btn-e:active{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX124</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX125</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
