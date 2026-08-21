@@ -1407,7 +1407,8 @@ function createCard(record, index, mode = 'MANAGE') {
 
   if (mode === 'SKILL') {
     return `
-      <div class="sk-row dc-card dc-card-skill ${rowColor}">
+      <div class="sk-row dc-card dc-card-skill ${rowColor}"
+        ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
         <div class="dc-part">${partMarkup}</div>
         <div class="dc-title smart-song-title" data-full-title="${esc(record.title)}">${titleMarkup}</div>
         <div class="dc-skill dc-skill-span ${boxColor}">${formatSkill(skill)}</div>
