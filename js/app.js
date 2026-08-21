@@ -2003,7 +2003,7 @@ async function toggleFavorite(userId, instrument = activeInstrument) {
     // 同時操作などで事前判定をすり抜けてDB側の10人制限に
     // 到達した場合も、同じ上限メッセージに統一する。
     if (
-      /10件|10人|上限|limit|maximum|max favorites|too many/i.test(message)
+      /5件|5人|10件|10人|上限|limit|maximum|max favorites|too many|RIVAL_LIMIT_REACHED/i.test(message)
     ) {
       await showSiteDialog('登録人数上限です。', 'ライバル登録');
     } else {
