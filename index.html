@@ -5361,6 +5361,153 @@ body.light-mode select{
   -webkit-text-stroke:0 !important;
 }
 
+
+/* === FIX123: light mode contrast redesign === */
+/* Apple/iOS系の考え方に寄せて、背景/カード/コントロールを階層化。
+   黒縁は常用せず、通常文字は濃色でコントラストを確保する。 */
+body.light-mode{
+  background:#e5e7eb !important;
+  color:#111827 !important;
+  -webkit-text-stroke:0 !important;
+}
+html:has(body.light-mode),
+body.light-mode #appScreen,
+body.light-mode .p-container,
+body.light-mode #viewAllManage{
+  background:#e5e7eb !important;
+}
+
+/* 上部と検索領域 */
+body.light-mode .app-header,
+body.light-mode .sticky-main-header,
+body.light-mode #searchArea,
+body.light-mode .record-search-row,
+body.light-mode .record-filter-row{
+  background:#eef0f3 !important;
+}
+body.light-mode .score-cell{
+  background:#eef0f3 !important;
+}
+body.light-mode .score-lbl{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+  text-shadow:none !important;
+}
+/* TOTAL/HOT/OTHER値は元のスキルカラーを保ちつつ濃い影で輪郭を出す */
+body.light-mode .score-val{
+  -webkit-text-stroke:.35px rgba(15,23,42,.72) !important;
+  text-shadow:0 1px 1px rgba(255,255,255,.8),0 0 1px rgba(15,23,42,.45) !important;
+}
+
+/* 検索・フィルタは「操作できる面」と認識できる白系 */
+body.light-mode #domSearch,
+body.light-mode #recordTypeFilter,
+body.light-mode #recordFcFilter{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.06) !important;
+  -webkit-text-stroke:0 !important;
+}
+
+/* 登録カードはページ背景より一段明るく */
+body.light-mode #viewAllManage .m-card{
+  background:#f3f4f6 !important;
+  color:#111827 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.08) !important;
+}
+body.light-mode #viewAllManage .m-title-text,
+body.light-mode #viewAllManage .dc-song-title,
+body.light-mode #viewAllManage .m-txt-lv,
+body.light-mode #viewAllManage .m-txt-rate,
+body.light-mode #viewAllManage .m-txt-lv strong,
+body.light-mode #viewAllManage .m-txt-rate strong{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  text-shadow:none !important;
+  -webkit-text-stroke:0 !important;
+}
+
+/* スキル値: ライトモードでは黒文字。左右のスキル帯は維持 */
+body.light-mode #viewAllManage .dc-skill[class*="skill-box-"],
+body.light-mode #viewAllManage .m-card-val-box[class*="skill-box-"],
+body.light-mode .dc-skill[class*="skill-box-"]{
+  background-color:#f3f4f6 !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  -webkit-text-stroke:0 !important;
+  text-shadow:none !important;
+  border-top-color:#cbd5e1 !important;
+  border-bottom-color:#cbd5e1 !important;
+}
+
+/* 編集ボタン: 独立した青ボタンとして明示。謎の白い左余白を消す */
+body.light-mode #viewAllManage .m-btn-group{
+  background:transparent !important;
+  padding:0 !important;
+  margin-left:auto !important;
+  gap:0 !important;
+}
+body.light-mode #viewAllManage .m-btn-group::before,
+body.light-mode #viewAllManage .m-btn-group::after{
+  display:none !important;
+  content:none !important;
+}
+body.light-mode #viewAllManage button[data-edit-index],
+body.light-mode #viewAllManage .btn-edit,
+body.light-mode #viewAllManage .m-edit-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:48px !important;
+  min-height:30px !important;
+  padding:5px 10px !important;
+  margin:0 !important;
+  border:1px solid #1d4ed8 !important;
+  border-radius:6px !important;
+  background:#2563eb !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  font-weight:900 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.18) !important;
+  -webkit-text-stroke:0 !important;
+}
+
+/* 現行DOMで編集がbuttonではないケースも拾う */
+body.light-mode #viewAllManage .m-btn-edit{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:48px !important;
+  min-height:30px !important;
+  padding:5px 10px !important;
+  margin:0 !important;
+  border:1px solid #1d4ed8 !important;
+  border-radius:6px !important;
+  background:#2563eb !important;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.18) !important;
+}
+
+/* HOTはカードと同系背景 + 赤枠 */
+body.light-mode #viewAllManage .hot-tag{
+  background:#f3f4f6 !important;
+  color:#991b1b !important;
+  -webkit-text-fill-color:#991b1b !important;
+  border-color:#991b1b !important;
+  -webkit-text-stroke:0 !important;
+}
+
+/* モーダルはページより明るくして前景として分離 */
+body.light-mode #domModal .mdl-sheet,
+body.light-mode .site-dialog{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5805,7 +5952,7 @@ body.light-mode select{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX122</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX123</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
