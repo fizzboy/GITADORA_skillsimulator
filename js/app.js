@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_141';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_142';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -1993,7 +1993,11 @@ async function toggleFavorite(userId, instrument = activeInstrument) {
         return;
       }
 
-      await addFavorite(userId, instrument);
+      const { error: addError } = await supabase.rpc('add_favorite_v2', {
+        p_favorite_user_id: userId,
+        p_instrument: instrument
+      });
+      if (addError) throw addError;
     }
 
     await Promise.all([loadUsers(), loadFavorites()]);
@@ -2007,8 +2011,11 @@ async function toggleFavorite(userId, instrument = activeInstrument) {
     ) {
       await showSiteDialog('登録人数上限です。', 'ライバル登録');
     } else {
-      await showSiteDialog('ライバル登録の更新に失敗しました。', 'エラー');
-      console.error(e);
+      console.error('ライバル登録エラー:', e);
+      await showSiteDialog(
+        `ライバル登録の更新に失敗しました。\n${message}`,
+        'エラー'
+      );
     }
   }
 }
