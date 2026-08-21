@@ -470,13 +470,9 @@ function hide(id) { $(id).classList.add('hidden'); }
 
 
 function applyLightMode(enabled = null) {
-  const requested = enabled == null
+  const isLight = enabled == null
     ? localStorage.getItem('gitadora_light_mode') === '1'
     : Boolean(enabled);
-
-  // 調整完了までは管理者のみ利用可能。
-  // 管理者判定前・一般ユーザーは常にOFF。
-  const isLight = Boolean(adminAccessChecked && adminEnabled && requested);
 
   document.body.classList.toggle('light-mode', isLight);
   return isLight;
@@ -535,14 +531,12 @@ async function openFeatureSettings() {
   $('featureSettingsStatus').textContent = '';
 
   const lightInput = $('settingLightMode');
-  lightInput.disabled = !adminEnabled;
-  lightInput.checked = adminEnabled && applyLightMode();
+  lightInput.disabled = false;
+  lightInput.checked = applyLightMode();
 
   const lightNote = $('settingLightModeNote');
   if (lightNote) {
-    lightNote.textContent = adminEnabled
-      ? '現在は調整中のため、管理者のみ利用できます。'
-      : '現在調整中のため、管理者のみ利用できます。';
+    lightNote.textContent = '画面をライトテーマに切り替えます。';
   }
 
   try {
@@ -567,13 +561,9 @@ async function saveFeatureSettings() {
     button.textContent = '保存中';
     $('featureSettingsStatus').textContent = '';
 
-    if (adminEnabled) {
-      const light = $('settingLightMode').checked;
-      localStorage.setItem('gitadora_light_mode', light ? '1' : '0');
-      applyLightMode(light);
-    } else {
-      document.body.classList.remove('light-mode');
-    }
+    const light = $('settingLightMode').checked;
+    localStorage.setItem('gitadora_light_mode', light ? '1' : '0');
+    applyLightMode(light);
 
     const { error } = await supabase.rpc('set_my_feature_settings', {
       p_registration_public: $('settingRecordsPublic').checked,
@@ -2278,8 +2268,7 @@ async function checkAdminAccess() {
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
 
-  // 管理者のみ保存済みライトモードを反映。
-  // 一般ユーザーは過去にONにしていても強制的にダークへ戻す。
+  // 保存済みライトモード設定を全ユーザーに反映。
   applyLightMode();
 }
 
@@ -3392,11 +3381,6 @@ $('featureSettingsMask').addEventListener('click', e => {
 });
 $('btnSaveFeatureSettings').addEventListener('click', saveFeatureSettings);
 $('settingLightMode').addEventListener('change', e => {
-  if (!adminEnabled) {
-    e.target.checked = false;
-    document.body.classList.remove('light-mode');
-    return;
-  }
   applyLightMode(e.target.checked);
 });
 $('btnSaveXId').addEventListener('click', saveMyXId);
