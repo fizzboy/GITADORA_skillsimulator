@@ -441,6 +441,10 @@ let publicUsers = [];
 let favoriteUsers = { GF: [], DM: [] };
 let viewedUserScores = [];
 let currentUserId = null;
+let viewedUserId = null;
+let viewedUserName = '';
+let viewedUserProfile = null;
+let viewedUserRegisteredScores = [];
 let adminPasswordUserId = null;
 
 const $ = id => document.getElementById(id);
@@ -450,6 +454,139 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
 
 function show(id) { $(id).classList.remove('hidden'); }
 function hide(id) { $(id).classList.add('hidden'); }
+
+
+function applyLightMode(enabled = null) {
+  const isLight = enabled == null
+    ? localStorage.getItem('gitadora_light_mode') === '1'
+    : Boolean(enabled);
+
+  document.body.classList.toggle('light-mode', isLight);
+  return isLight;
+}
+
+async function getMyFeatureSettings() {
+  const { data, error } = await supabase.rpc('get_my_feature_settings');
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return row || {
+    registration_public: false,
+    x_public: false,
+    x_id: null
+  };
+}
+
+async function getUserPublicProfile(userId) {
+  const { data, error } = await supabase.rpc('get_public_user_profile', {
+    p_user_id: userId
+  });
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return row || {
+    registration_public: false,
+    x_public: false,
+    x_id: null
+  };
+}
+
+async function getPublicUserRegisteredScores(userId, instrument = activeInstrument, versionId = activeVersionId) {
+  const { data, error } = await supabase.rpc('get_public_user_registered_scores', {
+    p_user_id: userId,
+    p_instrument: instrument,
+    p_version_id: versionId
+  });
+  if (error) throw error;
+  return data ?? [];
+}
+
+function normalizeXIdInput(value) {
+  let text = String(value || '').trim();
+  if (!text) return '';
+
+  text = text.replace(/^https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\//i, '');
+  text = text.split(/[/?#]/)[0];
+  text = text.replace(/^@+/, '').trim();
+
+  if (!/^[A-Za-z0-9_]{1,15}$/.test(text)) {
+    throw new Error('X IDは英数字と「_」のみ、15文字以内で入力してください。');
+  }
+  return text;
+}
+
+async function openFeatureSettings() {
+  closeMenu();
+  $('featureSettingsStatus').textContent = '';
+  $('settingLightMode').checked = applyLightMode();
+
+  try {
+    const settings = await getMyFeatureSettings();
+    $('settingRecordsPublic').checked = Boolean(settings.registration_public);
+    $('settingXPublic').checked = Boolean(settings.x_public);
+    $('featureSettingsMask').style.display = 'flex';
+  } catch (e) {
+    await showSiteDialog('機能設定の取得に失敗しました: ' + e.message, 'エラー');
+  }
+}
+
+function closeFeatureSettings() {
+  $('featureSettingsMask').style.display = 'none';
+}
+
+async function saveFeatureSettings() {
+  const button = $('btnSaveFeatureSettings');
+  const original = button.textContent;
+  try {
+    button.disabled = true;
+    button.textContent = '保存中';
+    $('featureSettingsStatus').textContent = '';
+
+    const light = $('settingLightMode').checked;
+    localStorage.setItem('gitadora_light_mode', light ? '1' : '0');
+    applyLightMode(light);
+
+    const { error } = await supabase.rpc('set_my_feature_settings', {
+      p_registration_public: $('settingRecordsPublic').checked,
+      p_x_public: $('settingXPublic').checked
+    });
+    if (error) throw error;
+
+    closeFeatureSettings();
+    await showSiteDialog('機能設定を保存しました。', '保存完了');
+  } catch (e) {
+    $('featureSettingsStatus').textContent = '保存に失敗しました。';
+    await showSiteDialog(e?.message || '機能設定の保存に失敗しました。', 'エラー');
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+async function saveMyXId() {
+  const button = $('btnSaveXId');
+  const original = button.textContent;
+
+  try {
+    const xId = normalizeXIdInput($('mypageXIdInput').value);
+    button.disabled = true;
+    button.textContent = '保存中';
+
+    const { error } = await supabase.rpc('set_my_x_id', {
+      p_x_id: xId || null
+    });
+    if (error) throw error;
+
+    $('mypageXIdInput').value = xId;
+    await showSiteDialog(
+      xId ? 'X IDを保存しました。' : 'X IDを削除しました。',
+      '保存完了'
+    );
+  } catch (e) {
+    await showSiteDialog(e?.message || 'X IDの保存に失敗しました。', 'エラー');
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
 
 async function showAuth(mode = 'login') {
   hide('introScreen');
@@ -649,6 +786,10 @@ async function switchInstrument(instrument) {
   closeModal();
   render();
   if (activeTabName === 'USERS') await loadUsers();
+
+  if (viewedUserId && $('userDetailPage').style.display !== 'none') {
+    await openUserDetail(viewedUserId, viewedUserName);
+  }
 }
 
 async function init() {
@@ -1215,6 +1356,21 @@ function createCard(record, index, mode = 'MANAGE') {
       </div>`;
   }
 
+  if (mode === 'PUBLIC') {
+    return `
+      <div class="m-card dc-card dc-card-manage dc-card-public ${rowColor}"
+        ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
+        <div class="dc-part">${partMarkup}</div>
+        <div class="dc-title smart-song-title" data-full-title="${esc(record.title)}">${titleMarkup}</div>
+        <div class="dc-skill ${boxColor}">${formatSkill(skill)}</div>
+
+        <div class="dc-fc">${fcBadge}</div>
+        <div class="dc-lv">Lv <strong>${formatLevel(record.level)}</strong></div>
+        <div class="dc-rate">達成率 <strong>${formatRate(record.achievement_rate)}%</strong></div>
+        <div class="dc-option">${optionBadge}</div>
+      </div>`;
+  }
+
   return `
     <div class="m-card dc-card dc-card-manage ${rowColor}"
       ${record.song_id ? `data-compare-song="${record.song_id}" data-compare-title="${esc(record.title)}" data-compare-part="${esc(record.part)}"` : ''}>
@@ -1681,42 +1837,118 @@ function renderUsers() {
   }
 }
 
+function renderViewedUserSkill() {
+  const target = calcTargetTotals(viewedUserScores);
+
+  $('userDetailHot').textContent = formatSkill(target.hot);
+  $('userDetailOther').textContent = formatSkill(target.other);
+  $('userDetailTotal').textContent = formatSkill(target.total);
+
+  const rankClass = `score-rank-${getTotalSkillRank(target.total)}`;
+  ['userDetailTotal', 'userDetailHot', 'userDetailOther'].forEach(id => {
+    const el = $(id);
+    el.className = `user-detail-skill-value ${rankClass}`;
+  });
+
+  $('userDetailSkill').innerHTML = `
+    <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
+      ${target.hotRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
+    </div></div>
+    <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
+      ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
+    </div></div>`;
+}
+
+function setUserDetailTab(tab) {
+  document.querySelectorAll('[data-user-detail-tab]').forEach(button => {
+    button.classList.toggle('active', button.dataset.userDetailTab === tab);
+  });
+
+  $('userDetailSkill').classList.toggle('hidden', tab !== 'skill');
+  $('userDetailRecords').classList.toggle('hidden', tab !== 'records');
+}
+
+async function loadViewedUserRegisteredScores() {
+  if (!viewedUserId || !viewedUserProfile?.registration_public) return;
+
+  $('userDetailRecords').innerHTML = '<div class="empty-state">読み込み中...</div>';
+
+  try {
+    viewedUserRegisteredScores = await getPublicUserRegisteredScores(
+      viewedUserId,
+      activeInstrument,
+      activeVersionId
+    );
+
+    const data = [...viewedUserRegisteredScores]
+      .sort((a,b) => Number(b.skill) - Number(a.skill));
+
+    $('userDetailRecords').innerHTML = `
+      <div class="sk-section">
+        <h2>登録曲 ${data.length}件</h2>
+        <div class="list-container">
+          ${data.map((r,i) => createCard(r,i+1,'PUBLIC')).join('') || '<div class="empty-state">登録曲がありません</div>'}
+        </div>
+      </div>`;
+  } catch (e) {
+    $('userDetailRecords').innerHTML =
+      `<div class="empty-state">登録曲の取得に失敗しました: ${esc(e.message)}</div>`;
+  }
+}
+
 async function openUserDetail(userId, username) {
+  viewedUserId = userId;
+  viewedUserName = username;
+  viewedUserProfile = null;
+  viewedUserRegisteredScores = [];
+
   $('userDetailName').textContent = username;
   $('userDetailSkill').innerHTML = '<div class="empty-state">読み込み中...</div>';
+  $('userDetailRecords').innerHTML = '';
+  $('userDetailTabs').classList.add('hidden');
+  $('userDetailXLink').classList.add('hidden');
+  $('userDetailXLink').removeAttribute('href');
+  setUserDetailTab('skill');
   $('userDetailPage').style.display = 'block';
 
   try {
-    viewedUserScores = await getUserSkillTargets(userId, activeInstrument, activeVersionId);
-    const target = calcTargetTotals(viewedUserScores);
+    const [skillRows, profile] = await Promise.all([
+      getUserSkillTargets(userId, activeInstrument, activeVersionId),
+      getUserPublicProfile(userId)
+    ]);
 
-    $('userDetailHot').textContent = formatSkill(target.hot);
-    $('userDetailOther').textContent = formatSkill(target.other);
-    $('userDetailTotal').textContent = formatSkill(target.total);
+    viewedUserScores = skillRows;
+    viewedUserProfile = profile;
+    renderViewedUserSkill();
 
-    // ユーザー詳細のTOTAL/HOT/OTHERは、メイン画面と同じく
-    // TOTALスキルのカラーを3項目すべてに適用する。
-    const rankClass = `score-rank-${getTotalSkillRank(target.total)}`;
-    ['userDetailTotal', 'userDetailHot', 'userDetailOther'].forEach(id => {
-      const el = $(id);
-      el.className = `user-detail-skill-value ${rankClass}`;
-    });
+    $('userDetailTabs').classList.toggle(
+      'hidden',
+      !Boolean(profile?.registration_public)
+    );
 
-    $('userDetailSkill').innerHTML = `
-      <div class="sk-section"><h2>HOT Top25</h2><div class="list-container">
-        ${target.hotRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
-      </div></div>
-      <div class="sk-section"><h2>OTHER Top25</h2><div class="list-container">
-        ${target.otherRows.map((r,i) => createCard(r,i+1,'SKILL')).join('') || '<div class="empty-state">記録がありません</div>'}
-      </div></div>`;
+    const xId = String(profile?.x_id || '').trim();
+    if (profile?.x_public && /^[A-Za-z0-9_]{1,15}$/.test(xId)) {
+      const link = $('userDetailXLink');
+      link.href = `https://x.com/${encodeURIComponent(xId)}`;
+      link.title = `@${xId}`;
+      link.classList.remove('hidden');
+    }
   } catch (e) {
-    $('userDetailSkill').innerHTML = `<div class="empty-state">取得に失敗しました: ${esc(e.message)}</div>`;
+    $('userDetailSkill').innerHTML =
+      `<div class="empty-state">取得に失敗しました: ${esc(e.message)}</div>`;
   }
 }
 
 function closeUserDetail() {
   $('userDetailPage').style.display = 'none';
   viewedUserScores = [];
+  viewedUserRegisteredScores = [];
+  viewedUserProfile = null;
+  viewedUserId = null;
+  viewedUserName = '';
+  $('userDetailXLink').classList.add('hidden');
+  $('userDetailTabs').classList.add('hidden');
+  setUserDetailTab('skill');
 }
 
 async function toggleFavorite(userId, instrument = activeInstrument) {
@@ -1941,7 +2173,15 @@ async function openMyPage() {
   const { data } = await supabase.auth.getUser();
   $('mypageUsernameInput').value = data.user?.user_metadata?.username || $('headerUsername').textContent || '';
   $('newPassword').value = '';
+  $('mypageXIdInput').value = '';
   $('mypageModal').style.display = 'flex';
+
+  try {
+    const settings = await getMyFeatureSettings();
+    $('mypageXIdInput').value = settings.x_id || '';
+  } catch (e) {
+    console.error('X ID取得失敗:', e);
+  }
 }
 
 async function changeOwnUsername() {
@@ -2793,6 +3033,18 @@ $('userListPager')?.addEventListener('click', e => {
 $('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
 
 $('btnCloseUserDetail').addEventListener('click', closeUserDetail);
+$('userDetailTabs').addEventListener('click', async e => {
+  const button = e.target.closest('[data-user-detail-tab]');
+  if (!button) return;
+
+  const tab = button.dataset.userDetailTab;
+  setUserDetailTab(tab);
+
+  if (tab === 'records' && !viewedUserRegisteredScores.length) {
+    await loadViewedUserRegisteredScores();
+  }
+});
+
 $('btnCloseRateCompare').addEventListener('click', closeRateComparison);
 $('rateCompareMask').addEventListener('click', e => {
   if (e.target === $('rateCompareMask')) closeRateComparison();
@@ -3094,6 +3346,15 @@ $('btnMenu').addEventListener('click', openMenu);
 $('btnCloseMenu').addEventListener('click', closeMenu);
 $('menuMask').addEventListener('click', e => { if (e.target === $('menuMask')) closeMenu(); });
 $('btnMenuMypage').addEventListener('click', async () => { closeMenu(); await openMyPage(); });
+$('btnMenuFeatureSettings').addEventListener('click', openFeatureSettings);
+$('btnCloseFeatureSettings').addEventListener('click', closeFeatureSettings);
+$('featureSettingsMask').addEventListener('click', e => {
+  if (e.target === $('featureSettingsMask')) closeFeatureSettings();
+});
+$('btnSaveFeatureSettings').addEventListener('click', saveFeatureSettings);
+$('settingLightMode').addEventListener('change', e => applyLightMode(e.target.checked));
+$('btnSaveXId').addEventListener('click', saveMyXId);
+
 $('btnMenuSkillSync').addEventListener('click', openSkillSyncDialog);
 $('btnMenuShareSkill').addEventListener('click', () => { closeMenu(); shareSkillImage(); });
 $('btnMenuRivals').addEventListener('click', openRivalManage);
@@ -3121,6 +3382,8 @@ window.addEventListener('focus', () => {
     loadScores().catch(console.error);
   }
 });
+
+applyLightMode();
 
 init().catch(err => {
   console.error(err);
