@@ -6286,6 +6286,26 @@ body.light-mode .rival-manage-dialog .favorite-user-skill{
     0 0 1px rgba(15,23,42,.14) !important;
 }
 
+
+/* === FIX137: ライバル管理の行背景をユーザーリストと統一 === */
+body.light-mode .rival-manage-dialog .favorite-user-row{
+  background:#d8dde5 !important;
+  color:#111827 !important;
+  border-color:#8b98aa !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.05) !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-open{
+  background:#d8dde5 !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#8b98aa !important;
+}
+
+body.light-mode .rival-manage-dialog .favorite-user-open:active{
+  background:#cfd5de !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6730,7 +6750,7 @@ body.light-mode .rival-manage-dialog .favorite-user-skill{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX136</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX137</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
