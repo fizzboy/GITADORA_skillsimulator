@@ -1978,17 +1978,34 @@ async function toggleFavorite(userId, instrument = activeInstrument) {
   const user = publicUsers.find(u => u.user_id === userId);
   if (!user) return;
 
+  const isRemoving = Boolean(user.is_favorite && instrument === activeInstrument);
+
   try {
-    if (user.is_favorite && instrument === activeInstrument) {
+    if (isRemoving) {
       await removeFavorite(userId, instrument);
     } else {
+      // 11人目はDBへ登録処理を投げる前に止める。
+      // getMyFavorites() を直接取得して判定することで、
+      // 画面側のキャッシュ件数に依存しないようにする。
+      const currentFavorites = await getMyFavorites(instrument);
+      if ((currentFavorites ?? []).length >= 10) {
+        await showSiteDialog('登録人数上限です。', 'ライバル登録');
+        return;
+      }
+
       await addFavorite(userId, instrument);
     }
+
     await Promise.all([loadUsers(), loadFavorites()]);
   } catch (e) {
     const message = String(e?.message || e);
-    if (message.includes('10件')) {
-      await showSiteDialog(`${instrument}のライバル登録は10件までです。`, 'ライバル登録');
+
+    // 同時操作などで事前判定をすり抜けてDB側の10人制限に
+    // 到達した場合も、同じ上限メッセージに統一する。
+    if (
+      /10件|10人|上限|limit|maximum|max favorites|too many/i.test(message)
+    ) {
+      await showSiteDialog('登録人数上限です。', 'ライバル登録');
     } else {
       await showSiteDialog('ライバル登録の更新に失敗しました。', 'エラー');
       console.error(e);
