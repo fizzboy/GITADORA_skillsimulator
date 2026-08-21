@@ -6723,6 +6723,35 @@ body.light-mode #viewUsers .user-list-sticky::before{
   bottom:0 !important;
 }
 
+
+/* === FIX154: ユーザーリスト固定ブロックの位置ずれを完全に吸収 ===
+   sticky要素そのものはヘッダー直下に固定したまま、
+   初期表示で存在する6px分は内側コンテンツを移動せず、
+   上端の遮蔽レイヤーだけを6px上へ延長する。 */
+#viewUsers .user-list-sticky{
+  top:calc(var(--app-sticky-header-height) + 6px) !important;
+  padding-top:0 !important;
+  overflow:visible !important;
+}
+
+/* 上の6pxを専用の不透明マスクで塞ぐ。
+   検索窓の位置はFIX152と同じなのでスクロール前後で動かない。 */
+#viewUsers .user-list-sticky::before{
+  content:"";
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  top:-6px !important;
+  bottom:0 !important;
+  z-index:-1 !important;
+  background:#030712 !important;
+  pointer-events:none !important;
+}
+
+body.light-mode #viewUsers .user-list-sticky::before{
+  background:#f3f4f6 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7183,7 +7212,7 @@ body.light-mode #viewUsers .user-list-sticky::before{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX153</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX154</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
