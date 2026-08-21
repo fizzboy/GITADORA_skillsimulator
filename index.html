@@ -5761,6 +5761,33 @@ body.light-mode #domModal #correctionLevel{
   border:1px solid #94a3b8 !important;
 }
 
+
+/* === FIX127: ライトモード MENU バージョン選択 === */
+body.light-mode #versionSelect,
+body.light-mode .app-menu-sheet #versionSelect{
+  -webkit-appearance:none !important;
+  appearance:none !important;
+  color-scheme:light !important;
+  background-color:#f8fafc !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  box-shadow:0 1px 1px rgba(15,23,42,.06) !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #334155 50%),
+    linear-gradient(135deg, #334155 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50% !important;
+  background-size:6px 6px,6px 6px !important;
+  background-repeat:no-repeat !important;
+  padding-right:38px !important;
+}
+body.light-mode #versionSelect option{
+  background:#ffffff !important;
+  color:#111827 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6205,7 +6232,7 @@ body.light-mode #domModal #correctionLevel{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX126</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX127</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
