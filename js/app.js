@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_142';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_143';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -872,12 +872,51 @@ async function openFavoriteUserDetail(userId, username, instrument) {
 
 function closeMenu() { $('menuMask').style.display = 'none'; }
 
+async function loadMyFeedbackHistory() {
+  const target = $('feedbackHistory');
+  if (!target) return;
+
+  target.innerHTML = '<div class="feedback-history-empty">読み込み中...</div>';
+
+  try {
+    const { data, error } = await supabase.rpc('get_my_feedback_history');
+    if (error) throw error;
+
+    const rows = data ?? [];
+    target.innerHTML = rows.map(item => {
+      const categoryLabel = item.category === 'bug' ? '不具合' : '要望';
+      const isDone = item.status === 'resolved';
+      const reply = String(item.admin_reply || '').trim();
+
+      return `
+        <div class="feedback-history-card">
+          <div class="feedback-history-top">
+            <span class="feedback-category ${item.category === 'bug' ? 'bug' : 'request'}">${categoryLabel}</span>
+            <span class="feedback-history-date">${new Date(item.created_at).toLocaleString('ja-JP')}</span>
+          </div>
+          <div class="feedback-history-message">${esc(item.message).replace(/\\n/g, '<br>')}</div>
+          ${reply ? `
+            <div class="feedback-history-reply">
+              <div class="feedback-history-reply-label">管理者からの返信</div>
+              <div class="feedback-history-reply-message">${esc(reply).replace(/\\n/g, '<br>')}</div>
+            </div>
+          ` : ''}
+          <div class="feedback-history-status">${reply ? '返信済み' : (isDone ? '対応済み' : '未対応')}</div>
+        </div>`;
+    }).join('') || '<div class="feedback-history-empty">送信履歴はありません</div>';
+  } catch (e) {
+    console.error('要望・不具合履歴取得エラー:', e);
+    target.innerHTML = '<div class="feedback-history-empty">送信履歴の取得に失敗しました</div>';
+  }
+}
+
 function openFeedback() {
   closeMenu();
   $('feedbackCategory').value = 'request';
   $('feedbackMessage').value = '';
   $('feedbackStatus').textContent = '';
   $('feedbackMask').style.display = 'flex';
+  loadMyFeedbackHistory();
 }
 function closeFeedback() {
   $('feedbackMask').style.display = 'none';
@@ -915,8 +954,9 @@ async function submitFeedback() {
 
     if (error) throw error;
 
-    closeFeedback();
-    await showSiteDialog('送信しました。ありがとうございます。', '送信完了');
+    $('feedbackMessage').value = '';
+    await loadMyFeedbackHistory();
+    await showSiteDialog('送信しました。送信履歴に追加しました。', '送信完了');
   } catch (e) {
     console.error('要望・不具合報告送信エラー:', e);
     $('feedbackStatus').textContent = '送信に失敗しました。';
@@ -2522,7 +2562,7 @@ async function loadAdminFeedback() {
   try {
     const { data, error } = await supabase
       .from('user_feedback')
-      .select('id,user_id,category,message,status,created_at,resolved_at')
+      .select('id,user_id,category,message,status,created_at,resolved_at,admin_reply,replied_at')
       .order('created_at', { ascending: false })
       .limit(500);
 
@@ -2567,15 +2607,58 @@ async function loadAdminFeedback() {
             </div>
           </div>
           <div class="feedback-admin-message">${esc(item.message).replace(/\\n/g, '<br>')}</div>
+
+          ${item.admin_reply ? `
+            <div class="feedback-admin-replied">
+              <strong>返信済み</strong>
+              ${esc(item.admin_reply).replace(/\\n/g, '<br>')}
+              ${item.replied_at ? `<div class="admin-card-meta" style="margin-top:5px;">${new Date(item.replied_at).toLocaleString('ja-JP')}</div>` : ''}
+            </div>
+          ` : `
+            <div class="feedback-admin-reply-box">
+              <div class="feedback-admin-reply-label">ユーザーへ返信（1回のみ）</div>
+              <textarea
+                maxlength="2000"
+                data-admin-feedback-reply-input="${item.id}"
+                placeholder="返信内容を入力してください"></textarea>
+              <div class="feedback-admin-reply-actions">
+                <button data-admin-feedback-reply="${item.id}">返信する</button>
+              </div>
+            </div>
+          `}
+
           <div class="admin-card-meta">
             <span>${new Date(item.created_at).toLocaleString('ja-JP')}</span>
-            <span>${isDone ? '対応済み' : '未対応'}</span>
+            <span>${item.admin_reply ? '返信済み' : (isDone ? '対応済み' : '未対応')}</span>
           </div>
         </div>`;
     }).join('') || '<div class="empty-state">要望・不具合報告はありません</div>';
   } catch (e) {
     $('adminBody').innerHTML = `<div class="empty-state">取得失敗: ${esc(e.message)}</div>`;
   }
+}
+
+async function replyAdminFeedbackOnce(id, reply) {
+  const cleanReply = String(reply || '').trim();
+  if (!cleanReply) throw new Error('返信内容を入力してください。');
+  if (cleanReply.length > 2000) throw new Error('返信内容は2000文字以内にしてください。');
+
+  const { data, error } = await supabase
+    .from('user_feedback')
+    .update({
+      admin_reply: cleanReply,
+      replied_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .is('admin_reply', null)
+    .select('id');
+
+  if (error) throw error;
+  if (!data?.length) {
+    throw new Error('この報告には既に返信済みです。追加返信はできません。');
+  }
+
+  await loadAdminFeedback();
 }
 
 async function updateAdminFeedbackStatus(id, status) {
@@ -3103,6 +3186,34 @@ $('rateCompareMask').addEventListener('click', e => {
 });
 
 document.addEventListener('click', async e => {
+  const adminFeedbackReply = e.target.closest('[data-admin-feedback-reply]');
+  if (adminFeedbackReply) {
+    const id = adminFeedbackReply.dataset.adminFeedbackReply;
+    const input = document.querySelector(`[data-admin-feedback-reply-input="${id}"]`);
+    const reply = input?.value || '';
+
+    try {
+      if (!reply.trim()) {
+        await showSiteDialog('返信内容を入力してください。', '入力エラー');
+        return;
+      }
+
+      const ok = await showSiteConfirm(
+        'この内容で返信しますか？\n返信は1回のみで、送信後の変更・追加返信はできません。',
+        '返信確認'
+      );
+      if (!ok) return;
+
+      adminFeedbackReply.disabled = true;
+      await replyAdminFeedbackOnce(id, reply);
+      await showSiteDialog('返信しました。', '返信完了');
+    } catch (error) {
+      await showSiteDialog(error?.message || '返信に失敗しました。', 'エラー');
+      if (adminFeedbackReply.isConnected) adminFeedbackReply.disabled = false;
+    }
+    return;
+  }
+
   const adminFeedbackDelete = e.target.closest('[data-admin-feedback-delete]');
   if (adminFeedbackDelete) {
     try {
