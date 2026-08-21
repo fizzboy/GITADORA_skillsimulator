@@ -5238,6 +5238,129 @@ body.light-mode .admin-form-mask{
   cursor:not-allowed;
 }
 
+
+/* === FIX122: ライトモード調整 1/登録曲一覧 === */
+
+/* iOS Safariでコンテンツ末尾の余白までダーク背景が見えないようにする */
+html:has(body.light-mode),
+body.light-mode,
+body.light-mode #appScreen,
+body.light-mode .p-container,
+body.light-mode #viewAllManage{
+  background:#f3f4f6 !important;
+}
+
+/* 登録タブの検索・フィルタ */
+body.light-mode #searchArea,
+body.light-mode .record-search-row,
+body.light-mode .record-filter-row{
+  background:#f3f4f6 !important;
+}
+body.light-mode #recordTypeFilter,
+body.light-mode #recordFcFilter{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border:1px solid #94a3b8 !important;
+  color-scheme:light !important;
+}
+body.light-mode #recordTypeFilter option,
+body.light-mode #recordFcFilter option{
+  background:#ffffff !important;
+  color:#111827 !important;
+}
+
+/* 登録曲カード */
+body.light-mode #viewAllManage .m-card{
+  background:#f3f4f6 !important;
+  background-image:none !important;
+  color:#111827 !important;
+}
+body.light-mode #viewAllManage .m-title-text,
+body.light-mode #viewAllManage .dc-song-title,
+body.light-mode #viewAllManage .m-txt-lv,
+body.light-mode #viewAllManage .m-txt-rate,
+body.light-mode #viewAllManage .m-txt-lv strong,
+body.light-mode #viewAllManage .m-txt-rate strong{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
+/* HOTは内側を背景色に合わせ、枠・文字だけ赤を維持 */
+body.light-mode #viewAllManage .hot-tag{
+  background:#f3f4f6 !important;
+  color:#991b1b !important;
+  -webkit-text-fill-color:#991b1b !important;
+  border-color:#991b1b !important;
+}
+
+/* 曲別スキル値はJS側で左右のスキル帯を復元。
+   白文字は黒縁付きにしてライト背景上でも読めるようにする。 */
+body.light-mode #viewAllManage .dc-skill[class*="skill-box-"],
+body.light-mode #viewAllManage .m-card-val-box[class*="skill-box-"]{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  -webkit-text-stroke:.45px #111827 !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9) !important;
+}
+
+/* スコア登録/編集モーダル */
+body.light-mode #domModal .mdl-sheet{
+  background:#f3f4f6 !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode #domModal .mdl-sheet h3,
+body.light-mode #domModal .mdl-sheet label,
+body.light-mode #domModal .mdl-sheet .section-note{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+body.light-mode #domModal .mdl-sheet input,
+body.light-mode #domModal .mdl-sheet select,
+body.light-mode #domModal .mdl-sheet textarea{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+  color-scheme:light !important;
+}
+body.light-mode #domModal .suggestion-list,
+body.light-mode #domModal .suggestion{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+
+/* サイト共通のエラー/確認メッセージもライト対応 */
+body.light-mode .site-dialog{
+  background:#f3f4f6 !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .site-dialog-title,
+body.light-mode .site-dialog-message{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+body.light-mode .site-dialog-input{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+
+/* ライトモードでは全体にごく細い黒縁を追加。
+   黒文字ではほぼ目立たず、白/淡色文字の視認性だけ補助する。 */
+body.light-mode{
+  -webkit-text-stroke:.18px rgba(0,0,0,.55);
+}
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select{
+  -webkit-text-stroke:0 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5682,7 +5805,7 @@ body.light-mode .admin-form-mask{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX121</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX122</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -5759,6 +5882,6 @@ body.light-mode .admin-form-mask{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_121"></script>
+<script type="module" src="./js/app.js?v=21_122"></script>
 </body>
 </html>
