@@ -4738,6 +4738,203 @@ body.light-mode .site-dialog-mask{
   background:rgba(15,23,42,.28) !important;
 }
 
+
+/* === FIX118: ライトモード全面調整 ===
+   スキル値・PART/HOT/FC/EXC/OPTIONなど意味を持つ色は維持し、
+   黒/紺の背景・カード・入力欄・メニュー類を白系へ統一する。 */
+body.light-mode,
+body.light-mode #appScreen,
+body.light-mode .p-container,
+body.light-mode #mainContent,
+body.light-mode #viewSkill,
+body.light-mode #viewAllManage,
+body.light-mode #viewUsers,
+body.light-mode .user-detail-page{
+  background:#ffffff !important;
+  color:#111827 !important;
+}
+
+body.light-mode .p-header,
+body.light-mode .user-header-row,
+body.light-mode .score-row,
+body.light-mode .p-tabs,
+body.light-mode .search-bar-container,
+body.light-mode #searchArea,
+body.light-mode .users-toolbar,
+body.light-mode .user-list-header,
+body.light-mode .user-detail-header,
+body.light-mode .user-detail-tabs{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+
+body.light-mode .score-box{
+  background:#ffffff !important;
+  border-color:#475569 !important;
+}
+body.light-mode .score-label,
+body.light-mode .user-list-header,
+body.light-mode .user-list-header *{
+  color:#64748b !important;
+}
+
+body.light-mode .p-tab-btn{
+  background:#f1f5f9 !important;
+  color:#111827 !important;
+}
+body.light-mode .p-tab-btn.active{
+  background:#2563eb !important;
+  color:#ffffff !important;
+}
+
+/* ユーザーリスト */
+body.light-mode .user-list-row,
+body.light-mode .user-list-row:active{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+  box-shadow:none !important;
+}
+body.light-mode .user-list-name{ color:#111827 !important; }
+body.light-mode .user-list-date{ color:#64748b !important; }
+body.light-mode .favorite-toggle{
+  background:#f1f5f9 !important;
+  border:1px solid #cbd5e1 !important;
+}
+
+/* 検索・フィルタ */
+body.light-mode .search-input,
+body.light-mode .record-filter-row select,
+body.light-mode .users-toolbar input,
+body.light-mode .users-toolbar select{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .record-filter-row .filter-control,
+body.light-mode .filter-select{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+
+/* データカード：グラデーション背景を含めて白へ。
+   枠線のスキルカラーとスキル値の帯はそのまま残す。 */
+body.light-mode .dc-card,
+body.light-mode .dc-card.dc-card-skill,
+body.light-mode .dc-card.dc-card-manage,
+body.light-mode #viewSkill .dc-card,
+body.light-mode #viewAllManage .dc-card,
+body.light-mode .user-detail-body .dc-card{
+  background:#ffffff !important;
+  background-image:none !important;
+  color:#111827 !important;
+  box-shadow:none !important;
+}
+body.light-mode .dc-title,
+body.light-mode .dc-song-title,
+body.light-mode .dc-lv,
+body.light-mode .dc-rate,
+body.light-mode .dc-lv strong,
+body.light-mode .dc-rate strong{
+  color:#111827 !important;
+}
+body.light-mode .dc-edit{
+  background:#ffffff !important;
+}
+
+/* MENU */
+body.light-mode .app-menu-sheet{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#475569 !important;
+}
+body.light-mode .app-menu-item{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  border-color:#475569 !important;
+}
+body.light-mode .app-menu-head,
+body.light-mode .app-menu-head strong{
+  color:#111827 !important;
+}
+body.light-mode .app-menu-head button,
+body.light-mode .menu-entry{
+  background:#1e293b !important;
+  color:#ffffff !important;
+}
+body.light-mode .version-block{
+  border-color:#475569 !important;
+}
+body.light-mode .version-label{
+  color:#94a3b8 !important;
+}
+body.light-mode .version-select{
+  background:#111827 !important;
+  color:#ffffff !important;
+  border-color:#334155 !important;
+}
+
+/* 各種モーダル */
+body.light-mode .feature-settings-dialog,
+body.light-mode .feedback-dialog,
+body.light-mode .howto-dialog,
+body.light-mode .rival-manage-dialog,
+body.light-mode .skill-sync-dialog,
+body.light-mode .site-dialog,
+body.light-mode .rate-compare-dialog,
+body.light-mode .mypage-sheet,
+body.light-mode .mdl-box,
+body.light-mode .admin-form-box{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .feature-setting-row,
+body.light-mode .favorite-user-row,
+body.light-mode .rate-row{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+body.light-mode .favorite-user-row .name,
+body.light-mode .mypage-section-title{
+  color:#111827 !important;
+}
+body.light-mode .feature-setting-row small,
+body.light-mode .section-note{
+  color:#64748b !important;
+}
+body.light-mode .mypage-sheet input,
+body.light-mode .mypage-sheet select,
+body.light-mode .mdl-box input,
+body.light-mode .mdl-box select,
+body.light-mode .mdl-box textarea,
+body.light-mode .feature-settings-dialog input,
+body.light-mode .feature-settings-dialog select,
+body.light-mode .feature-settings-dialog textarea{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+
+/* 見出し */
+body.light-mode .sk-section,
+body.light-mode .sk-section h2,
+body.light-mode .empty-state{
+  background:#ffffff !important;
+}
+body.light-mode .empty-state{ color:#64748b !important; }
+
+/* 背景マスクはライト時も薄いグレーに */
+body.light-mode .site-dialog-mask,
+body.light-mode .mypage-modal,
+body.light-mode .mdl-mask,
+body.light-mode .admin-form-mask{
+  background:rgba(15,23,42,.25) !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5180,7 +5377,7 @@ body.light-mode .site-dialog-mask{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX117</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX118</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -5257,6 +5454,6 @@ body.light-mode .site-dialog-mask{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_117"></script>
+<script type="module" src="./js/app.js?v=21_118"></script>
 </body>
 </html>
