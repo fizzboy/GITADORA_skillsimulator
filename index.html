@@ -5231,6 +5231,13 @@ body.light-mode .admin-form-mask{
   background:rgba(15,23,42,.22) !important;
 }
 
+
+/* FIX121: ライトモードは調整中のため管理者のみ */
+#settingLightMode:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5465,9 +5472,9 @@ body.light-mode .admin-form-mask{
       <label class="feature-setting-row">
         <span>
           <strong>ライトモード</strong>
-          <small>黒背景を白背景へ切り替えます。この端末に保存されます。</small>
+          <small id="settingLightModeNote">現在調整中のため、管理者のみ利用できます。</small>
         </span>
-        <input id="settingLightMode" type="checkbox">
+        <input id="settingLightMode" type="checkbox" disabled>
       </label>
 
       <label class="feature-setting-row">
@@ -5675,7 +5682,7 @@ body.light-mode .admin-form-mask{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX120</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX121</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -5752,6 +5759,6 @@ body.light-mode .admin-form-mask{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_120"></script>
+<script type="module" src="./js/app.js?v=21_121"></script>
 </body>
 </html>
