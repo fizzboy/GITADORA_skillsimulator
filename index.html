@@ -6306,6 +6306,182 @@ body.light-mode .rival-manage-dialog .favorite-user-open:active{
   background:#cfd5de !important;
 }
 
+
+/* === FIX143: 要望・不具合 1往復返信 + ユーザー送信履歴 === */
+.feedback-history-divider{
+  height:1px;
+  margin:16px 0 12px;
+  background:#334155;
+}
+.feedback-history-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px;
+}
+.feedback-history-head strong{
+  color:#f8fafc;
+  font-size:13px;
+}
+.feedback-history-head span{
+  color:#64748b;
+  font-size:9px;
+  font-weight:800;
+}
+.feedback-history{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.feedback-history-card{
+  padding:9px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#111827;
+}
+.feedback-history-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:6px;
+}
+.feedback-history-date,
+.feedback-history-status{
+  color:#94a3b8;
+  font-size:9px;
+  font-weight:800;
+}
+.feedback-history-message{
+  color:#f8fafc;
+  font-size:11px;
+  line-height:1.55;
+  word-break:break-word;
+}
+.feedback-history-reply{
+  margin-top:8px;
+  padding:8px;
+  border-left:3px solid #2563eb;
+  border-radius:5px;
+  background:#0b1220;
+}
+.feedback-history-reply-label{
+  margin-bottom:4px;
+  color:#60a5fa;
+  font-size:9px;
+  font-weight:900;
+}
+.feedback-history-reply-message{
+  color:#e2e8f0;
+  font-size:11px;
+  line-height:1.55;
+  word-break:break-word;
+}
+.feedback-history-empty{
+  padding:14px 8px;
+  color:#64748b;
+  font-size:10px;
+  text-align:center;
+}
+
+/* 管理者返信 */
+.feedback-admin-reply-box{
+  margin-top:8px;
+  padding:8px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  background:#f8fafc;
+}
+.feedback-admin-reply-label{
+  margin-bottom:5px;
+  color:#475569;
+  font-size:10px;
+  font-weight:900;
+}
+.feedback-admin-reply-box textarea{
+  width:100%;
+  min-height:72px;
+  box-sizing:border-box;
+  padding:8px;
+  border:1px solid #94a3b8;
+  border-radius:6px;
+  background:#fff;
+  color:#111827;
+  font:inherit;
+  font-size:11px;
+  resize:vertical;
+}
+.feedback-admin-reply-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:6px;
+}
+.feedback-admin-reply-actions button{
+  min-height:32px;
+  padding:0 12px;
+  border:1px solid #1d4ed8;
+  border-radius:6px;
+  background:#2563eb;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+}
+.feedback-admin-replied{
+  margin-top:8px;
+  padding:8px;
+  border-left:3px solid #2563eb;
+  border-radius:5px;
+  background:#eff6ff;
+  color:#1e293b;
+  font-size:11px;
+  line-height:1.55;
+}
+.feedback-admin-replied strong{
+  display:block;
+  margin-bottom:4px;
+  color:#1d4ed8;
+  font-size:10px;
+}
+
+/* light mode */
+body.light-mode .feedback-history-divider{
+  background:#cbd5e1 !important;
+}
+body.light-mode .feedback-history-head strong{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+body.light-mode .feedback-history-head span{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+body.light-mode .feedback-history-card{
+  background:#e9edf2 !important;
+  border-color:#cbd5e1 !important;
+}
+body.light-mode .feedback-history-date,
+body.light-mode .feedback-history-status{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+body.light-mode .feedback-history-message{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+body.light-mode .feedback-history-reply{
+  background:#dbeafe !important;
+  border-left-color:#2563eb !important;
+}
+body.light-mode .feedback-history-reply-label{
+  color:#1d4ed8 !important;
+  -webkit-text-fill-color:#1d4ed8 !important;
+}
+body.light-mode .feedback-history-reply-message{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6585,6 +6761,15 @@ body.light-mode .rival-manage-dialog .favorite-user-open:active{
 
       <div id="feedbackStatus" class="feedback-status"></div>
       <button id="btnSubmitFeedback" type="button" class="btn-submit">送信する</button>
+
+      <div class="feedback-history-divider"></div>
+      <div class="feedback-history-head">
+        <strong>送信履歴</strong>
+        <span>管理者からの返信は1回のみです</span>
+      </div>
+      <div id="feedbackHistory" class="feedback-history">
+        <div class="feedback-history-empty">読み込み中...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -6750,7 +6935,7 @@ body.light-mode .rival-manage-dialog .favorite-user-open:active{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX142</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX143</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -6827,6 +7012,6 @@ body.light-mode .rival-manage-dialog .favorite-user-open:active{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_142"></script>
+<script type="module" src="./js/app.js?v=21_143"></script>
 </body>
 </html>
