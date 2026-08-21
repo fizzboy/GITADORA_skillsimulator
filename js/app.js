@@ -920,7 +920,47 @@ function shareSkillImage() {
       x.textBaseline='alphabetic';
       x.fillStyle='#94a3b8'; x.font='700 11px sans-serif';
       // パートは従来より少し下へ。
-      x.fillText(r.part,pos[1]+8,y+48);
+      const partText = String(r.part || '');
+      const partX = pos[1] + 8;
+      const partY = y + 48;
+      x.fillText(partText, partX, partY);
+
+      // GFのオプションをパート右側に表示（正規は非表示）。
+      // 画面上の [RAN] / [SRA] / [RAN+] / [SRA+] に相当する小型バッジ。
+      const optionText = String(r.play_option || 'NORMAL').toUpperCase();
+      if (!partText.endsWith('-D') && optionText !== 'NORMAL') {
+        const optionStyles = {
+          'RAN':  { text:'#86efac', border:'#15803d', bg:'rgba(20,83,45,.34)' },
+          'SRA':  { text:'#fdba74', border:'#c2410c', bg:'rgba(124,45,18,.38)' },
+          'RAN+': { text:'#4ade80', border:'#166534', bg:'rgba(20,83,45,.34)' },
+          'SRA+': { text:'#fb923c', border:'#9a3412', bg:'rgba(124,45,18,.38)' }
+        };
+        const st = optionStyles[optionText] || { text:'#cbd5e1', border:'#475569', bg:'rgba(30,41,59,.5)' };
+
+        x.font = '900 9px sans-serif';
+        const optionW = Math.max(34, Math.ceil(x.measureText(optionText).width) + 12);
+        const optionH = 15;
+        const optionX = partX + x.measureText(partText).width + 8;
+        const optionY = y + 36;
+
+        // 曲名セル内に収まる場合だけ描画。
+        if (optionX + optionW <= pos[2] - 5) {
+          x.fillStyle = st.bg;
+          x.beginPath();
+          x.roundRect(optionX, optionY, optionW, optionH, 3);
+          x.fill();
+          x.strokeStyle = st.border;
+          x.lineWidth = 1;
+          x.stroke();
+
+          x.fillStyle = st.text;
+          x.textAlign = 'center';
+          x.textBaseline = 'middle';
+          x.fillText(optionText, optionX + optionW / 2, optionY + optionH / 2 + .5);
+          x.textAlign = 'left';
+          x.textBaseline = 'alphabetic';
+        }
+      }
 
       // SKILL:
       // 数字は白固定。左右の帯だけを、その曲のスキルカラーで表示する。
