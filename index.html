@@ -4556,6 +4556,188 @@ html.ios-viewport-repair {
   color:#334155 !important;
 }
 
+
+/* === FIX117: 機能設定 / 公開設定 / ライトモード === */
+.feature-settings-dialog{
+  width:min(92vw,520px);
+  background:#0f172a;
+  color:#f8fafc;
+  border:1px solid #334155;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+}
+.feature-settings-body{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.feature-setting-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  padding:12px 4px;
+  border-bottom:1px solid #253247;
+}
+.feature-setting-row > span{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.feature-setting-row strong{ font-size:13px; }
+.feature-setting-row small{
+  color:#94a3b8;
+  font-size:10px;
+  line-height:1.45;
+}
+.feature-setting-row input[type="checkbox"]{
+  width:22px;
+  height:22px;
+  accent-color:#2563eb;
+}
+.feature-settings-status{
+  min-height:18px;
+  color:#fca5a5;
+  font-size:11px;
+}
+.feature-settings-save{
+  width:100%;
+  min-height:44px;
+}
+.mypage-x-block{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid #e5e7eb;
+}
+
+.user-detail-header{
+  grid-template-columns:auto minmax(0,1fr) auto !important;
+}
+.user-detail-x-link{
+  width:32px;
+  height:32px;
+  flex:0 0 32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#111827;
+  color:#fff !important;
+  border:1px solid #475569;
+  font-size:15px;
+  font-weight:900;
+  text-decoration:none;
+}
+.user-detail-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  padding:6px 8px 0;
+  background:#0b1424;
+}
+.user-detail-tab{
+  min-height:38px;
+  border:0;
+  border-radius:6px;
+  background:#1f2937;
+  color:#9ca3af;
+  font-weight:900;
+  font-size:12px;
+}
+.user-detail-tab.active{
+  background:#2563eb;
+  color:#fff;
+}
+.dc-card-public .dc-edit{ display:none !important; }
+
+/* ライトモード：スキルカラー・バッジ色は維持し、黒系の面だけ白系へ置換 */
+body.light-mode,
+body.light-mode #appScreen,
+body.light-mode .p-container,
+body.light-mode .user-detail-page,
+body.light-mode .admin-modal{
+  background:#f8fafc !important;
+  color:#111827 !important;
+}
+body.light-mode .p-header,
+body.light-mode .p-tabs,
+body.light-mode .search-bar-container,
+body.light-mode .user-header-row,
+body.light-mode .user-detail-header,
+body.light-mode .user-detail-tabs,
+body.light-mode .app-menu-sheet,
+body.light-mode .feature-settings-dialog,
+body.light-mode .feedback-dialog,
+body.light-mode .howto-dialog,
+body.light-mode .rival-manage-dialog,
+body.light-mode .skill-sync-dialog,
+body.light-mode .site-dialog,
+body.light-mode .rate-compare-dialog,
+body.light-mode .auth-card{
+  background:#ffffff !important;
+  color:#111827 !important;
+}
+body.light-mode .p-tab-btn,
+body.light-mode .app-menu-item,
+body.light-mode .favorite-user-row,
+body.light-mode .admin-card,
+body.light-mode .rate-row,
+body.light-mode .feature-setting-row{
+  background:#f1f5f9 !important;
+  color:#111827 !important;
+}
+body.light-mode .p-tab-btn.active,
+body.light-mode .user-detail-tab.active{
+  background:#2563eb !important;
+  color:#fff !important;
+}
+body.light-mode .user-detail-tab{
+  background:#e2e8f0;
+  color:#475569;
+}
+body.light-mode .search-input,
+body.light-mode .auth-card input,
+body.light-mode .feature-settings-dialog input,
+body.light-mode .feature-settings-dialog select,
+body.light-mode .feature-settings-dialog textarea{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+body.light-mode .dc-card{
+  background-color:#ffffff !important;
+  color:#111827 !important;
+}
+body.light-mode .dc-title,
+body.light-mode .dc-song-title,
+body.light-mode .dc-lv strong,
+body.light-mode .dc-rate strong{
+  color:#111827 !important;
+}
+body.light-mode .dc-lv,
+body.light-mode .dc-rate,
+body.light-mode .section-note,
+body.light-mode .feature-setting-row small{
+  color:#64748b !important;
+}
+body.light-mode .site-dialog-message,
+body.light-mode .site-dialog-head,
+body.light-mode .app-menu-head,
+body.light-mode .user-detail-name{
+  color:#111827 !important;
+}
+body.light-mode .user-detail-x-link{
+  background:#111827 !important;
+  color:#fff !important;
+}
+body.light-mode .mypage-modal,
+body.light-mode .mdl-mask,
+body.light-mode .site-dialog-mask{
+  background:rgba(15,23,42,.28) !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -4764,6 +4946,7 @@ html.ios-viewport-repair {
   <div class="app-menu-sheet">
     <div class="app-menu-head"><strong>MENU</strong><button id="btnCloseMenu" type="button">×</button></div>
     <button id="btnMenuMypage" type="button" class="app-menu-item">マイページ <span>›</span></button>
+    <button id="btnMenuFeatureSettings" type="button" class="app-menu-item">機能設定 <span>›</span></button>
     <button id="btnMenuSkillSync" type="button" class="app-menu-item">スキル対象同期 <span>›</span></button>
     <button id="btnMenuShareSkill" type="button" class="app-menu-item">スキル画像共有 <span>›</span></button>
     <button id="btnMenuRivals" type="button" class="app-menu-item">ライバル管理 <span>›</span></button>
@@ -4776,6 +4959,45 @@ html.ios-viewport-repair {
   </div>
 </div>
 
+
+
+<div id="featureSettingsMask" class="site-dialog-mask">
+  <div class="feature-settings-dialog">
+    <div class="app-menu-head">
+      <strong>機能設定</strong>
+      <button id="btnCloseFeatureSettings" type="button">×</button>
+    </div>
+
+    <div class="feature-settings-body">
+      <label class="feature-setting-row">
+        <span>
+          <strong>ライトモード</strong>
+          <small>黒背景を白背景へ切り替えます。この端末に保存されます。</small>
+        </span>
+        <input id="settingLightMode" type="checkbox">
+      </label>
+
+      <label class="feature-setting-row">
+        <span>
+          <strong>登録曲を公開</strong>
+          <small>ONにすると、他ユーザーがあなたの登録曲一覧を閲覧できます。</small>
+        </span>
+        <input id="settingRecordsPublic" type="checkbox">
+      </label>
+
+      <label class="feature-setting-row">
+        <span>
+          <strong>Xアカウント情報を公開</strong>
+          <small>マイページに登録したX IDへのリンクをユーザー詳細に表示します。</small>
+        </span>
+        <input id="settingXPublic" type="checkbox">
+      </label>
+
+      <div id="featureSettingsStatus" class="feature-settings-status"></div>
+      <button id="btnSaveFeatureSettings" type="button" class="btn-submit feature-settings-save">保存する</button>
+    </div>
+  </div>
+</div>
 
 <div id="feedbackMask" class="site-dialog-mask">
   <div class="feedback-dialog">
@@ -4851,6 +5073,15 @@ html.ios-viewport-repair {
       <button id="btnChangePassword" type="button" class="btn-name-change">変更</button>
     </div>
 
+    <div class="mypage-x-block">
+      <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">X（旧Twitter）ID</label>
+      <div class="mypage-name-row">
+        <input id="mypageXIdInput" maxlength="64" autocomplete="off" placeholder="例：fizz_rky または @fizz_rky">
+        <button id="btnSaveXId" type="button" class="btn-name-change">保存</button>
+      </div>
+      <div class="section-note">任意項目です。公開設定がONの場合のみ、他ユーザーにXへのリンクが表示されます。</div>
+    </div>
+
     <div class="mypage-logout-zone">
       <button id="btnLogout" class="btn-cancel mypage-logout">ログアウト</button>
     </div>
@@ -4916,13 +5147,19 @@ html.ios-viewport-repair {
   <div class="user-detail-header">
     <button id="btnCloseUserDetail" type="button" class="user-detail-back">← 戻る</button>
     <div id="userDetailName" class="user-detail-name"></div>
+    <a id="userDetailXLink" class="user-detail-x-link hidden" href="#" target="_blank" rel="noopener noreferrer" aria-label="Xアカウントを開く">X</a>
   </div>
   <div class="user-detail-summary">
     <div><span>TOTAL</span><strong id="userDetailTotal">0.00</strong></div>
     <div><span>HOT</span><strong id="userDetailHot">0.00</strong></div>
     <div><span>OTHER</span><strong id="userDetailOther">0.00</strong></div>
   </div>
+  <div id="userDetailTabs" class="user-detail-tabs hidden">
+    <button type="button" class="user-detail-tab active" data-user-detail-tab="skill">スキル対象</button>
+    <button type="button" class="user-detail-tab" data-user-detail-tab="records">登録曲</button>
+  </div>
   <div id="userDetailSkill" class="user-detail-body"></div>
+  <div id="userDetailRecords" class="user-detail-body hidden"></div>
 </div>
 
 <div id="rateCompareMask" class="site-dialog-mask">
@@ -4943,7 +5180,7 @@ html.ios-viewport-repair {
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX116</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX117</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -5020,6 +5257,6 @@ html.ios-viewport-repair {
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_116"></script>
+<script type="module" src="./js/app.js?v=21_117"></script>
 </body>
 </html>
