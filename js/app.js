@@ -167,7 +167,7 @@ function skillColorCanvasVerticalPaint(ctx, row, left, top, width, height) {
 import { supabase } from './supabase.js?v=21_57';
 import { register, login, logout, changePassword, getSession, validateUsername } from './auth.js?v=21_84';
 import { initAuthCaptcha, prepareAuthCaptcha, getAuthCaptchaToken, resetAuthCaptcha } from './captcha.js?v=21_84';
-import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_98';
+import { PARTS, GF_PARTS, DM_PARTS, partsForInstrument, normalizeSongTitleForMatch, searchSongTitles, getSongByTitleAndPart, requestSongMaster, requestSongLevelCorrection } from './songs.js?v=21_116';
 import { calcSkill, formatLevel, formatRate, formatSkill, getMyScores, saveScore, deleteScore } from './scores.js?v=21_110';
 import { getGameVersions } from './versions.js?v=21_57';
 const {
@@ -242,7 +242,7 @@ async function importSkillSyncRecords(payload) {
     if (!Number.isFinite(rate) || rate < 0 || rate > 100) continue;
     if (!Number.isFinite(level) || level <= 0 || level > 99.99) continue;
 
-    unique.set(`${title}\u0000${part}`, {
+    unique.set(`${normalizeSongTitleForMatch(title)}\u0000${part}`, {
       title,
       part,
       rate: Math.floor((rate + Number.EPSILON) * 100) / 100,
@@ -1551,7 +1551,20 @@ async function submitScore() {
       versionId: activeVersionId
     });
 
-    requestId = request.id;
+    // 申請直前の再照合で既存マスターが見つかった場合は、
+    // 新規申請を作らず既存song_idへ保存する。
+    if (request?.existing_song_id) {
+      songId = request.existing_song_id;
+      selectedSong = {
+        id: request.existing_song_id,
+        title: request.title,
+        part: request.part,
+        level: request.level,
+        is_hot: request.is_hot
+      };
+    } else {
+      requestId = request.id;
+    }
   }
 
   const numericRate = Number(rate);
