@@ -1200,7 +1200,7 @@ body { background:#0b1220; }
   background: #030712 !important;
 }
 
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   border-color: #334155 !important;
   background: #111827 !important;
   color: #f8fafc !important;
@@ -1257,14 +1257,14 @@ body { background:#0b1220; }
 }
 
 /* ③ 登録一覧のカード枠線を明確化 */
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   border: 1px solid #475569 !important;
   border-radius: 8px !important;
   background: #111827 !important;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.015);
 }
 
-#viewAllManage .m-card:hover {
+:is(#viewAllManage, #userDetailRecords) .m-card:hover {
   border-color: #64748b !important;
 }
 
@@ -2931,7 +2931,7 @@ html.ios-viewport-repair {
 }
 
 /* === v21 FIX43: 登録一覧をスキル対象カードと同系統に統一 === */
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   border: 1px solid #475569 !important;
   border-radius: 8px !important;
   background: #111827 !important;
@@ -2957,7 +2957,7 @@ html.ios-viewport-repair {
 #viewAllManage .m-title-text {
   color: #f8fafc !important;
 }
-#viewAllManage .m-card-val-box {
+:is(#viewAllManage, #userDetailRecords) .m-card-val-box {
   flex-shrink: 0;
 }
 #viewAllManage .m-flow-container {
@@ -3011,7 +3011,7 @@ html.ios-viewport-repair {
   margin: 0 !important;
   vertical-align: middle !important;
 }
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   margin-bottom: 5px !important;
 }
 #viewAllManage .m-upper-row {
@@ -3085,14 +3085,14 @@ html.ios-viewport-repair {
 /* === v21 FIX46: 登録曲カード完全統一 === */
 
 /* border-colorではグラデーション不可なので疑似要素で描画 */
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   position: relative !important;
   border: 0 !important;
   border-radius: 8px !important;
   background: #111827 !important;
   overflow: hidden;
 }
-#viewAllManage .m-card::before {
+:is(#viewAllManage, #userDetailRecords) .m-card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -3109,29 +3109,29 @@ html.ios-viewport-repair {
 }
 
 /* HOTはスキル対象と同一 */
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   color: #fecaca !important;
   background: #450a0a !important;
   border: 1px solid #991b1b !important;
 }
 
 /* オプションもスキル対象と同一 */
-#viewAllManage .m-card .opt-ran {
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-ran {
   color: #86efac !important;
   background: transparent !important;
   border: 1px solid #15803d !important;
 }
-#viewAllManage .m-card .opt-sra {
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-sra {
   color: #ffedd5 !important;
   background: transparent !important;
   border: 1px solid #c2410c !important;
 }
-#viewAllManage .m-card .opt-ran-plus {
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-ran-plus {
   color: #67e8f9 !important;
   background: transparent !important;
   border: 1px solid #0369a1 !important;
 }
-#viewAllManage .m-card .opt-sra-plus {
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-sra-plus {
   color: #fecdd3 !important;
   background: transparent !important;
   border: 1px solid #be123c !important;
@@ -3182,14 +3182,14 @@ html.ios-viewport-repair {
 
 /* RAN系：緑。同系色で + を濃く */
 .opt-ran,
-#viewAllManage .m-card .opt-ran,
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-ran,
 .rate-badges .opt-ran {
   color: #86efac !important;
   background: transparent !important;
   border: 1px solid #15803d !important;
 }
 .opt-ran-plus,
-#viewAllManage .m-card .opt-ran-plus,
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-ran-plus,
 .rate-badges .opt-ran-plus {
   color: #4ade80 !important;
   background: rgba(20,83,45,.34) !important;
@@ -3198,14 +3198,14 @@ html.ios-viewport-repair {
 
 /* SRA系：オレンジ。同系色で + を濃く */
 .opt-sra,
-#viewAllManage .m-card .opt-sra,
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-sra,
 .rate-badges .opt-sra {
   color: #fdba74 !important;
   background: transparent !important;
   border: 1px solid #c2410c !important;
 }
 .opt-sra-plus,
-#viewAllManage .m-card .opt-sra-plus,
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-sra-plus,
 .rate-badges .opt-sra-plus {
   color: #fb923c !important;
   background: rgba(124,45,18,.38) !important;
@@ -3322,7 +3322,7 @@ html.ios-viewport-repair {
 
 /* 曲名がHOTよりわずかに上に見える分だけ1px下げる */
 .sk-row .sk-title,
-#viewAllManage .m-card .m-title-text {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-title-text {
   position: relative;
   top: 1px;
 }
@@ -3366,7 +3366,7 @@ html.ios-viewport-repair {
 
 /* FIX70: HOTバッジを見切れさせず、曲名と上下中央を揃える */
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   position: relative !important;
   top: 0 !important;
   transform: translateY(-1px);
@@ -3375,7 +3375,7 @@ html.ios-viewport-repair {
 
 /* FIX72: HOTバッジをMAS-Gと同じ縦中央位置へ揃える */
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   position: static !important;
   top: auto !important;
   transform: none !important;
@@ -3397,14 +3397,14 @@ html.ios-viewport-repair {
 
 /* 文字だけが上/下に寄らないよう余白補正は入れない */
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
 
 /* タイトル行はバッジ・曲名とも同一の中央基準 */
 .sk-row .sk-title,
-#viewAllManage .m-card .m-title-text {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-title-text {
   align-items: center !important;
   overflow: visible !important;
 }
@@ -3412,7 +3412,7 @@ html.ios-viewport-repair {
 
 /* FIX78: HOTは負のmarginを使わず、17px高で中央に揃える */
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   height: 17px !important;
@@ -3423,7 +3423,7 @@ html.ios-viewport-repair {
 
 
 /* FIX76: 登録曲の曲名もスキル対象と同じく最大2行表示 */
-#viewAllManage .m-card .m-title-text {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-title-text {
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
@@ -3441,7 +3441,7 @@ html.ios-viewport-repair {
 @supports (-webkit-touch-callout: none) {
   /* バッジ全体はMAS-Gに合わせて1px上へ */
   .sk-row .hot-tag,
-  #viewAllManage .m-card .hot-tag {
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
     position: relative !important;
     top: -1px !important;
     transform: none !important;
@@ -3455,8 +3455,8 @@ html.ios-viewport-repair {
   /* 上へ1px動かしても枠が切れないよう、周辺のクリップを解除 */
   .sk-row .sk-title,
   .sk-row .sk-text-column,
-  #viewAllManage .m-card .m-title-text,
-  #viewAllManage .m-card .m-upper-row {
+  :is(#viewAllManage, #userDetailRecords) .m-card .m-title-text,
+  :is(#viewAllManage, #userDetailRecords) .m-card .m-upper-row {
     overflow: visible !important;
   }
 }
@@ -3465,8 +3465,8 @@ html.ios-viewport-repair {
 /* FIX80: HOTの箱をPARTバッジと同じ高さに統一。ブラウザ別の位置移動は無効化 */
 .sk-row .p-badge,
 .sk-row .hot-tag,
-#viewAllManage .m-card .p-badge,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge,
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   height: 20px !important;
   min-height: 20px !important;
   box-sizing: border-box !important;
@@ -3483,27 +3483,27 @@ html.ios-viewport-repair {
 }
 
 .sk-row .p-badge,
-#viewAllManage .m-card .p-badge {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
 
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   padding: 0 5px !important;
 }
 
 /* Safariは文字の見え方だけ1px下げる。HOTの箱自体は動かさない */
 @supports (-webkit-touch-callout: none) {
   .sk-row .hot-tag,
-  #viewAllManage .m-card .hot-tag {
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
     padding-top: 1px !important;
     padding-bottom: 0 !important;
   }
 }
 
 /* 登録曲は1行固定にせず、必要な曲だけカード上段を広げて最大2行表示 */
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   height: auto !important;
   min-height: 72px !important;
 }
@@ -3567,8 +3567,8 @@ html.ios-viewport-repair {
    スキル対象 / 登録曲 / ユーザー詳細スキル対象で同じ寸法に統一 */
 .sk-row .p-badge,
 .sk-row .hot-tag,
-#viewAllManage .m-card .p-badge,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge,
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   height: 20px !important;
   min-height: 20px !important;
   max-height: 20px !important;
@@ -3589,13 +3589,13 @@ html.ios-viewport-repair {
 
 /* HOTはPARTと同じ20pxの外寸を維持 */
 .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   padding: 0 5px !important;
 }
 
 /* PARTも上下paddingで高さが膨らまないよう固定 */
 .sk-row .p-badge,
-#viewAllManage .m-card .p-badge {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
@@ -3603,7 +3603,7 @@ html.ios-viewport-repair {
 /* Safariも箱そのものは動かさない。文字だけ微調整 */
 @supports (-webkit-touch-callout: none) {
   .sk-row .hot-tag,
-  #viewAllManage .m-card .hot-tag {
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
     padding-top: 1px !important;
     padding-bottom: 0 !important;
   }
@@ -3613,7 +3613,7 @@ html.ios-viewport-repair {
 /* FIX86: 登録曲のHOT寸法を正として、スキル対象/ユーザー詳細にも完全統一 */
 
 /* 登録曲側のHOTを基準化 */
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   height: 20px !important;
   min-height: 20px !important;
   max-height: 20px !important;
@@ -3680,7 +3680,7 @@ html.ios-viewport-repair {
 
 /* Safariは箱は動かさず文字だけ微調整 */
 @supports (-webkit-touch-callout: none) {
-  #viewAllManage .m-card .hot-tag,
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag,
   #viewSkill .sk-row .hot-tag,
   #userDetailSkill .sk-row .hot-tag {
     padding-top: 1px !important;
@@ -3695,8 +3695,8 @@ html.ios-viewport-repair {
 #viewSkill .sk-row .hot-tag,
 #userDetailSkill .sk-row .p-badge,
 #userDetailSkill .sk-row .hot-tag,
-#viewAllManage .m-card .p-badge,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge,
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   height: 22px !important;
   min-height: 22px !important;
   max-height: 22px !important;
@@ -3716,13 +3716,13 @@ html.ios-viewport-repair {
 
 #viewSkill .sk-row .p-badge,
 #userDetailSkill .sk-row .p-badge,
-#viewAllManage .m-card .p-badge {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge {
   padding: 0 !important;
 }
 
 #viewSkill .sk-row .hot-tag,
 #userDetailSkill .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   padding: 0 7px !important;
   border-width: 1px !important;
   border-radius: 4px !important;
@@ -3732,7 +3732,7 @@ html.ios-viewport-repair {
 @supports (-webkit-touch-callout: none) {
   #viewSkill .sk-row .hot-tag,
   #userDetailSkill .sk-row .hot-tag,
-  #viewAllManage .m-card .hot-tag {
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
     padding-top: 1px !important;
     padding-bottom: 0 !important;
   }
@@ -3836,12 +3836,12 @@ html.ios-viewport-repair {
 }
 
 /* ---------- 登録曲 ---------- */
-#viewAllManage .m-card {
+:is(#viewAllManage, #userDetailRecords) .m-card {
   height: auto !important;
   min-height: 72px !important;
 }
 
-#viewAllManage .m-card .m-main-area {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-main-area {
   height: auto !important;
   min-height: 64px !important;
 
@@ -3850,13 +3850,13 @@ html.ios-viewport-repair {
   justify-content: center !important;
 }
 
-#viewAllManage .m-card .m-upper-row {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-upper-row {
   height: auto !important;
   min-height: 22px !important;
   align-items: center !important;
 }
 
-#viewAllManage .m-card .m-title-text {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-title-text {
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
@@ -3877,7 +3877,7 @@ html.ios-viewport-repair {
   transform: none !important;
 }
 
-#viewAllManage .m-card .m-lower-row {
+:is(#viewAllManage, #userDetailRecords) .m-card .m-lower-row {
   height: auto !important;
   min-height: 24px !important;
   margin-top: 4px !important;
@@ -3890,8 +3890,8 @@ html.ios-viewport-repair {
 #viewSkill .sk-row .hot-tag,
 #userDetailSkill .sk-row .p-badge,
 #userDetailSkill .sk-row .hot-tag,
-#viewAllManage .m-card .p-badge,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .p-badge,
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   height: 22px !important;
   min-height: 22px !important;
   max-height: 22px !important;
@@ -3915,7 +3915,7 @@ html.ios-viewport-repair {
 
 #viewSkill .sk-row .hot-tag,
 #userDetailSkill .sk-row .hot-tag,
-#viewAllManage .m-card .hot-tag {
+:is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
   padding: 0 7px !important;
 }
 
@@ -3923,7 +3923,7 @@ html.ios-viewport-repair {
 @supports (-webkit-touch-callout: none) {
   #viewSkill .sk-row .hot-tag,
   #userDetailSkill .sk-row .hot-tag,
-  #viewAllManage .m-card .hot-tag {
+  :is(#viewAllManage, #userDetailRecords) .m-card .hot-tag {
     padding-top: 1px !important;
     padding-bottom: 0 !important;
   }
@@ -4935,6 +4935,82 @@ body.light-mode .admin-form-mask{
   background:rgba(15,23,42,.25) !important;
 }
 
+
+/* === FIX119: 他ユーザー登録曲は自分の登録曲デザインをそのまま使用 === */
+.user-detail-sticky{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:#0f172a;
+}
+.user-detail-sticky .user-detail-header{
+  position:relative !important;
+  top:auto !important;
+  z-index:auto !important;
+}
+
+/* 自分の「登録」タブで使っているカード配色を他ユーザー登録曲にも適用 */
+#userDetailRecords .m-card .hot-tag{
+  color:#fecaca !important;
+  background:#450a0a !important;
+  border:1px solid #991b1b !important;
+}
+#userDetailRecords .m-card .opt-ran{
+  color:#86efac !important;
+  background:transparent !important;
+  border:1px solid #15803d !important;
+}
+#userDetailRecords .m-card .opt-sra{
+  color:#ffedd5 !important;
+  background:transparent !important;
+  border:1px solid #c2410c !important;
+}
+#userDetailRecords .m-card .opt-ran-plus{
+  color:#67e8f9 !important;
+  background:transparent !important;
+  border:1px solid #0369a1 !important;
+}
+#userDetailRecords .m-card .opt-sra-plus{
+  color:#fecdd3 !important;
+  background:transparent !important;
+  border:1px solid #be123c !important;
+}
+#userDetailRecords .dc-card{
+  color:#f8fafc !important;
+}
+#userDetailRecords .dc-title,
+#userDetailRecords .dc-song-title,
+#userDetailRecords .dc-lv,
+#userDetailRecords .dc-rate,
+#userDetailRecords .dc-lv strong,
+#userDetailRecords .dc-rate strong{
+  color:#f8fafc !important;
+}
+
+/* ライトモード時だけ、自分の登録曲と同じく白地＋黒文字 */
+body.light-mode .user-detail-sticky{
+  background:#ffffff !important;
+}
+body.light-mode #userDetailRecords .dc-card{
+  background:#ffffff !important;
+  background-image:none !important;
+  color:#111827 !important;
+}
+body.light-mode #userDetailRecords .dc-title,
+body.light-mode #userDetailRecords .dc-song-title,
+body.light-mode #userDetailRecords .dc-lv,
+body.light-mode #userDetailRecords .dc-rate,
+body.light-mode #userDetailRecords .dc-lv strong,
+body.light-mode #userDetailRecords .dc-rate strong{
+  color:#111827 !important;
+}
+/* HOT/OPTIONはライトモードでも自分の登録曲と同じ意味色を維持 */
+body.light-mode #userDetailRecords .m-card .hot-tag{
+  color:#fecaca !important;
+  background:#450a0a !important;
+  border-color:#991b1b !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -5341,19 +5417,21 @@ body.light-mode .admin-form-mask{
 </div>
 
 <div id="userDetailPage" class="user-detail-page">
-  <div class="user-detail-header">
-    <button id="btnCloseUserDetail" type="button" class="user-detail-back">← 戻る</button>
-    <div id="userDetailName" class="user-detail-name"></div>
-    <a id="userDetailXLink" class="user-detail-x-link hidden" href="#" target="_blank" rel="noopener noreferrer" aria-label="Xアカウントを開く">X</a>
-  </div>
-  <div class="user-detail-summary">
-    <div><span>TOTAL</span><strong id="userDetailTotal">0.00</strong></div>
-    <div><span>HOT</span><strong id="userDetailHot">0.00</strong></div>
-    <div><span>OTHER</span><strong id="userDetailOther">0.00</strong></div>
-  </div>
-  <div id="userDetailTabs" class="user-detail-tabs hidden">
-    <button type="button" class="user-detail-tab active" data-user-detail-tab="skill">スキル対象</button>
-    <button type="button" class="user-detail-tab" data-user-detail-tab="records">登録曲</button>
+  <div class="user-detail-sticky">
+    <div class="user-detail-header">
+      <button id="btnCloseUserDetail" type="button" class="user-detail-back">← 戻る</button>
+      <div id="userDetailName" class="user-detail-name"></div>
+      <a id="userDetailXLink" class="user-detail-x-link hidden" href="#" target="_blank" rel="noopener noreferrer" aria-label="Xアカウントを開く">X</a>
+    </div>
+    <div class="user-detail-summary">
+      <div><span>TOTAL</span><strong id="userDetailTotal">0.00</strong></div>
+      <div><span>HOT</span><strong id="userDetailHot">0.00</strong></div>
+      <div><span>OTHER</span><strong id="userDetailOther">0.00</strong></div>
+    </div>
+    <div id="userDetailTabs" class="user-detail-tabs hidden">
+      <button type="button" class="user-detail-tab active" data-user-detail-tab="skill">スキル対象</button>
+      <button type="button" class="user-detail-tab" data-user-detail-tab="records">登録曲</button>
+    </div>
   </div>
   <div id="userDetailSkill" class="user-detail-body"></div>
   <div id="userDetailRecords" class="user-detail-body hidden"></div>
@@ -5377,7 +5455,7 @@ body.light-mode .admin-form-mask{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX118</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX119</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -5454,6 +5532,6 @@ body.light-mode .admin-form-mask{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_118"></script>
+<script type="module" src="./js/app.js?v=21_119"></script>
 </body>
 </html>
