@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_150';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_151';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -461,6 +461,15 @@ let viewedUserRegisteredScores = [];
 let adminPasswordUserId = null;
 
 const $ = id => document.getElementById(id);
+
+function syncAppStickyHeaderHeight() {
+  const header = document.querySelector('.p-header');
+  if (!header) return;
+  const height = Math.ceil(header.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--app-sticky-header-height', `${height}px`);
+}
+
+
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[c]));
@@ -3593,6 +3602,19 @@ window.addEventListener('focus', () => {
     loadScores().catch(console.error);
   }
 });
+
+// ヘッダーの実際の高さを使ってユーザーリスト固定位置を決める。
+window.addEventListener('resize', syncAppStickyHeaderHeight);
+window.addEventListener('orientationchange', () => setTimeout(syncAppStickyHeaderHeight, 80));
+
+const appHeaderResizeObserver = typeof ResizeObserver !== 'undefined'
+  ? new ResizeObserver(() => syncAppStickyHeaderHeight())
+  : null;
+const appStickyHeader = document.querySelector('.p-header');
+if (appStickyHeader && appHeaderResizeObserver) {
+  appHeaderResizeObserver.observe(appStickyHeader);
+}
+requestAnimationFrame(syncAppStickyHeaderHeight);
 
 document.body.classList.remove('light-mode');
 
