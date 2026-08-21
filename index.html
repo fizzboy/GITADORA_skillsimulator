@@ -6540,6 +6540,55 @@ body.light-mode .feedback-history-reply-message{
   -webkit-overflow-scrolling:touch !important;
 }
 
+
+/* === FIX149: 曲詳細の固定項目行をスクロール内容が貫通しないようにする === */
+.rate-compare-body{
+  position:relative !important;
+  isolation:isolate !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
+/* 「ユーザー / 達成率 / SKILL」行 */
+.rate-compare-body .rate-table-head,
+.rate-compare-body .rate-header,
+.rate-compare-body .rate-row-header,
+.rate-compare-body > [class*="rate-"][class*="head"]:not(.rate-compare-head),
+.rate-compare-body .rate-row:first-of-type:has(.rate-user-header),
+.rate-compare-body .rate-row:first-child:has(.rate-user-header){
+  position:sticky !important;
+  top:0 !important;
+  z-index:100 !important;
+  opacity:1 !important;
+  transform:translateZ(0);
+}
+
+/* 固定ヘッダーの背景を必ず不透明にする */
+body:not(.light-mode) .rate-compare-body .rate-table-head,
+body:not(.light-mode) .rate-compare-body .rate-header,
+body:not(.light-mode) .rate-compare-body .rate-row-header,
+body:not(.light-mode) .rate-compare-body > [class*="rate-"][class*="head"]:not(.rate-compare-head),
+body:not(.light-mode) .rate-compare-body .rate-row:first-of-type:has(.rate-user-header),
+body:not(.light-mode) .rate-compare-body .rate-row:first-child:has(.rate-user-header){
+  background:#111827 !important;
+}
+
+body.light-mode .rate-compare-body .rate-table-head,
+body.light-mode .rate-compare-body .rate-header,
+body.light-mode .rate-compare-body .rate-row-header,
+body.light-mode .rate-compare-body > [class*="rate-"][class*="head"]:not(.rate-compare-head),
+body.light-mode .rate-compare-body .rate-row:first-of-type:has(.rate-user-header),
+body.light-mode .rate-compare-body .rate-row:first-child:has(.rate-user-header){
+  background:#dfe5ec !important;
+}
+
+/* Safariで子要素のz-indexがstickyを突き抜けないようユーザー行を下層へ固定 */
+.rate-compare-body .rate-row:not(:has(.rate-user-header)){
+  position:relative !important;
+  z-index:1 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6993,7 +7042,7 @@ body.light-mode .feedback-history-reply-message{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX148</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX149</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
