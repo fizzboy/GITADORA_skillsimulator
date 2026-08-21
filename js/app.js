@@ -3200,7 +3200,8 @@ document.addEventListener('click', async e => {
 
       const ok = await showSiteConfirm(
         'この内容で返信しますか？\n返信は1回のみで、送信後の変更・追加返信はできません。',
-        '返信確認'
+        '返信確認',
+        '返信する'
       );
       if (!ok) return;
 
