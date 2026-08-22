@@ -6879,6 +6879,42 @@ body.light-mode .feedback-history-env{
   .feedback-env-grid{grid-template-columns:1fr;}
 }
 
+
+/* === FIX160: 管理者 登録依頼の曲名修正承認 === */
+.admin-request-title-wrap{
+  flex:1;
+  min-width:0;
+}
+.admin-request-title-wrap label{
+  display:block;
+  margin-bottom:3px;
+  color:#64748b;
+  font-size:10px;
+  font-weight:900;
+}
+.request-title-edit{
+  width:100%;
+  min-height:38px;
+  box-sizing:border-box;
+  padding:6px 9px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  background:#fff;
+  color:#111827;
+  font-size:13px;
+  font-weight:900;
+}
+.request-title-edit:focus{
+  outline:2px solid rgba(37,99,235,.22);
+  border-color:#2563eb;
+}
+body.light-mode .request-title-edit{
+  background:#fff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7351,7 +7387,7 @@ body.light-mode .feedback-history-env{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX159</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX160</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7428,6 +7464,6 @@ body.light-mode .feedback-history-env{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_158"></script>
+<script type="module" src="./js/app.js?v=21_160"></script>
 </body>
 </html>
