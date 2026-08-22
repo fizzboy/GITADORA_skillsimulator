@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.4.5 ===
+/* === APP VERSION 3.4.6 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -7464,7 +7464,7 @@ body.light-mode .menu-ofuse-support-arrow{
 }
 
 
-/* === APP VERSION 3.4.5: MENUスクロール / VERSION幅 / OFUSEモーダル === */
+/* === APP VERSION 3.4.6: MENUスクロール / VERSION幅 / OFUSEモーダル === */
 .app-menu-sheet{
   max-height:calc(100dvh - 24px) !important;
   overflow-y:auto !important;
@@ -7572,7 +7572,7 @@ body.light-mode .support-dialog-body{
 }
 
 
-/* === APP VERSION 3.4.5: 運営支援をMENU共通デザインへ統一 === */
+/* === APP VERSION 3.4.6: 運営支援をMENU共通デザインへ統一 === */
 #menuOfuseSupport.app-menu-item{
   width:100% !important;
   margin:0 !important;
@@ -7628,13 +7628,13 @@ body.light-mode .support-ofuse-button{
 }
 
 
-/* === APP VERSION 3.4.5: MENU最下部の余白 === */
+/* === APP VERSION 3.4.6: MENU最下部の余白 === */
 .app-menu-version{
   padding-bottom:18px !important;
 }
 
 
-/* === APP VERSION 3.4.5: 運営支援の戻るボタンをMENU共通仕様へ === */
+/* === APP VERSION 3.4.6: 運営支援の戻るボタンをMENU共通仕様へ === */
 #btnCloseSupport.menu-back-btn{
   width:auto !important;
   height:32px !important;
@@ -7657,7 +7657,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
 }
 
 
-/* === APP VERSION 3.4.5: MENUサイズ最適化 / 余白復元 / 戻るボタン統一 === */
+/* === APP VERSION 3.4.6: MENUサイズ最適化 / 余白復元 / 戻るボタン統一 === */
 
 /* 3.4.3で追加したVERSION下の余白を戻す */
 .app-menu-version{
@@ -7704,6 +7704,103 @@ body.light-mode #btnCloseSupport.menu-back-btn{
   -webkit-text-fill-color:#2563eb !important;
   border:1px solid #94a3b8 !important;
   box-shadow:none !important;
+}
+
+
+/* === APP VERSION 3.4.6: MENUを他モーダルと同じ中央配置へ / 戻るボタン完全統一 === */
+
+/* MENU本体:
+   旧仕様の top/right 固定ポップアップをやめて、site-dialog-mask の中央配置を使う */
+#menuMask{
+  align-items:center !important;
+  justify-content:center !important;
+  padding:16px !important;
+}
+
+#menuMask .app-menu-sheet{
+  position:relative !important;
+  top:auto !important;
+  right:auto !important;
+  left:auto !important;
+  bottom:auto !important;
+
+  width:100% !important;
+  max-width:520px !important;
+  height:auto !important;
+  max-height:calc(100dvh - 32px) !important;
+  margin:0 !important;
+  padding:16px !important;
+
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+
+  border-radius:14px !important;
+  box-sizing:border-box !important;
+}
+
+/* MENU内のVERSION末尾に余計な追加余白は入れない */
+#menuMask .app-menu-version{
+  padding-bottom:0 !important;
+}
+
+/* MENU配下で使う「戻る」はID指定で旧ルールを確実に上書き */
+#btnCloseMypage.menu-back-btn,
+#btnCloseFeatureSettings.menu-back-btn,
+#btnCloseSkillSync.menu-back-btn,
+#btnCloseRivalManage.menu-back-btn,
+#btnCloseHowTo.menu-back-btn,
+#btnCloseFeedback.menu-back-btn,
+#btnCloseSupport.menu-back-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  width:auto !important;
+  min-width:52px !important;
+  height:34px !important;
+  min-height:34px !important;
+  padding:0 11px !important;
+  margin:0 !important;
+
+  border:1px solid #64748b !important;
+  border-radius:8px !important;
+  background:#111827 !important;
+  color:#e2e8f0 !important;
+  -webkit-text-fill-color:#e2e8f0 !important;
+  box-shadow:none !important;
+
+  font-size:12px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  text-align:center !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+}
+
+body.light-mode #btnCloseMypage.menu-back-btn,
+body.light-mode #btnCloseFeatureSettings.menu-back-btn,
+body.light-mode #btnCloseSkillSync.menu-back-btn,
+body.light-mode #btnCloseRivalManage.menu-back-btn,
+body.light-mode #btnCloseHowTo.menu-back-btn,
+body.light-mode #btnCloseFeedback.menu-back-btn,
+body.light-mode #btnCloseSupport.menu-back-btn{
+  border:1px solid #94a3b8 !important;
+  background:#f8fafc !important;
+  color:#2563eb !important;
+  -webkit-text-fill-color:#2563eb !important;
+  box-shadow:none !important;
+}
+
+@media (max-width:600px){
+  #menuMask{
+    padding:12px !important;
+  }
+  #menuMask .app-menu-sheet{
+    max-width:460px !important;
+    max-height:calc(100dvh - 24px) !important;
+  }
 }
 
 </style>
@@ -7932,7 +8029,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.5</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.6</div>
     </div>
   </div>
 </div>
@@ -8216,7 +8313,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.5</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.6</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8293,6 +8390,6 @@ body.light-mode #btnCloseSupport.menu-back-btn{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_4_5"></script>
+<script type="module" src="./js/app.js?v=3_4_6"></script>
 </body>
 </html>
