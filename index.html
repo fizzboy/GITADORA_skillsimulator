@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.4.1 ===
+/* === APP VERSION 3.4.2 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -7464,7 +7464,7 @@ body.light-mode .menu-ofuse-support-arrow{
 }
 
 
-/* === APP VERSION 3.4.1: MENUスクロール / VERSION幅 / OFUSEモーダル === */
+/* === APP VERSION 3.4.2: MENUスクロール / VERSION幅 / OFUSEモーダル === */
 .app-menu-sheet{
   max-height:calc(100dvh - 24px) !important;
   overflow-y:auto !important;
@@ -7569,6 +7569,62 @@ body.light-mode .support-dialog{
 body.light-mode .support-dialog-body{
   color:#111827 !important;
   -webkit-text-fill-color:#111827 !important;
+}
+
+
+/* === APP VERSION 3.4.2: 運営支援をMENU共通デザインへ統一 === */
+#menuOfuseSupport.app-menu-item{
+  width:100% !important;
+  margin:0 !important;
+}
+
+/* VERSIONは他のMENU項目と同じ横幅 */
+.app-menu-version,
+.app-menu-version #versionSelect{
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+
+/* 支援画面は要望・不具合報告等と同じダイアログ外観を使用 */
+.support-dialog{
+  width:min(92vw,560px) !important;
+  max-height:calc(100dvh - 28px) !important;
+  overflow-y:auto !important;
+}
+.support-dialog-body{
+  padding:16px 18px 18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:14px !important;
+  font-size:13px !important;
+  line-height:1.7 !important;
+}
+.support-dialog-body p{
+  margin:0 !important;
+}
+.support-ofuse-button{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-height:46px !important;
+  margin-top:4px !important;
+  text-decoration:none !important;
+  box-sizing:border-box !important;
+}
+body.light-mode .support-dialog{
+  background:#f3f4f6 !important;
+  color:#111827 !important;
+}
+body.light-mode .support-dialog-body,
+body.light-mode .support-dialog-body p{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+body.light-mode .support-ofuse-button{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
 }
 
 </style>
@@ -7792,29 +7848,18 @@ body.light-mode .support-dialog-body{
     <button id="btnMenuRivals" type="button" class="app-menu-item">ライバル管理 <span>›</span></button>
     <button id="btnMenuHowTo" type="button" class="app-menu-item">How to use <span>›</span></button>
     <button id="btnMenuFeedback" type="button" class="app-menu-item">要望・不具合報告 <span>›</span></button>
+    <button id="menuOfuseSupport" type="button" class="app-menu-item hidden">運営を支援する <span>›</span></button>
+
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-
-      <div class="menu-version-support-separator" aria-hidden="true"></div>
-
-      <button id="menuOfuseSupport"
-              type="button"
-              class="menu-ofuse-support hidden">
-        <span class="menu-ofuse-support-text">
-          <strong>☕ 運営を支援する</strong>
-          <small>サイトの維持・運営費への任意支援</small>
-        </span>
-        <span class="menu-ofuse-support-arrow">›</span>
-      </button>
-
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.1</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.2</div>
     </div>
   </div>
 </div>
 
 <div id="supportMask" class="site-dialog-mask">
-  <div class="support-dialog">
+  <div class="feedback-dialog support-dialog">
     <div class="app-menu-head">
       <strong>運営を支援する</strong>
       <button id="btnCloseSupport" type="button" class="menu-back-btn">戻る</button>
@@ -7823,7 +7868,7 @@ body.light-mode .support-dialog-body{
       <p>GITADORA Skill Simulatorは無料で公開・運営しています。</p>
       <p>サイトの維持・運営費として、任意でご支援いただけると助かります。</p>
       <p>支援の有無によって利用できる機能が変わることはありません。</p>
-      <a class="support-ofuse-button"
+      <a class="btn-submit support-ofuse-button"
          href="https://ofuse.me/gitadorafc"
          target="_blank"
          rel="noopener noreferrer">OFUSEで支援する</a>
@@ -8092,7 +8137,7 @@ body.light-mode .support-dialog-body{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.1</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.2</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8169,6 +8214,6 @@ body.light-mode .support-dialog-body{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_4_1"></script>
+<script type="module" src="./js/app.js?v=3_4_2"></script>
 </body>
 </html>
