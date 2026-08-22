@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.2.7 ===
+/* === APP VERSION 3.3.0 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.2.7: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.0: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.2.7: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.0: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6968,6 +6968,36 @@ body.global-modal-scroll-lock{
 .admin-modal,
 .mdl-mask > *{
   touch-action:pan-y;
+}
+
+
+/* === APP VERSION 3.3.0: 管理者用 登録曲一括削除 === */
+.admin-bulk-delete-area{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:6px;
+}
+.admin-bulk-delete-area.hidden{
+  display:none !important;
+}
+.admin-bulk-delete-btn{
+  min-height:34px;
+  padding:0 12px;
+  border:1px solid #b91c1c;
+  border-radius:7px;
+  background:#3f0d12;
+  color:#fca5a5;
+  font-size:10px;
+  font-weight:900;
+}
+.admin-bulk-delete-btn:disabled{
+  opacity:.55;
+}
+body.light-mode .admin-bulk-delete-btn{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  -webkit-text-fill-color:#b91c1c !important;
+  border-color:#ef4444 !important;
 }
 
 </style>
@@ -7050,6 +7080,11 @@ body.global-modal-scroll-lock{
       <div class="record-search-row">
         <input id="domSearch" class="search-input" placeholder="登録済みの曲を検索...">
         <button id="btnHeaderAdd" class="btn-add-inline">＋ 登録</button>
+      </div>
+      <div id="adminBulkDeleteArea" class="admin-bulk-delete-area hidden">
+        <button id="btnAdminBulkDeleteScores" type="button" class="admin-bulk-delete-btn">
+          登録曲を一括削除
+        </button>
       </div>
       <div class="record-filter-row">
         <select id="recordTypeFilter" aria-label="種別フィルタ">
@@ -7189,7 +7224,7 @@ body.global-modal-scroll-lock{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.2.7</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.0</div>
     </div>
   </div>
 </div>
@@ -7446,7 +7481,7 @@ body.global-modal-scroll-lock{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.2.7</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.0</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7523,6 +7558,6 @@ body.global-modal-scroll-lock{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_2_7"></script>
+<script type="module" src="./js/app.js?v=3_3_0"></script>
 </body>
 </html>
