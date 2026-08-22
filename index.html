@@ -6821,6 +6821,64 @@ body.light-mode #btnCloseFeedback.menu-back-btn{
   box-shadow:none !important;
 }
 
+
+/* === FIX158: 要望・不具合報告 ご利用環境 === */
+.feedback-env-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.feedback-body input{
+  width:100%;
+  min-height:44px;
+  box-sizing:border-box;
+  padding:8px 10px;
+  background:#111827;
+  color:#f8fafc;
+  border:1px solid #334155;
+  border-radius:8px;
+  font:inherit;
+}
+.feedback-env-note{
+  margin-top:5px;
+  color:#64748b;
+  font-size:10px;
+}
+.feedback-admin-env,
+.feedback-history-env{
+  margin-top:7px;
+  padding:7px 9px;
+  border-radius:7px;
+  background:rgba(148,163,184,.10);
+  color:#94a3b8;
+  font-size:11px;
+  line-height:1.5;
+}
+.feedback-admin-env strong,
+.feedback-history-env strong{
+  color:inherit;
+}
+body.light-mode .feedback-body input{
+  background:#fff !important;
+  color:#0f172a !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .feedback-body input::placeholder{
+  color:#7b8798 !important;
+  opacity:1 !important;
+}
+body.light-mode .feedback-env-note{
+  color:#64748b;
+}
+body.light-mode .feedback-admin-env,
+body.light-mode .feedback-history-env{
+  background:#e2e8f0;
+  color:#475569;
+}
+@media (max-width:420px){
+  .feedback-env-grid{grid-template-columns:1fr;}
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7097,6 +7155,18 @@ body.light-mode #btnCloseFeedback.menu-back-btn{
         <option value="bug">不具合報告</option>
       </select>
 
+      <div class="feedback-env-grid">
+        <div>
+          <label for="feedbackDevice">機種名</label>
+          <input id="feedbackDevice" type="text" maxlength="100" placeholder="例：iPhone 17 Pro">
+        </div>
+        <div>
+          <label for="feedbackBrowser">ブラウザ</label>
+          <input id="feedbackBrowser" type="text" maxlength="100" placeholder="例：Safari">
+        </div>
+      </div>
+      <div class="feedback-env-note">ご利用環境（任意）</div>
+
       <label for="feedbackMessage">内容</label>
       <textarea id="feedbackMessage" maxlength="2000" placeholder="内容を入力してください"></textarea>
 
@@ -7281,7 +7351,7 @@ body.light-mode #btnCloseFeedback.menu-back-btn{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX157</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX158</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7358,6 +7428,6 @@ body.light-mode #btnCloseFeedback.menu-back-btn{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_157"></script>
+<script type="module" src="./js/app.js?v=21_158"></script>
 </body>
 </html>
