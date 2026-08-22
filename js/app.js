@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_6';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_7';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -2841,7 +2841,19 @@ async function loadAdminFeedback() {
       .limit(500);
 
     if (error) throw error;
-    adminFeedback = data ?? [];
+
+    // 表示順:
+    // 1. 未対応 最新 → 古い
+    // 2. 対応済み 最新 → 古い
+    adminFeedback = [...(data ?? [])].sort((a, b) => {
+      const aDone = a.status === 'resolved' ? 1 : 0;
+      const bDone = b.status === 'resolved' ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+
+      const aTime = new Date(a.created_at || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      return bTime - aTime;
+    });
 
     const userIds = [...new Set(adminFeedback.map(row => row.user_id).filter(Boolean))];
     const usernameMap = new Map();
