@@ -7897,6 +7897,94 @@ body.light-mode #domModal .select-arrow-wrap::after{
   border-bottom-color:#334155;
 }
 
+/* === APP VERSION 3.6.2: ライトモードのモーダルスクロールバー ===
+   iPhoneがダーク設定でも、ライトモードではSafariのシステムUIを
+   ライト配色として描画させ、白いスクロールバーを防ぐ。 */
+body.light-mode{
+  color-scheme:light !important;
+}
+body.light-mode :is(
+  .mdl-sheet,
+  .mypage-sheet,
+  .admin-form-sheet,
+  .feature-settings-dialog,
+  .feedback-dialog,
+  .howto-dialog,
+  .rival-manage-dialog,
+  .skill-sync-dialog,
+  .support-dialog,
+  .site-dialog,
+  .rate-compare-dialog,
+  .rate-compare-body,
+  .admin-modal,
+  .user-detail-page,
+  .suggestion-list
+){
+  color-scheme:light !important;
+  scrollbar-color:#64748b #e2e8f0;
+}
+body.light-mode :is(
+  .mdl-sheet,
+  .mypage-sheet,
+  .admin-form-sheet,
+  .feature-settings-dialog,
+  .feedback-dialog,
+  .howto-dialog,
+  .rival-manage-dialog,
+  .skill-sync-dialog,
+  .support-dialog,
+  .site-dialog,
+  .rate-compare-dialog,
+  .rate-compare-body,
+  .admin-modal,
+  .user-detail-page,
+  .suggestion-list
+)::-webkit-scrollbar{
+  width:10px;
+  height:10px;
+}
+body.light-mode :is(
+  .mdl-sheet,
+  .mypage-sheet,
+  .admin-form-sheet,
+  .feature-settings-dialog,
+  .feedback-dialog,
+  .howto-dialog,
+  .rival-manage-dialog,
+  .skill-sync-dialog,
+  .support-dialog,
+  .site-dialog,
+  .rate-compare-dialog,
+  .rate-compare-body,
+  .admin-modal,
+  .user-detail-page,
+  .suggestion-list
+)::-webkit-scrollbar-track{
+  background:#e2e8f0;
+  border-radius:999px;
+}
+body.light-mode :is(
+  .mdl-sheet,
+  .mypage-sheet,
+  .admin-form-sheet,
+  .feature-settings-dialog,
+  .feedback-dialog,
+  .howto-dialog,
+  .rival-manage-dialog,
+  .skill-sync-dialog,
+  .support-dialog,
+  .site-dialog,
+  .rate-compare-dialog,
+  .rate-compare-body,
+  .admin-modal,
+  .user-detail-page,
+  .suggestion-list
+)::-webkit-scrollbar-thumb{
+  background:#64748b;
+  border:2px solid #e2e8f0;
+  border-radius:999px;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -8138,7 +8226,7 @@ body.light-mode #domModal .select-arrow-wrap::after{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.6.1</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.6.2</div>
     </div>
   </div>
 </div>
@@ -8423,7 +8511,7 @@ body.light-mode #domModal .select-arrow-wrap::after{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.6.1</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.6.2</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8500,6 +8588,6 @@ body.light-mode #domModal .select-arrow-wrap::after{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_6_1"></script>
+<script type="module" src="./js/app.js?v=3_6_2"></script>
 </body>
 </html>
