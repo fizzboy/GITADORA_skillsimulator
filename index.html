@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.5.0 ===
+/* === APP VERSION 3.6.0 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -7464,7 +7464,7 @@ body.light-mode .menu-ofuse-support-arrow{
 }
 
 
-/* === APP VERSION 3.5.0: MENUスクロール / VERSION幅 / OFUSEモーダル === */
+/* === APP VERSION 3.6.0: MENUスクロール / VERSION幅 / OFUSEモーダル === */
 .app-menu-sheet{
   max-height:calc(100dvh - 24px) !important;
   overflow-y:auto !important;
@@ -7572,7 +7572,7 @@ body.light-mode .support-dialog-body{
 }
 
 
-/* === APP VERSION 3.5.0: 運営支援をMENU共通デザインへ統一 === */
+/* === APP VERSION 3.6.0: 運営支援をMENU共通デザインへ統一 === */
 #menuOfuseSupport.app-menu-item{
   width:100% !important;
   margin:0 !important;
@@ -7628,13 +7628,13 @@ body.light-mode .support-ofuse-button{
 }
 
 
-/* === APP VERSION 3.5.0: MENU最下部の余白 === */
+/* === APP VERSION 3.6.0: MENU最下部の余白 === */
 .app-menu-version{
   padding-bottom:18px !important;
 }
 
 
-/* === APP VERSION 3.5.0: 運営支援の戻るボタンをMENU共通仕様へ === */
+/* === APP VERSION 3.6.0: 運営支援の戻るボタンをMENU共通仕様へ === */
 #btnCloseSupport.menu-back-btn{
   width:auto !important;
   height:32px !important;
@@ -7657,7 +7657,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
 }
 
 
-/* === APP VERSION 3.5.0: MENUサイズ最適化 / 余白復元 / 戻るボタン統一 === */
+/* === APP VERSION 3.6.0: MENUサイズ最適化 / 余白復元 / 戻るボタン統一 === */
 
 /* 3.4.3で追加したVERSION下の余白を戻す */
 .app-menu-version{
@@ -7707,7 +7707,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
 }
 
 
-/* === APP VERSION 3.5.0: MENUを他モーダルと同じ中央配置へ / 戻るボタン完全統一 === */
+/* === APP VERSION 3.6.0: MENUを他モーダルと同じ中央配置へ / 戻るボタン完全統一 === */
 
 /* MENU本体:
    旧仕様の top/right 固定ポップアップをやめて、site-dialog-mask の中央配置を使う */
@@ -7801,6 +7801,69 @@ body.light-mode #btnCloseSupport.menu-back-btn{
     max-width:460px !important;
     max-height:calc(100dvh - 24px) !important;
   }
+}
+
+
+/* === APP VERSION 3.6.0: 管理者先行・曲ごとの非公開コメント === */
+#formPrivateComment{
+  width:100%;
+  min-height:58px;
+  resize:vertical;
+  box-sizing:border-box;
+  padding:9px 10px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#111827;
+  color:#f8fafc;
+  font:inherit;
+  line-height:1.5;
+}
+#formPrivateComment::placeholder{
+  color:#64748b;
+}
+.score-private-comment-note{
+  margin-top:4px;
+  color:#64748b;
+  font-size:9px;
+  line-height:1.4;
+}
+.rate-private-comment{
+  padding:9px 14px;
+  border-bottom:1px solid #334155;
+  background:#111827;
+  color:#e2e8f0;
+  font-size:11px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.rate-private-comment::before{
+  content:"コメント";
+  display:block;
+  margin-bottom:3px;
+  color:#94a3b8;
+  font-size:9px;
+  font-weight:900;
+}
+body.light-mode #formPrivateComment{
+  background:#fff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode #formPrivateComment::placeholder{
+  color:#94a3b8 !important;
+  -webkit-text-fill-color:#94a3b8 !important;
+}
+body.light-mode .rate-private-comment{
+  background:#e9edf2 !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#cbd5e1 !important;
+}
+body.light-mode .rate-private-comment::before{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
 }
 
 </style>
@@ -7997,6 +8060,15 @@ body.light-mode #btnCloseSupport.menu-back-btn{
       </div>
     </div>
 
+    <div id="scorePrivateCommentGroup" class="f-group hidden">
+      <label>コメント</label>
+      <textarea id="formPrivateComment"
+                maxlength="100"
+                rows="2"
+                placeholder="例：ミス2 / ラス切り"></textarea>
+      <div class="score-private-comment-note">自分だけに表示されます（100文字まで）</div>
+    </div>
+
     <div class="f-group">
       <label>Skill</label>
       <div id="formSkill" class="skill-preview">-</div>
@@ -8029,7 +8101,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.5.0</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.6.0</div>
     </div>
   </div>
 </div>
@@ -8299,6 +8371,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
       </div>
       <button id="btnCloseRateCompare" type="button">×</button>
     </div>
+    <div id="ratePrivateComment" class="rate-private-comment hidden"></div>
     <div id="ratePersonalBest" class="rate-personal-best hidden"></div>
     <div id="rateOptionSummary" class="rate-option-summary"></div>
     <div id="rateCompareColumns" class="rate-table-head rate-table-head-fixed">
@@ -8313,7 +8386,7 @@ body.light-mode #btnCloseSupport.menu-back-btn{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.5.0</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.6.0</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8390,6 +8463,6 @@ body.light-mode #btnCloseSupport.menu-back-btn{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_5_0"></script>
+<script type="module" src="./js/app.js?v=3_6_0"></script>
 </body>
 </html>
