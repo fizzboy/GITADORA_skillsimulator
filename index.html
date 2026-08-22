@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.3.13 ===
+/* === APP VERSION 3.3.14 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.3.13: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.14: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.3.13: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.14: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6971,7 +6971,7 @@ body.global-modal-scroll-lock{
 }
 
 
-/* === APP VERSION 3.3.13: 管理者用 登録曲一括削除 === */
+/* === APP VERSION 3.3.14: 管理者用 登録曲一括削除 === */
 .admin-bulk-delete-area{
   display:flex;
   justify-content:flex-end;
@@ -7001,7 +7001,7 @@ body.light-mode .admin-bulk-delete-btn{
 }
 
 
-/* === APP VERSION 3.3.13: ライトモードの青背景は白文字で統一 === */
+/* === APP VERSION 3.3.14: ライトモードの青背景は白文字で統一 === */
 body.light-mode .skill-sync-dialog .skill-sync-step-no{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
@@ -7028,7 +7028,7 @@ body.light-mode [class*="btn"][class*="primary"]{
 }
 
 
-/* === APP VERSION 3.3.13: 同期画面 Android Chrome案内 === */
+/* === APP VERSION 3.3.14: 同期画面 Android Chrome案内 === */
 .skill-sync-card-warning{
   margin-top:8px;padding:10px 12px;border:1px solid #f59e0b;border-radius:8px;
   background:rgba(245,158,11,.12);color:#fbbf24;font-size:12px;font-weight:800;line-height:1.55;
@@ -7052,7 +7052,7 @@ body.light-mode .skill-sync-android-note strong{
 }
 
 
-/* === APP VERSION 3.3.13: スキル対象同期の説明文を通常の文字色へ === */
+/* === APP VERSION 3.3.14: スキル対象同期の説明文を通常の文字色へ === */
 .skill-sync-dialog .section-note,
 .skill-sync-dialog .skill-sync-browser-guide,
 .skill-sync-dialog .skill-sync-encoding-note{
@@ -7069,7 +7069,7 @@ body.light-mode .skill-sync-dialog .skill-sync-encoding-note{
 }
 
 
-/* === APP VERSION 3.3.13: ユーザーリストのページ番号ナビ === */
+/* === APP VERSION 3.3.14: ユーザーリストのページ番号ナビ === */
 .user-list-pager{
   display:flex;
   flex-direction:column;
@@ -7159,7 +7159,7 @@ body.light-mode .user-list-page-summary{
 }
 
 
-/* === APP VERSION 3.3.13: ページ番号ナビの旧CSS競合を解消 === */
+/* === APP VERSION 3.3.14: ページ番号ナビの旧CSS競合を解消 === */
 #userListPager.user-list-pager{
   display:flex !important;
   flex-direction:column !important;
@@ -7243,7 +7243,7 @@ body.light-mode .user-list-page-summary{
 }
 
 
-/* === APP VERSION 3.3.13: 任意ページへ直接移動できるページャー === */
+/* === APP VERSION 3.3.14: 任意ページへ直接移動できるページャー === */
 #userListPager .user-pager-nearby{
   display:flex;
   align-items:center;
@@ -7284,7 +7284,7 @@ body.light-mode #userListPager .user-pager-jump select{
 }
 
 
-/* === APP VERSION 3.3.13: ライトモードの全プルダウン表示を統一 === */
+/* === APP VERSION 3.3.14: ライトモードの全プルダウン表示を統一 === */
 body.light-mode select{
   color-scheme:light !important;
   color:#111827 !important;
@@ -7328,7 +7328,7 @@ body.light-mode #userListPager .user-pager-jump select{
 }
 
 
-/* === APP VERSION 3.3.13: スコア登録プルダウンの▼を確実に表示 === */
+/* === APP VERSION 3.3.14: スコア登録プルダウンの▼を確実に表示 === */
 body.light-mode #scoreModal select,
 body.light-mode .score-modal select,
 body.light-mode .score-form select,
@@ -7368,6 +7368,39 @@ body.light-mode #optionSelect{
     calc(100% - 11px) 50% !important;
   background-size:6px 6px,6px 6px !important;
   background-repeat:no-repeat !important;
+}
+
+
+/* === APP VERSION 3.3.14: プルダウン矢印をダーク/ライトで共通デザイン化 ===
+   ブラウザ標準の矢印表示には依存せず、全selectで同じシェブロンを表示する。 */
+select{
+  -webkit-appearance:none !important;
+  appearance:none !important;
+  padding-right:38px !important;
+  background-repeat:no-repeat !important;
+  background-size:16px 16px !important;
+  background-position:calc(100% - 12px) 50% !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6.5 8 10l4-3.5' fill='none' stroke='%23e5e7eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+/* ライトモードは同じ形を濃色で表示 */
+body.light-mode select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6.5 8 10l4-3.5' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+/* ページ選択は横幅が狭いので少し内側へ */
+#userListPager .user-pager-jump select{
+  padding-right:30px !important;
+  background-position:calc(100% - 8px) 50% !important;
+  background-size:14px 14px !important;
+}
+
+/* disabledも矢印自体は見えるようにし、操作不可は色で表す */
+select:disabled{
+  opacity:.65;
+}
+body.light-mode select:disabled{
+  opacity:1 !important;
 }
 
 </style>
@@ -7594,7 +7627,7 @@ body.light-mode #optionSelect{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.13</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.14</div>
     </div>
   </div>
 </div>
@@ -7860,7 +7893,7 @@ body.light-mode #optionSelect{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.13</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.14</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7937,6 +7970,6 @@ body.light-mode #optionSelect{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_3_13"></script>
+<script type="module" src="./js/app.js?v=3_3_14"></script>
 </body>
 </html>
