@@ -462,6 +462,81 @@ let adminPasswordUserId = null;
 
 const $ = id => document.getElementById(id);
 
+let globalModalScrollY = 0;
+let globalModalScrollLocked = false;
+
+const GLOBAL_SCROLL_LOCK_OVERLAYS = [
+  '#menuMask',
+  '#featureSettingsMask',
+  '#feedbackMask',
+  '#howToMask',
+  '#rivalManageMask',
+  '#mypageModal',
+  '#skillSyncMask',
+  '#rateCompareMask',
+  '#siteDialogMask',
+  '#adminModal',
+  '#adminSongFormMask',
+  '#adminPasswordMask'
+];
+
+function isOverlayVisible(element) {
+  if (!element) return false;
+  const style = getComputedStyle(element);
+  return style.display !== 'none' &&
+         style.visibility !== 'hidden' &&
+         style.opacity !== '0';
+}
+
+function hasVisibleGlobalOverlay() {
+  return GLOBAL_SCROLL_LOCK_OVERLAYS.some(selector =>
+    isOverlayVisible(document.querySelector(selector))
+  );
+}
+
+function lockMainPageScroll() {
+  // スコア登録モーダルは既存のiOS Safari専用ロック処理を使用する。
+  if (document.body.classList.contains('score-modal-open')) return;
+  if (globalModalScrollLocked) return;
+
+  globalModalScrollY = window.scrollY || window.pageYOffset || 0;
+  globalModalScrollLocked = true;
+
+  document.body.classList.add('global-modal-scroll-lock');
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${globalModalScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+}
+
+function unlockMainPageScroll() {
+  if (!globalModalScrollLocked) return;
+
+  globalModalScrollLocked = false;
+  document.body.classList.remove('global-modal-scroll-lock');
+
+  // スコア登録モーダルが開いている場合は、そちらの固定を壊さない。
+  if (document.body.classList.contains('score-modal-open')) return;
+
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+
+  window.scrollTo({ top: globalModalScrollY, left: 0, behavior: 'auto' });
+}
+
+function syncGlobalModalScrollLock() {
+  if (hasVisibleGlobalOverlay()) {
+    lockMainPageScroll();
+  } else {
+    unlockMainPageScroll();
+  }
+}
+
+
 function syncAppStickyHeaderHeight() {
   const header = document.querySelector('.p-header');
   if (!header) return;
@@ -1642,6 +1717,8 @@ function closeModal() {
 
   // キーボードが完全に閉じた後にも最終補正
   setTimeout(repairViewport, 120);
+
+  requestAnimationFrame(syncGlobalModalScrollLock);
 }
 
 let songSuggestRequestSeq = 0;
@@ -3689,6 +3766,23 @@ window.addEventListener('focus', () => {
     loadScores().catch(console.error);
   }
 });
+
+// モーダル表示中は背面のメイン画面をスクロールさせない。
+// style/classの切替を監視するため、登録曲詳細・マイページ・エラー等にも共通適用。
+const modalScrollObserver = new MutationObserver(() => {
+  requestAnimationFrame(syncGlobalModalScrollLock);
+});
+
+GLOBAL_SCROLL_LOCK_OVERLAYS.forEach(selector => {
+  const element = document.querySelector(selector);
+  if (element) {
+    modalScrollObserver.observe(element, {
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+  }
+});
+requestAnimationFrame(syncGlobalModalScrollLock);
 
 // ヘッダーの実際の高さを使ってユーザーリスト固定位置を決める。
 window.addEventListener('resize', syncAppStickyHeaderHeight);
