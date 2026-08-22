@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.2.5 ===
+/* === APP VERSION 3.2.6 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6935,6 +6935,22 @@ body.light-mode .user-list-page-summary {
 }
 body.light-mode .app-code-version{
   color:#64748b !important;
+}
+
+
+/* === APP VERSION 3.2.6: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
+body:has(#viewUsers:not(.hidden)) .p-header{
+  box-shadow:none !important;
+}
+
+/* 検索窓＋項目行までを固定エリアとして扱い、その最下部に影を付ける */
+#viewUsers .user-list-sticky{
+  box-shadow:0 5px 10px rgba(0,0,0,.28) !important;
+}
+
+body.light-mode #viewUsers .user-list-sticky{
+  box-shadow:0 5px 10px rgba(15,23,42,.18) !important;
 }
 
 </style>
@@ -7156,7 +7172,7 @@ body.light-mode .app-code-version{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.2.5</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.2.6</div>
     </div>
   </div>
 </div>
