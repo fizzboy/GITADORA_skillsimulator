@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_10';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_11';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -2029,42 +2029,36 @@ function buildUserListPager(totalPages) {
   if (totalPages <= 1) return '';
 
   const current = userListPage + 1;
-  const items = [];
+  const nearby = [];
 
-  // 先頭・末尾を残しつつ、現在ページ周辺を表示。
-  // 例: ◀ 1 2 3 … 13 ▶ / ◀ 1 … 6 7 8 … 13 ▶
-  const pages = new Set([1, totalPages]);
-  for (let p = current - 1; p <= current + 1; p++) {
-    if (p >= 1 && p <= totalPages) pages.add(p);
-  }
-  if (current <= 3) {
-    [1,2,3,4].forEach(p => { if (p <= totalPages) pages.add(p); });
-  }
-  if (current >= totalPages - 2) {
-    [totalPages-3,totalPages-2,totalPages-1,totalPages].forEach(p => {
-      if (p >= 1) pages.add(p);
-    });
-  }
-
-  const sorted = [...pages].sort((a,b) => a-b);
-  let previous = 0;
-  for (const page of sorted) {
-    if (previous && page - previous > 1) {
-      items.push('<span class="user-pager-ellipsis" aria-hidden="true">…</span>');
-    }
-    items.push(
+  // 現在ページ前後を直接選べるようにしつつ、
+  // どのページへでも移動できるネイティブ選択欄を中央に置く。
+  for (let p = Math.max(1, current - 2); p <= Math.min(totalPages, current + 2); p++) {
+    nearby.push(
       `<button type="button"
-        class="user-pager-page ${page === current ? 'active' : ''}"
-        data-user-page-number="${page - 1}"
-        ${page === current ? 'aria-current="page"' : ''}>${page}</button>`
+        class="user-pager-page ${p === current ? 'active' : ''}"
+        data-user-page-number="${p - 1}"
+        ${p === current ? 'aria-current="page"' : ''}>${p}</button>`
     );
-    previous = page;
   }
+
+  const pageOptions = Array.from({ length: totalPages }, (_, i) => {
+    const page = i + 1;
+    return `<option value="${i}" ${page === current ? 'selected' : ''}>${page} / ${totalPages}</option>`;
+  }).join('');
 
   return `
     <button type="button" class="user-pager-arrow" data-user-page="prev"
       ${userListPage <= 0 ? 'disabled' : ''} aria-label="前のページ">◀</button>
-    <div class="user-pager-numbers">${items.join('')}</div>
+
+    <div class="user-pager-nearby">${nearby.join('')}</div>
+
+    <label class="user-pager-jump" aria-label="ページを選択">
+      <select data-user-page-select>
+        ${pageOptions}
+      </select>
+    </label>
+
     <button type="button" class="user-pager-arrow" data-user-page="next"
       ${userListPage + 1 >= totalPages ? 'disabled' : ''} aria-label="次のページ">▶</button>
   `;
@@ -3509,18 +3503,15 @@ $('userListPager')?.addEventListener('click', e => {
   if (numberButton && !numberButton.disabled) {
     const nextPage = Number(numberButton.dataset.userPageNumber);
     const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
-    if (Number.isInteger(nextPage) && nextPage >= 0 && nextPage < totalPages) {
-      userListPage = nextPage;
-    } else {
-      return;
-    }
+    if (!Number.isInteger(nextPage) || nextPage < 0 || nextPage >= totalPages) return;
+    userListPage = nextPage;
   } else if (navButton && !navButton.disabled) {
     if (navButton.dataset.userPage === 'prev' && userListPage > 0) {
       userListPage--;
     } else if (navButton.dataset.userPage === 'next') {
       const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
-      if (userListPage + 1 < totalPages) userListPage++;
-      else return;
+      if (userListPage + 1 >= totalPages) return;
+      userListPage++;
     } else {
       return;
     }
@@ -3529,9 +3520,20 @@ $('userListPager')?.addEventListener('click', e => {
   }
 
   renderUsers();
-  requestAnimationFrame(() => {
-    scrollUserListPageToTop();
-  });
+  requestAnimationFrame(scrollUserListPageToTop);
+});
+
+$('userListPager')?.addEventListener('change', e => {
+  const select = e.target.closest('[data-user-page-select]');
+  if (!select) return;
+
+  const nextPage = Number(select.value);
+  const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
+  if (!Number.isInteger(nextPage) || nextPage < 0 || nextPage >= totalPages) return;
+
+  userListPage = nextPage;
+  renderUsers();
+  requestAnimationFrame(scrollUserListPageToTop);
 });
 
 $('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
