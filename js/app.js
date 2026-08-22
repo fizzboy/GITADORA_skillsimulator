@@ -1448,8 +1448,6 @@ async function getMyPrivateScoreComments() {
 }
 
 async function savePrivateScoreComment({ scoreId = null, songId = null, requestId = null, comment = '' }) {
-  if (!adminEnabled) return;
-
   const normalized = String(comment || '').trim();
   if (normalized.length > 100) {
     throw new Error('コメントは100文字以内で入力してください。');
@@ -1489,7 +1487,7 @@ async function applyPreviousScoreSettings(title, part) {
 
   // 前の曲・パートから値が残らないよう、取得前に初期値へ戻す。
   $('formOption').value = 'NORMAL';
-  if (adminEnabled) $('formPrivateComment').value = '';
+  $('formPrivateComment').value = '';
   const initialOption = $('formOption').value;
   const initialComment = $('formPrivateComment').value;
 
@@ -1524,7 +1522,7 @@ async function applyPreviousScoreSettings(title, part) {
         : option;
     }
 
-    if (adminEnabled && $('formPrivateComment').value === initialComment) {
+    if ($('formPrivateComment').value === initialComment) {
       $('formPrivateComment').value = String(row.private_comment || '').slice(0, 100);
     }
   } catch (error) {
@@ -1819,9 +1817,9 @@ function openScoreModal(score = null) {
     : (score?.play_option || 'NORMAL');
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
 
-  // 管理者先行公開。一般ユーザーには入力欄自体を表示しない。
-  $('scorePrivateCommentGroup').classList.toggle('hidden', !adminEnabled);
-  $('formPrivateComment').value = adminEnabled ? (score?.private_comment || '') : '';
+  // コメントは本人だけが入力・参照できる非公開項目。
+  $('scorePrivateCommentGroup').classList.remove('hidden');
+  $('formPrivateComment').value = score?.private_comment || '';
 
   $('songSuggestions').innerHTML = '';
   $('btnSubmitForm').textContent = '保存する';
@@ -1911,7 +1909,7 @@ async function suggestSongs() {
   if (!editingScoreId) {
     previousScoreSettingsRequestSeq++;
     $('formOption').value = 'NORMAL';
-    if (adminEnabled) $('formPrivateComment').value = '';
+    $('formPrivateComment').value = '';
   }
   $('formLevel').value = '';
   $('formLevel').readOnly = true;
@@ -2120,14 +2118,12 @@ async function submitScore() {
     playOption
   });
 
-  if (adminEnabled) {
-    await savePrivateScoreComment({
-      scoreId: editingScoreId,
-      songId,
-      requestId,
-      comment: $('formPrivateComment').value
-    });
-  }
+  await savePrivateScoreComment({
+    scoreId: editingScoreId,
+    songId,
+    requestId,
+    comment: $('formPrivateComment').value
+  });
 
   closeModal();
   await loadScores();
@@ -2594,13 +2590,11 @@ async function openRateComparison(songId, title, part) {
 
     // 詳細に出すコメントは常に「自分の同一譜面」のものだけ。
     // 他ユーザーのスキル対象から開いた場合でも他人のコメントは取得・表示しない。
-    if (adminEnabled) {
-      const ownScore = scores.find(row => row.song_id === songId);
-      const ownComment = String(ownScore?.private_comment || '').trim();
-      if (ownComment) {
-        $('ratePrivateComment').textContent = ownComment;
-        $('ratePrivateComment').classList.remove('hidden');
-      }
+    const ownScore = scores.find(row => row.song_id === songId);
+    const ownComment = String(ownScore?.private_comment || '').trim();
+    if (ownComment) {
+      $('ratePrivateComment').textContent = ownComment;
+      $('ratePrivateComment').classList.remove('hidden');
     }
 
     if (personalBest) {
@@ -2739,7 +2733,7 @@ async function checkAdminAccess() {
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
   $('menuOfuseSupport')?.classList.remove('hidden');
-  $('scorePrivateCommentGroup')?.classList.toggle('hidden', !adminEnabled);
+  $('scorePrivateCommentGroup')?.classList.remove('hidden');
 
   primaryAdminEnabled = false;
   if (adminEnabled) {
