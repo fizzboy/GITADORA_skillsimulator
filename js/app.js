@@ -928,7 +928,7 @@ function updateDmBassMirrorFieldVisibility() {
   const enabled = activeInstrument === 'DM' && adminEnabled;
   $('dmOptionFieldGroup')?.classList.toggle('hidden', !enabled);
   document.body.classList.toggle('dm-bass-mirror-enabled', enabled);
-  if (!enabled && $('formBassMirror')) $('formBassMirror').checked = false;
+  if (!enabled && $('formDmOption')) $('formDmOption').value = 'NORMAL';
 }
 function applyInstrumentUI() {
   document.querySelectorAll('[data-instrument]').forEach(b => b.classList.toggle('active', b.dataset.instrument === activeInstrument));
@@ -1499,10 +1499,10 @@ async function applyPreviousScoreSettings(title, part) {
 
   // 前の曲・パートから値が残らないよう、取得前に初期値へ戻す。
   $('formOption').value = 'NORMAL';
-  $('formBassMirror').checked = false;
+  $('formDmOption').value = 'NORMAL';
   $('formPrivateComment').value = '';
   const initialOption = $('formOption').value;
-  const initialBassMirror = $('formBassMirror').checked;
+  const initialDmOption = $('formDmOption').value;
   const initialComment = $('formPrivateComment').value;
 
   if (!cleanTitle || !cleanPart || !versionId) return;
@@ -1531,8 +1531,10 @@ async function applyPreviousScoreSettings(title, part) {
     const option = String(row.play_option || 'NORMAL');
     const allowedOptions = ['NORMAL','RAN','SRA','RAN+','SRA+'];
     if (activeInstrument === 'DM') {
-      if (adminEnabled && $('formBassMirror').checked === initialBassMirror) {
-        $('formBassMirror').checked = option === 'BASS_MIRROR';
+      if (adminEnabled && $('formDmOption').value === initialDmOption) {
+        $('formDmOption').value = option === 'BASS_MIRROR'
+          ? 'BASS_MIRROR'
+          : 'NORMAL';
       }
     } else if ($('formOption').value === initialOption) {
       $('formOption').value = allowedOptions.includes(option) ? option : 'NORMAL';
@@ -1835,10 +1837,12 @@ function openScoreModal(score = null) {
     ? 'NORMAL'
     : (score?.play_option || 'NORMAL');
   updateDmBassMirrorFieldVisibility();
-  $('formBassMirror').checked =
+  $('formDmOption').value =
     activeInstrument === 'DM' &&
     adminEnabled &&
-    score?.play_option === 'BASS_MIRROR';
+    score?.play_option === 'BASS_MIRROR'
+      ? 'BASS_MIRROR'
+      : 'NORMAL';
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
 
   // コメントは本人だけが入力・参照できる非公開項目。
@@ -1933,7 +1937,7 @@ async function suggestSongs() {
   if (!editingScoreId) {
     previousScoreSettingsRequestSeq++;
     $('formOption').value = 'NORMAL';
-    $('formBassMirror').checked = false;
+    $('formDmOption').value = 'NORMAL';
     $('formPrivateComment').value = '';
   }
   $('formLevel').value = '';
@@ -2138,7 +2142,7 @@ async function submitScore() {
   const playOption = activeInstrument === 'DM'
     ? (
         adminEnabled
-          ? ($('formBassMirror').checked ? 'BASS_MIRROR' : 'NORMAL')
+          ? ($('formDmOption').value === 'BASS_MIRROR' ? 'BASS_MIRROR' : 'NORMAL')
           : (editingScore?.play_option === 'BASS_MIRROR' ? 'BASS_MIRROR' : 'NORMAL')
       )
     : $('formOption').value;
@@ -2584,9 +2588,9 @@ async function moveFavorite(userId, direction, instrument) {
 }
 
 
-function getOptionDisplayName(option) {
+function getOptionDisplayName(option, part = '') {
   switch (option) {
-    case 'NORMAL': return '正規';
+    case 'NORMAL': return String(part).endsWith('-D') ? 'なし' : '正規';
     case 'RAN': return 'RAN';
     case 'SRA': return 'SRA';
     case 'RAN+': return 'RAN+';
@@ -2594,6 +2598,12 @@ function getOptionDisplayName(option) {
     case 'BASS_MIRROR': return 'バスミラー';
     default: return String(option || '');
   }
+}
+
+function getHistoricalOptionMarkup(option, part) {
+  const badge = getOptionBadgeMarkup(option);
+  if (badge) return badge;
+  return `<span class="history-option-badge">${esc(getOptionDisplayName('NORMAL', part))}</span>`;
 }
 
 function formatOptionPercentage(value) {
@@ -2607,9 +2617,8 @@ async function openRateComparison(songId, title, part) {
   $('ratePrivateComment').textContent = '';
   $('ratePersonalBest').classList.add('hidden');
   $('ratePersonalBest').innerHTML = '';
-  $('rateOptionSummary').innerHTML = part.endsWith('-D')
-    ? ''
-    : '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
+  $('rateOptionSummary').innerHTML =
+    '<div class="option-share-title">オプション利用割合を読み込み中...</div>';
   $('rateCompareColumns').classList.add('hidden');
   $('rateCompareBody').innerHTML = '<div class="empty-state">読み込み中...</div>';
   $('rateCompareMask').style.display = 'flex';
@@ -2619,7 +2628,7 @@ async function openRateComparison(songId, title, part) {
     // オプション割合はライバル登録に関係なく全ユーザーを集計。
     const [rows, optionRows, personalBest] = await Promise.all([
       getSongRateComparison(songId),
-      part.endsWith('-D') ? Promise.resolve([]) : getSongOptionDistribution(songId),
+      getSongOptionDistribution(songId),
       getSongPersonalBestHistory(songId)
     ]);
 
@@ -2633,31 +2642,43 @@ async function openRateComparison(songId, title, part) {
     }
 
     if (personalBest) {
+      const bestBadges = [
+        getFcBadgeMarkup(personalBest.fc, personalBest.achievement_rate),
+        getHistoricalOptionMarkup(personalBest.play_option, part)
+      ].filter(Boolean).join('');
       $('ratePersonalBest').classList.remove('hidden');
       $('ratePersonalBest').innerHTML = `
-        <span class="rate-personal-best-label">自己ベスト</span>
+        <span class="rate-personal-best-label">歴代自己ベスト</span>
         <strong class="rate-personal-best-value">${formatRate(personalBest.achievement_rate)}%</strong>
-        <span class="rate-personal-best-version">（${esc(personalBest.version_name)}）</span>`;
+        <span class="rate-personal-best-version">（${esc(personalBest.version_name)}）</span>
+        <span class="rate-personal-best-badges">${bestBadges}</span>`;
     } else {
       $('ratePersonalBest').classList.add('hidden');
       $('ratePersonalBest').innerHTML = '';
     }
 
-    const visibleOptions = part.endsWith('-D') ? [] : optionRows.filter(row => Number(row.percentage) > 0);
+    const isDm = part.endsWith('-D');
+    const visibleOptions = optionRows.filter(row => {
+      if (Number(row.percentage) <= 0) return false;
+      if (isDm) return ['NORMAL','BASS_MIRROR'].includes(row.play_option);
+      return ['NORMAL','RAN','SRA','RAN+','SRA+'].includes(row.play_option);
+    });
+    const hasBassMirror = isDm && optionRows.some(row =>
+      row.play_option === 'BASS_MIRROR' && Number(row.use_count) > 0
+    );
+    const showOptionSummary = isDm ? hasBassMirror : visibleOptions.length > 0;
 
-    $('rateOptionSummary').innerHTML = part.endsWith('-D')
-      ? ''
-      : (visibleOptions.length
-          ? `
-            <div class="option-share-title">全ユーザーのオプション利用割合</div>
-            ${visibleOptions.map(row => `
-              <div class="option-share-item">
-                <span>${esc(getOptionDisplayName(row.play_option))}</span>
-                <strong>${formatOptionPercentage(row.percentage)}%</strong>
-              </div>`
-            ).join('')}
-          `
-          : '');
+    $('rateOptionSummary').innerHTML = showOptionSummary
+      ? `
+          <div class="option-share-title">全ユーザーのオプション利用割合</div>
+          ${visibleOptions.map(row => `
+            <div class="option-share-item">
+              <span>${esc(getOptionDisplayName(row.play_option, part))}</span>
+              <strong>${formatOptionPercentage(row.percentage)}%</strong>
+            </div>`
+          ).join('')}
+        `
+      : '';
 
     $('rateCompareColumns').classList.toggle('hidden', !rows.length);
 

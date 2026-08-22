@@ -2188,6 +2188,7 @@ body.dm-mode #dmOptionFieldGroup:not(.hidden){
 #partSelect,
 #formFc,
 #formOption,
+#formDmOption,
 #versionSelect {
   background-color:#f8fafc !important;
   color:#111827 !important;
@@ -2201,6 +2202,7 @@ body.dm-mode #dmOptionFieldGroup:not(.hidden){
 #partSelect,
 #formFc,
 #formOption,
+#formDmOption,
 #versionSelect {
   color-scheme: light;
 }
@@ -2313,6 +2315,7 @@ select {
 #partSelect,
 #formFc,
 #formOption,
+#formDmOption,
 #versionSelect,
 .admin-form-sheet select,
 .mdl-sheet select {
@@ -2350,7 +2353,8 @@ select {
 /* Part / FC / Option の文字が上下で切れないように調整 */
 #domModal #partSelect,
 #domModal #formFc,
-#domModal #formOption {
+#domModal #formOption,
+#domModal #formDmOption {
   min-height: 42px !important;
   height: 42px !important;
   line-height: normal !important;
@@ -7995,33 +7999,7 @@ body.light-mode :is(
   border-radius:999px;
 }
 
-/* === APP VERSION 3.9.0: DM バスミラー（管理者先行公開） === */
-.bass-mirror-check{
-  min-height:40px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border:1px solid #334155;
-  border-radius:8px;
-  background:#111827;
-  color:#f8fafc;
-  box-sizing:border-box;
-  cursor:pointer;
-}
-.bass-mirror-check input{
-  width:19px !important;
-  height:19px !important;
-  min-height:19px !important;
-  margin:0;
-  accent-color:#7c3aed;
-  flex:0 0 auto;
-}
-.bass-mirror-check span{
-  font-size:11px;
-  font-weight:900;
-  line-height:1.2;
-}
+/* === APP VERSION 3.10.0: DMオプション・歴代自己ベスト表示 === */
 .opt-bass-mirror,
 :is(#viewAllManage, #userDetailRecords) .m-card .opt-bass-mirror,
 .rate-badges .opt-bass-mirror{
@@ -8034,12 +8012,6 @@ body.light-mode :is(
   background:rgba(76,29,149,.28) !important;
   border:1px solid #7c3aed !important;
 }
-body.light-mode .bass-mirror-check{
-  background:#ffffff !important;
-  color:#111827 !important;
-  -webkit-text-fill-color:#111827 !important;
-  border-color:#94a3b8 !important;
-}
 body.light-mode .opt-bass-mirror,
 body.light-mode #viewAllManage .opt-bass-mirror,
 body.light-mode #userDetailRecords .opt-bass-mirror,
@@ -8049,6 +8021,46 @@ body.light-mode .rate-badges .opt-bass-mirror{
   -webkit-text-fill-color:#6d28d9 !important;
   background:#f5f3ff !important;
   border-color:#7c3aed !important;
+}
+.rate-personal-best{
+  flex-wrap:wrap !important;
+  align-items:center !important;
+}
+.rate-personal-best-version{
+  flex:1 1 110px;
+  min-width:0;
+}
+.rate-personal-best-badges{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin-left:auto;
+  white-space:nowrap;
+}
+.rate-personal-best-badges .fc-unified-badge,
+.rate-personal-best-badges .opt-badge,
+.history-option-badge{
+  width:auto !important;
+  min-width:48px !important;
+  padding:2px 6px !important;
+  box-sizing:border-box;
+}
+.history-option-badge{
+  display:inline-block;
+  border:1px solid #475569;
+  border-radius:2px;
+  background:transparent;
+  color:#cbd5e1;
+  font-size:9px;
+  font-weight:900;
+  line-height:1.2;
+  text-align:center;
+}
+body.light-mode .history-option-badge{
+  color:#334155 !important;
+  -webkit-text-fill-color:#334155 !important;
+  background:#f8fafc !important;
+  border-color:#94a3b8 !important;
 }
 
 </style>
@@ -8251,10 +8263,12 @@ body.light-mode .rate-badges .opt-bass-mirror{
       </div>
       <div id="dmOptionFieldGroup" class="f-group hidden">
         <label>オプション</label>
-        <label class="bass-mirror-check" for="formBassMirror">
-          <input id="formBassMirror" type="checkbox">
-          <span>バスミラー</span>
-        </label>
+        <div class="select-arrow-wrap">
+          <select id="formDmOption">
+            <option value="NORMAL">なし</option>
+            <option value="BASS_MIRROR">バスミラー</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -8299,7 +8313,7 @@ body.light-mode .rate-badges .opt-bass-mirror{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.9.0</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.10.0</div>
     </div>
   </div>
 </div>
@@ -8413,7 +8427,7 @@ body.light-mode .rate-badges .opt-bass-mirror{
       <section><b>2. スコアを登録する</b><p>「登録」→「＋登録」から曲名・パート・達成率・フルコンを入力します。GFでは譜面オプションも登録できます。</p></section>
       <section><b>3. スキル対象を同期する</b><p>MENU →「スキル対象同期」から、GITADORA公式ページからスキル対象をまとめて取得できます。</p></section>
       <section><b>4. ライバルを登録する</b><p>ユーザーリストからGF / DMそれぞれ最大10人まで登録と解除ができます。「ライバル管理」では登録しているユーザーが一覧で確認できます。</p></section>
-      <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップするとライバルとの達成率比較、歴代の自己ベスト、GFでは譜面オプションの使用割合を確認できます。</p></section>
+      <section><b>5. 登録曲詳細を見る</b><p>登録曲をタップするとライバルとの達成率比較、当時のオプション・FC/EXCを含む歴代自己ベスト、オプションの使用割合を確認できます。DMの割合はバスミラー使用者がいる場合だけ表示されます。</p></section>
       <section><b>6. SNSへ共有する</b><p>MENU →「スキル画像共有」から現在のGF / DMスキル対象画像を作成し、端末の共有メニューからXやInstagramなどへ送れます。</p></section>
     </div>
   </div>
@@ -8584,7 +8598,7 @@ body.light-mode .rate-badges .opt-bass-mirror{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.9.0</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.10.0</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8661,6 +8675,6 @@ body.light-mode .rate-badges .opt-bass-mirror{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_9_0"></script>
+<script type="module" src="./js/app.js?v=3_10_0"></script>
 </body>
 </html>
