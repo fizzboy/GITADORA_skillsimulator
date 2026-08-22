@@ -6769,6 +6769,58 @@ body.light-mode textarea::-webkit-input-placeholder{
   opacity:1 !important;
 }
 
+
+/* === FIX157: MENU配下モーダルの「戻る」ボタンを完全統一 === */
+#btnCloseMypage.menu-back-btn,
+#btnCloseFeatureSettings.menu-back-btn,
+#btnCloseSkillSync.menu-back-btn,
+#btnCloseRivalManage.menu-back-btn,
+#btnCloseHowTo.menu-back-btn,
+#btnCloseFeedback.menu-back-btn{
+  width:auto !important;
+  min-width:44px !important;
+  height:32px !important;
+  min-height:32px !important;
+  padding:0 4px 0 10px !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#93c5fd !important;
+  -webkit-text-fill-color:#93c5fd !important;
+  box-shadow:none !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  line-height:32px !important;
+  white-space:nowrap !important;
+  text-align:right !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+}
+
+/* app-menu-head側の34x34/20px指定を確実に打ち消す */
+.app-menu-head .menu-back-btn,
+.skill-sync-head .menu-back-btn,
+.mypage-title-row .menu-back-btn{
+  width:auto !important;
+  height:32px !important;
+  background:transparent !important;
+  font-size:12px !important;
+}
+
+body.light-mode #btnCloseMypage.menu-back-btn,
+body.light-mode #btnCloseFeatureSettings.menu-back-btn,
+body.light-mode #btnCloseSkillSync.menu-back-btn,
+body.light-mode #btnCloseRivalManage.menu-back-btn,
+body.light-mode #btnCloseHowTo.menu-back-btn,
+body.light-mode #btnCloseFeedback.menu-back-btn{
+  background:transparent !important;
+  color:#2563eb !important;
+  -webkit-text-fill-color:#2563eb !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -6998,7 +7050,7 @@ body.light-mode textarea::-webkit-input-placeholder{
   <div class="feature-settings-dialog">
     <div class="app-menu-head">
       <strong>機能設定</strong>
-      <button id="btnCloseFeatureSettings" type="button">戻る</button>
+      <button id="btnCloseFeatureSettings" type="button" class="menu-back-btn">戻る</button>
     </div>
 
     <div class="feature-settings-body">
@@ -7036,7 +7088,7 @@ body.light-mode textarea::-webkit-input-placeholder{
   <div class="feedback-dialog">
     <div class="app-menu-head">
       <strong>要望・不具合報告</strong>
-      <button id="btnCloseFeedback" type="button">×</button>
+      <button id="btnCloseFeedback" type="button" class="menu-back-btn">戻る</button>
     </div>
     <div class="feedback-body">
       <label for="feedbackCategory">種類</label>
@@ -7065,7 +7117,7 @@ body.light-mode textarea::-webkit-input-placeholder{
 
 <div id="howToMask" class="site-dialog-mask">
   <div class="howto-dialog">
-    <div class="app-menu-head"><strong>How to use</strong><button id="btnCloseHowTo" type="button">×</button></div>
+    <div class="app-menu-head"><strong>How to use</strong><button id="btnCloseHowTo" type="button" class="menu-back-btn">戻る</button></div>
     <div class="howto-body">
       <section><b>1. GF / DMを切り替える</b><p>画面上部のGF / DMボタンで表示するスキルを切り替えます。</p></section>
       <section><b>2. スコアを登録する</b><p>「登録」→「＋登録」から曲名・パート・達成率・フルコンを入力します。GFでは譜面オプションも登録できます。</p></section>
@@ -7082,7 +7134,7 @@ body.light-mode textarea::-webkit-input-placeholder{
   <div class="rival-manage-dialog">
     <div class="app-menu-head">
       <strong>ライバル管理</strong>
-      <button id="btnCloseRivalManage" type="button">×</button>
+      <button id="btnCloseRivalManage" type="button" class="menu-back-btn">戻る</button>
     </div>
     <div class="section-note rival-manage-note">ライバルのTOTALスキルを確認できます。ユーザー名をタップするとスキル対象を表示します。GF / DMそれぞれ最大10件です。</div>
     <div class="rival-manage-block">
@@ -7100,7 +7152,7 @@ body.light-mode textarea::-webkit-input-placeholder{
   <div class="mypage-sheet">
     <div class="mypage-title-row">
       <h3>マイページ</h3>
-      <button id="btnCloseMypage" type="button" class="mypage-close">戻る</button>
+      <button id="btnCloseMypage" type="button" class="mypage-close menu-back-btn">戻る</button>
     </div>
     <label style="display:block;font-size:11px;font-weight:900;margin-bottom:4px;">ユーザー名</label>
     <div class="mypage-name-row">
@@ -7144,7 +7196,7 @@ body.light-mode textarea::-webkit-input-placeholder{
         <div class="skill-sync-kicker">e-amusement連携</div>
         <h3>スキル対象を同期する</h3>
       </div>
-      <button id="btnCloseSkillSync" type="button" class="skill-sync-close">戻る</button>
+      <button id="btnCloseSkillSync" type="button" class="skill-sync-close menu-back-btn">戻る</button>
     </div>
 
     <div class="skill-sync-note">
@@ -7229,7 +7281,7 @@ body.light-mode textarea::-webkit-input-placeholder{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX156</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX157</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7306,6 +7358,6 @@ body.light-mode textarea::-webkit-input-placeholder{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_156"></script>
+<script type="module" src="./js/app.js?v=21_157"></script>
 </body>
 </html>
