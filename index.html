@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.3.5 ===
+/* === APP VERSION 3.3.6 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.3.5: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.6: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.3.5: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.6: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6971,7 +6971,7 @@ body.global-modal-scroll-lock{
 }
 
 
-/* === APP VERSION 3.3.5: 管理者用 登録曲一括削除 === */
+/* === APP VERSION 3.3.6: 管理者用 登録曲一括削除 === */
 .admin-bulk-delete-area{
   display:flex;
   justify-content:flex-end;
@@ -7001,7 +7001,7 @@ body.light-mode .admin-bulk-delete-btn{
 }
 
 
-/* === APP VERSION 3.3.5: ライトモードの青背景は白文字で統一 === */
+/* === APP VERSION 3.3.6: ライトモードの青背景は白文字で統一 === */
 body.light-mode .skill-sync-dialog .skill-sync-step-no{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
@@ -7025,6 +7025,30 @@ body.light-mode [class*="primary"][class*="btn"],
 body.light-mode [class*="btn"][class*="primary"]{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
+}
+
+
+/* === APP VERSION 3.3.6: 同期画面 Android Chrome案内 === */
+.skill-sync-card-warning{
+  margin-top:8px;padding:10px 12px;border:1px solid #f59e0b;border-radius:8px;
+  background:rgba(245,158,11,.12);color:#fbbf24;font-size:12px;font-weight:800;line-height:1.55;
+}
+.skill-sync-android-note{
+  margin-top:8px;padding:10px 12px;border:1px solid #3b82f6;border-radius:8px;
+  background:rgba(59,130,246,.10);color:var(--text);font-size:12px;line-height:1.6;
+}
+.skill-sync-android-note strong{display:block;margin-bottom:4px;color:#60a5fa;font-size:12px;font-weight:900}
+.skill-sync-android-note span{display:block}
+body.light-mode .skill-sync-card-warning{
+  background:#fff7ed !important;border-color:#f59e0b !important;color:#92400e !important;
+  -webkit-text-fill-color:#92400e !important;
+}
+body.light-mode .skill-sync-android-note{
+  background:#eff6ff !important;border-color:#93c5fd !important;color:#1e293b !important;
+  -webkit-text-fill-color:#1e293b !important;
+}
+body.light-mode .skill-sync-android-note strong{
+  color:#1d4ed8 !important;-webkit-text-fill-color:#1d4ed8 !important;
 }
 
 </style>
@@ -7251,7 +7275,7 @@ body.light-mode [class*="btn"][class*="primary"]{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.5</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.6</div>
     </div>
   </div>
 </div>
@@ -7449,8 +7473,14 @@ body.light-mode [class*="btn"][class*="primary"]{
       <div>
         <strong>e-amusementを開く</strong>
         <div class="section-note">
-          開いたページでログイン状態を確認し、そのページを開いたまま、作成した同期用ブックマークを開きます。<br>
-          ⚠この時、複数カードがある場合、参照するカードが合っているかご確認ください。
+          開いたページでログイン状態を確認し、そのページを開いたまま、作成した同期用ブックマークを開きます。
+        </div>
+        <div class="skill-sync-card-warning">
+          ⚠️ この時、複数カードがある場合、参照するカードが合っているかご確認ください。
+        </div>
+        <div class="skill-sync-android-note">
+          <strong>Android版Chromeをご利用の場合</strong>
+          <span>ブックマーク一覧から同期用ブックマークを開いても動作しない場合があります。その場合は、Chromeのアドレスバーに作成したブックマークの名前を入力し、表示された候補から同期用ブックマークを選択してください。</span>
         </div>
         <button id="btnOpenEamusement" type="button" class="btn-open-eamusement">GITADORA公式サイトを開く</button>
       </div>
@@ -7511,7 +7541,7 @@ body.light-mode [class*="btn"][class*="primary"]{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.5</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.6</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7588,6 +7618,6 @@ body.light-mode [class*="btn"][class*="primary"]{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_3_5"></script>
+<script type="module" src="./js/app.js?v=3_3_6"></script>
 </body>
 </html>
