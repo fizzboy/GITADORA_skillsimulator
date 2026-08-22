@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.3.10 ===
+/* === APP VERSION 3.3.11 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.3.10: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.11: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.3.10: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.11: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6971,7 +6971,7 @@ body.global-modal-scroll-lock{
 }
 
 
-/* === APP VERSION 3.3.10: 管理者用 登録曲一括削除 === */
+/* === APP VERSION 3.3.11: 管理者用 登録曲一括削除 === */
 .admin-bulk-delete-area{
   display:flex;
   justify-content:flex-end;
@@ -7001,7 +7001,7 @@ body.light-mode .admin-bulk-delete-btn{
 }
 
 
-/* === APP VERSION 3.3.10: ライトモードの青背景は白文字で統一 === */
+/* === APP VERSION 3.3.11: ライトモードの青背景は白文字で統一 === */
 body.light-mode .skill-sync-dialog .skill-sync-step-no{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
@@ -7028,7 +7028,7 @@ body.light-mode [class*="btn"][class*="primary"]{
 }
 
 
-/* === APP VERSION 3.3.10: 同期画面 Android Chrome案内 === */
+/* === APP VERSION 3.3.11: 同期画面 Android Chrome案内 === */
 .skill-sync-card-warning{
   margin-top:8px;padding:10px 12px;border:1px solid #f59e0b;border-radius:8px;
   background:rgba(245,158,11,.12);color:#fbbf24;font-size:12px;font-weight:800;line-height:1.55;
@@ -7052,7 +7052,7 @@ body.light-mode .skill-sync-android-note strong{
 }
 
 
-/* === APP VERSION 3.3.10: スキル対象同期の説明文を通常の文字色へ === */
+/* === APP VERSION 3.3.11: スキル対象同期の説明文を通常の文字色へ === */
 .skill-sync-dialog .section-note,
 .skill-sync-dialog .skill-sync-browser-guide,
 .skill-sync-dialog .skill-sync-encoding-note{
@@ -7069,7 +7069,7 @@ body.light-mode .skill-sync-dialog .skill-sync-encoding-note{
 }
 
 
-/* === APP VERSION 3.3.10: ユーザーリストのページ番号ナビ === */
+/* === APP VERSION 3.3.11: ユーザーリストのページ番号ナビ === */
 .user-list-pager{
   display:flex;
   flex-direction:column;
@@ -7159,7 +7159,7 @@ body.light-mode .user-list-page-summary{
 }
 
 
-/* === APP VERSION 3.3.10: ページ番号ナビの旧CSS競合を解消 === */
+/* === APP VERSION 3.3.11: ページ番号ナビの旧CSS競合を解消 === */
 #userListPager.user-list-pager{
   display:flex !important;
   flex-direction:column !important;
@@ -7239,6 +7239,47 @@ body.light-mode .user-list-page-summary{
     flex-basis:16px !important;
     width:16px !important;
     min-width:16px !important;
+  }
+}
+
+
+/* === APP VERSION 3.3.11: 任意ページへ直接移動できるページャー === */
+#userListPager .user-pager-nearby{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+}
+#userListPager .user-pager-jump{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+}
+#userListPager .user-pager-jump select{
+  height:34px;
+  min-width:70px;
+  padding:0 24px 0 8px;
+  border:1px solid #475569;
+  border-radius:7px;
+  background:#111827;
+  color:#e5e7eb;
+  font-size:12px;
+  font-weight:900;
+  text-align:center;
+}
+body.light-mode #userListPager .user-pager-jump select{
+  background:#f8fafc !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+@media (max-width:520px){
+  #userListPager .user-pager-nearby .user-pager-page{
+    display:none !important;
+  }
+  #userListPager .user-pager-jump select{
+    min-width:88px;
   }
 }
 
@@ -7466,7 +7507,7 @@ body.light-mode .user-list-page-summary{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.10</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.11</div>
     </div>
   </div>
 </div>
@@ -7732,7 +7773,7 @@ body.light-mode .user-list-page-summary{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.10</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.11</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7809,6 +7850,6 @@ body.light-mode .user-list-page-summary{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_3_10"></script>
+<script type="module" src="./js/app.js?v=3_3_11"></script>
 </body>
 </html>
