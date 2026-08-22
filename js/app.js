@@ -200,6 +200,24 @@ const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
   'MAS-G','MAS-B','MAS-D','EXT-G','EXT-B','EXT-D','ADV-G','ADV-B','ADV-D','BSC-G','BSC-B','BSC-D'
 ];
 
+
+async function checkRequestAlreadyRegistered(requestId, title) {
+  const { data, error } = await supabase.rpc('check_song_request_already_registered', {
+    p_request_id: requestId,
+    p_title: String(title || '').trim()
+  });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+async function deletePendingSongRequest(requestId) {
+  const { data, error } = await supabase.rpc('delete_pending_song_request', {
+    p_request_id: requestId
+  });
+  if (error) throw error;
+  return data;
+}
+
 const EAMUSEMENT_ORIGIN = 'https://p.eagate.573.jp';
 function getEamusementSlug() {
   return activeVersion?.eamusement_slug || 'gitadora_galaxywave_delta';
@@ -3554,6 +3572,19 @@ document.addEventListener('click', async e => {
       }
 
       const changed = Boolean(req && title !== req.title);
+
+      if (req?.request_type !== 'level_correction' && await checkRequestAlreadyRegistered(requestId, title)) {
+        const shouldDelete = await showSiteConfirm(
+          '正式データを既に登録済みなので申請を削除しますか？',
+          '登録済みデータを確認',
+          '削除する'
+        );
+        if (!shouldDelete) return;
+        await deletePendingSongRequest(requestId);
+        await loadAdminRequests();
+        return;
+      }
+
       const confirmText = changed
         ? `曲名を「${req.title}」から「${title}」へ修正して、OTHERとして承認しますか？`
         : 'この登録依頼をOTHERとして承認しますか？';
@@ -3592,6 +3623,19 @@ document.addEventListener('click', async e => {
       }
 
       const changed = Boolean(req && title !== req.title);
+
+      if (req?.request_type !== 'level_correction' && await checkRequestAlreadyRegistered(requestId, title)) {
+        const shouldDelete = await showSiteConfirm(
+          '正式データを既に登録済みなので申請を削除しますか？',
+          '登録済みデータを確認',
+          '削除する'
+        );
+        if (!shouldDelete) return;
+        await deletePendingSongRequest(requestId);
+        await loadAdminRequests();
+        return;
+      }
+
       const confirmText = changed
         ? `曲名を「${req.title}」から「${title}」へ修正して、HOT曲として承認しますか？`
         : 'この登録依頼をHOT曲として承認しますか？';
