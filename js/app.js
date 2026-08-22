@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_156';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_157';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -867,8 +867,9 @@ function openRivalManage() {
   $('rivalManageMask').style.display = 'flex';
   loadFavorites().catch(console.error);
 }
-function closeRivalManage() {
+function closeRivalManage(returnToMenu = false) {
   $('rivalManageMask').style.display = 'none';
+  if (returnToMenu) openMenu();
 }
 
 async function openFavoriteUserDetail(userId, username, instrument) {
@@ -929,8 +930,9 @@ function openFeedback() {
   $('feedbackMask').style.display = 'flex';
   loadMyFeedbackHistory();
 }
-function closeFeedback() {
+function closeFeedback(returnToMenu = false) {
   $('feedbackMask').style.display = 'none';
+  if (returnToMenu) openMenu();
 }
 
 async function submitFeedback() {
@@ -979,7 +981,7 @@ async function submitFeedback() {
 }
 
 function openHowTo() { closeMenu(); $('howToMask').style.display = 'flex'; }
-function closeHowTo() { $('howToMask').style.display = 'none'; }
+function closeHowTo(returnToMenu = false) { $('howToMask').style.display = 'none'; if (returnToMenu) openMenu(); }
 
 function shareSkillImage() {
   const target = totals();
@@ -3131,7 +3133,7 @@ $('btnChangePassword').addEventListener('click', async () => {
 });
 
 $('btnMenuFeedback').addEventListener('click', openFeedback);
-$('btnCloseFeedback').addEventListener('click', closeFeedback);
+$('btnCloseFeedback').addEventListener('click', () => closeFeedback(true));
 $('feedbackMask').addEventListener('click', e => {
   if (e.target === $('feedbackMask')) closeFeedback();
 });
@@ -3590,9 +3592,9 @@ $('btnMenuSkillSync').addEventListener('click', openSkillSyncDialog);
 $('btnMenuShareSkill').addEventListener('click', () => { closeMenu(); shareSkillImage(); });
 $('btnMenuRivals').addEventListener('click', openRivalManage);
 $('btnMenuHowTo').addEventListener('click', openHowTo);
-$('btnCloseHowTo').addEventListener('click', closeHowTo);
+$('btnCloseHowTo').addEventListener('click', () => closeHowTo(true));
 $('howToMask').addEventListener('click', e => { if (e.target === $('howToMask')) closeHowTo(); });
-$('btnCloseRivalManage').addEventListener('click', closeRivalManage);
+$('btnCloseRivalManage').addEventListener('click', () => closeRivalManage(true));
 $('rivalManageMask').addEventListener('click', e => { if (e.target === $('rivalManageMask')) closeRivalManage(); });
 
 $('siteDialogOk').addEventListener('click', () => closeSiteDialog(true));
