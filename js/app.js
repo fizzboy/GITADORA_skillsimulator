@@ -907,6 +907,13 @@ async function loadMyFeedbackHistory() {
             <span class="feedback-history-date">${new Date(item.created_at).toLocaleString('ja-JP')}</span>
           </div>
           <div class="feedback-history-message">${esc(item.message).replace(/\\n/g, '<br>')}</div>
+          ${(item.device_name || item.browser_name) ? `
+            <div class="feedback-history-env">
+              <strong>ご利用環境</strong><br>
+              機種名：${esc(item.device_name || '未入力')}<br>
+              ブラウザ：${esc(item.browser_name || '未入力')}
+            </div>
+          ` : ''}
           ${reply ? `
             <div class="feedback-history-reply">
               <div class="feedback-history-reply-label">管理者からの返信</div>
@@ -925,6 +932,8 @@ async function loadMyFeedbackHistory() {
 function openFeedback() {
   closeMenu();
   $('feedbackCategory').value = 'request';
+  $('feedbackDevice').value = '';
+  $('feedbackBrowser').value = '';
   $('feedbackMessage').value = '';
   $('feedbackStatus').textContent = '';
   $('feedbackMask').style.display = 'flex';
@@ -937,6 +946,8 @@ function closeFeedback(returnToMenu = false) {
 
 async function submitFeedback() {
   const category = $('feedbackCategory').value;
+  const deviceName = $('feedbackDevice').value.trim();
+  const browserName = $('feedbackBrowser').value.trim();
   const message = $('feedbackMessage').value.trim();
   if (!message) {
     await showSiteDialog('内容を入力してください。', '入力エラー');
@@ -962,11 +973,15 @@ async function submitFeedback() {
       .insert({
         user_id: userData.user.id,
         category,
-        message
+        message,
+        device_name: deviceName || null,
+        browser_name: browserName || null
       });
 
     if (error) throw error;
 
+    $('feedbackDevice').value = '';
+    $('feedbackBrowser').value = '';
     $('feedbackMessage').value = '';
     await loadMyFeedbackHistory();
     await showSiteDialog('送信しました。送信履歴に追加しました。', '送信完了');
@@ -2611,7 +2626,7 @@ async function loadAdminFeedback() {
   try {
     const { data, error } = await supabase
       .from('user_feedback')
-      .select('id,user_id,category,message,status,created_at,resolved_at,admin_reply,replied_at')
+      .select('id,user_id,category,message,status,created_at,resolved_at,admin_reply,replied_at,device_name,browser_name')
       .order('created_at', { ascending: false })
       .limit(500);
 
@@ -2656,6 +2671,13 @@ async function loadAdminFeedback() {
             </div>
           </div>
           <div class="feedback-admin-message">${esc(item.message).replace(/\\n/g, '<br>')}</div>
+          ${(item.device_name || item.browser_name) ? `
+            <div class="feedback-admin-env">
+              <strong>ご利用環境</strong><br>
+              機種名：${esc(item.device_name || '未入力')}<br>
+              ブラウザ：${esc(item.browser_name || '未入力')}
+            </div>
+          ` : ''}
 
           ${item.admin_reply ? `
             <div class="feedback-admin-replied">
