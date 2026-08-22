@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_2';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_3';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -548,16 +548,35 @@ function syncAppStickyHeaderHeight() {
 function scrollUserListPageToTop() {
   const sticky = document.querySelector('#viewUsers .user-list-sticky');
   const header = document.querySelector('.p-header');
-  if (!sticky || !header) return;
+  const firstRow = document.querySelector('#userList .user-list-row');
+  if (!sticky || !header || !firstRow) return;
 
   const headerHeight = Math.ceil(header.getBoundingClientRect().height);
+  const stickyHeight = Math.ceil(sticky.getBoundingClientRect().height);
   const stickyTopGap = 6;
-  const stickyDocumentTop = sticky.getBoundingClientRect().top + window.scrollY;
-  const targetY = Math.max(0, stickyDocumentTop - headerHeight - stickyTopGap);
 
-  // ページ切替直後はスムーススクロールを使わず、
-  // 固定エリア直下に1人目が確実に見える位置へ即座に戻す。
+  // 現在どこまでスクロールしていても、
+  // 新しいページの1人目が「検索窓＋項目行」の直下に来るよう絶対位置で補正する。
+  const desiredFirstRowTop = headerHeight + stickyTopGap + stickyHeight;
+  const currentFirstRowTop = firstRow.getBoundingClientRect().top;
+  const targetY = Math.max(
+    0,
+    window.scrollY + currentFirstRowTop - desiredFirstRowTop
+  );
+
   window.scrollTo({ top: targetY, left: 0, behavior: 'auto' });
+
+  // iPhone Safariでレイアウト確定が1フレーム遅れる場合の最終補正。
+  requestAnimationFrame(() => {
+    const correction = firstRow.getBoundingClientRect().top - desiredFirstRowTop;
+    if (Math.abs(correction) > 1) {
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + correction),
+        left: 0,
+        behavior: 'auto'
+      });
+    }
+  });
 }
 
 
