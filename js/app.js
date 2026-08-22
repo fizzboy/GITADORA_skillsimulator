@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_4_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_4_1';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -470,6 +470,7 @@ const GLOBAL_SCROLL_LOCK_OVERLAYS = [
   '#menuMask',
   '#featureSettingsMask',
   '#feedbackMask',
+  '#supportMask',
   '#howToMask',
   '#rivalManageMask',
   '#mypageModal',
@@ -3415,6 +3416,17 @@ $('btnChangePassword').addEventListener('click', async () => {
 });
 
 $('btnMenuFeedback').addEventListener('click', openFeedback);
+$('menuOfuseSupport')?.addEventListener('click', () => {
+  closeMenu();
+  $('supportMask').style.display = 'flex';
+  requestAnimationFrame(syncGlobalModalScrollLock);
+});
+$('btnCloseSupport')?.addEventListener('click', () => {
+  $('supportMask').style.display = 'none';
+  openMenu();
+  requestAnimationFrame(syncGlobalModalScrollLock);
+});
+
 $('btnCloseFeedback').addEventListener('click', () => closeFeedback(true));
 $('feedbackMask').addEventListener('click', e => {
   if (e.target === $('feedbackMask')) closeFeedback();
