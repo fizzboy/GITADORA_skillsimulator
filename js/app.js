@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_1';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_2';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -543,6 +543,21 @@ function syncAppStickyHeaderHeight() {
   if (!header) return;
   const height = Math.ceil(header.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--app-sticky-header-height', `${height}px`);
+}
+
+function scrollUserListPageToTop() {
+  const sticky = document.querySelector('#viewUsers .user-list-sticky');
+  const header = document.querySelector('.p-header');
+  if (!sticky || !header) return;
+
+  const headerHeight = Math.ceil(header.getBoundingClientRect().height);
+  const stickyTopGap = 6;
+  const stickyDocumentTop = sticky.getBoundingClientRect().top + window.scrollY;
+  const targetY = Math.max(0, stickyDocumentTop - headerHeight - stickyTopGap);
+
+  // ページ切替直後はスムーススクロールを使わず、
+  // 固定エリア直下に1人目が確実に見える位置へ即座に戻す。
+  window.scrollTo({ top: targetY, left: 0, behavior: 'auto' });
 }
 
 
@@ -3401,7 +3416,9 @@ $('userListPager')?.addEventListener('click', e => {
   }
 
   renderUsers();
-  $('viewUsers')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  requestAnimationFrame(() => {
+    scrollUserListPageToTop();
+  });
 });
 
 $('versionSelect').addEventListener('change', async e => { await switchGameVersion(e.target.value); });
