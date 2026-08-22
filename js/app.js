@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_4_6';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_5_0';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -974,7 +974,10 @@ async function init() {
 
 
 let myPageOpenedFromMenu = false;
-function openMenu() { $('menuMask').style.display = 'flex'; }
+function openMenu() {
+  $('menuOfuseSupport')?.classList.remove('hidden');
+  $('menuMask').style.display = 'flex';
+}
 function openRivalManage() {
   closeMenu();
   $('rivalManageMask').style.display = 'flex';
@@ -2572,7 +2575,7 @@ async function checkAdminAccess() {
 
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
-  $('menuOfuseSupport')?.classList.toggle('hidden', !adminEnabled);
+  $('menuOfuseSupport')?.classList.remove('hidden');
 
   primaryAdminEnabled = false;
   if (adminEnabled) {
