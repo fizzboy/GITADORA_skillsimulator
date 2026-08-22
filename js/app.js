@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_163';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_0';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -2472,9 +2472,58 @@ async function checkAdminAccess() {
 
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
+  $('adminBulkDeleteArea')?.classList.toggle('hidden', !adminEnabled);
 
   // 保存済みライトモード設定を全ユーザーに反映。
   applyLightMode();
+}
+
+async function adminBulkDeleteCurrentScores() {
+  if (!adminEnabled) return;
+
+  const instrumentLabel = activeInstrument === 'DM' ? 'DM' : 'GF';
+  const versionLabel = activeVersion?.name || activeVersion?.code || '現在のVERSION';
+
+  const ok = await showSiteConfirm(
+    `${versionLabel} の ${instrumentLabel} 登録曲をすべて削除しますか？\nこの操作は元に戻せません。`,
+    '登録曲の一括削除',
+    '一括削除する'
+  );
+  if (!ok) return;
+
+  const button = $('btnAdminBulkDeleteScores');
+  const original = button?.textContent || '登録曲を一括削除';
+
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = '削除中...';
+    }
+
+    const { data, error } = await supabase.rpc('admin_bulk_delete_my_scores', {
+      p_version_id: activeVersionId,
+      p_instrument: activeInstrument
+    });
+    if (error) throw error;
+
+    await loadScores();
+
+    const deleted = Number(data) || 0;
+    await showSiteDialog(
+      `${instrumentLabel} の登録曲を ${deleted}件削除しました。`,
+      '一括削除完了'
+    );
+  } catch (e) {
+    await showSiteDialog(
+      '一括削除に失敗しました: ' + (e?.message || e),
+      'エラー'
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  }
 }
 
 async function openAdmin() {
@@ -3247,6 +3296,7 @@ $('feedbackMask').addEventListener('click', e => {
 $('btnSubmitFeedback').addEventListener('click', submitFeedback);
 
 $('btnAdmin').addEventListener('click', openAdmin);
+$('btnAdminBulkDeleteScores')?.addEventListener('click', adminBulkDeleteCurrentScores);
 $('btnCloseAdmin').addEventListener('click', closeAdmin);
 
 document.querySelectorAll('.admin-tab').forEach(btn => {
