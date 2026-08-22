@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.3.9 ===
+/* === APP VERSION 3.3.10 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.3.9: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.10: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.3.9: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.10: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6971,7 +6971,7 @@ body.global-modal-scroll-lock{
 }
 
 
-/* === APP VERSION 3.3.9: 管理者用 登録曲一括削除 === */
+/* === APP VERSION 3.3.10: 管理者用 登録曲一括削除 === */
 .admin-bulk-delete-area{
   display:flex;
   justify-content:flex-end;
@@ -7001,7 +7001,7 @@ body.light-mode .admin-bulk-delete-btn{
 }
 
 
-/* === APP VERSION 3.3.9: ライトモードの青背景は白文字で統一 === */
+/* === APP VERSION 3.3.10: ライトモードの青背景は白文字で統一 === */
 body.light-mode .skill-sync-dialog .skill-sync-step-no{
   color:#ffffff !important;
   -webkit-text-fill-color:#ffffff !important;
@@ -7028,7 +7028,7 @@ body.light-mode [class*="btn"][class*="primary"]{
 }
 
 
-/* === APP VERSION 3.3.9: 同期画面 Android Chrome案内 === */
+/* === APP VERSION 3.3.10: 同期画面 Android Chrome案内 === */
 .skill-sync-card-warning{
   margin-top:8px;padding:10px 12px;border:1px solid #f59e0b;border-radius:8px;
   background:rgba(245,158,11,.12);color:#fbbf24;font-size:12px;font-weight:800;line-height:1.55;
@@ -7052,7 +7052,7 @@ body.light-mode .skill-sync-android-note strong{
 }
 
 
-/* === APP VERSION 3.3.9: スキル対象同期の説明文を通常の文字色へ === */
+/* === APP VERSION 3.3.10: スキル対象同期の説明文を通常の文字色へ === */
 .skill-sync-dialog .section-note,
 .skill-sync-dialog .skill-sync-browser-guide,
 .skill-sync-dialog .skill-sync-encoding-note{
@@ -7069,7 +7069,7 @@ body.light-mode .skill-sync-dialog .skill-sync-encoding-note{
 }
 
 
-/* === APP VERSION 3.3.9: ユーザーリストのページ番号ナビ === */
+/* === APP VERSION 3.3.10: ユーザーリストのページ番号ナビ === */
 .user-list-pager{
   display:flex;
   flex-direction:column;
@@ -7156,6 +7156,90 @@ body.light-mode .user-list-page-summary{
   }
   .user-pager-main{gap:3px}
   .user-pager-numbers{gap:3px}
+}
+
+
+/* === APP VERSION 3.3.10: ページ番号ナビの旧CSS競合を解消 === */
+#userListPager.user-list-pager{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  width:100% !important;
+  min-height:0 !important;
+  padding:10px 6px 12px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+#userListPager .user-pager-main{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+
+#userListPager .user-pager-numbers{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  min-width:0 !important;
+  flex:0 1 auto !important;
+}
+
+#userListPager button.user-pager-page,
+#userListPager button.user-pager-arrow{
+  flex:0 0 34px !important;
+  width:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  height:34px !important;
+  min-height:34px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:7px !important;
+  box-sizing:border-box !important;
+}
+
+#userListPager .user-pager-ellipsis{
+  flex:0 0 18px !important;
+  width:18px !important;
+  min-width:18px !important;
+}
+
+#userListPager .user-list-page-summary{
+  width:auto !important;
+  text-align:center !important;
+}
+
+@media (max-width:420px){
+  #userListPager.user-list-pager{
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+  #userListPager .user-pager-main,
+  #userListPager .user-pager-numbers{
+    gap:3px !important;
+  }
+  #userListPager button.user-pager-page,
+  #userListPager button.user-pager-arrow{
+    flex-basis:32px !important;
+    width:32px !important;
+    min-width:32px !important;
+    max-width:32px !important;
+    height:32px !important;
+    min-height:32px !important;
+  }
+  #userListPager .user-pager-ellipsis{
+    flex-basis:16px !important;
+    width:16px !important;
+    min-width:16px !important;
+  }
 }
 
 </style>
@@ -7382,7 +7466,7 @@ body.light-mode .user-list-page-summary{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.9</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.10</div>
     </div>
   </div>
 </div>
@@ -7648,7 +7732,7 @@ body.light-mode .user-list-page-summary{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.9</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.10</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7725,6 +7809,6 @@ body.light-mode .user-list-page-summary{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_3_9"></script>
+<script type="module" src="./js/app.js?v=3_3_10"></script>
 </body>
 </html>
