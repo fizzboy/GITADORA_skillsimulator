@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_1';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -441,6 +441,7 @@ let scoreModalScrollY = 0;
 
 let adminEnabled = false;
 let adminAccessChecked = false;
+let primaryAdminEnabled = false;
 let adminTab = 'songs';
 let adminSongs = [];
 let adminUsers = [];
@@ -2472,14 +2473,28 @@ async function checkAdminAccess() {
 
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
-  $('adminBulkDeleteArea')?.classList.toggle('hidden', !adminEnabled);
+
+  primaryAdminEnabled = false;
+  if (adminEnabled) {
+    try {
+      const { data, error } = await supabase.rpc('is_primary_admin');
+      if (error) throw error;
+      primaryAdminEnabled = data === true;
+    } catch (e) {
+      console.error('primary admin check failed:', e);
+    }
+  }
+  $('adminBulkDeleteArea')?.classList.toggle('hidden', !primaryAdminEnabled);
 
   // 保存済みライトモード設定を全ユーザーに反映。
   applyLightMode();
 }
 
 async function adminBulkDeleteCurrentScores() {
-  if (!adminEnabled) return;
+  if (!adminEnabled || !primaryAdminEnabled) {
+    await showSiteDialog('この機能はadmin専用です。', '権限エラー');
+    return;
+  }
 
   const instrumentLabel = activeInstrument === 'DM' ? 'DM' : 'GF';
   const versionLabel = activeVersion?.name || activeVersion?.code || '現在のVERSION';
