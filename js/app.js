@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_14';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_4_0';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -962,6 +962,7 @@ async function init() {
       adminAccessChecked = false;
       document.body.classList.remove('light-mode');
       $('btnAdmin').classList.add('hidden');
+      $('menuOfuseSupport')?.classList.add('hidden');
       closeAdmin();
       hide('authScreen');
       hide('appScreen');
@@ -2570,6 +2571,7 @@ async function checkAdminAccess() {
 
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
+  $('menuOfuseSupport')?.classList.toggle('hidden', !adminEnabled);
 
   primaryAdminEnabled = false;
   if (adminEnabled) {
