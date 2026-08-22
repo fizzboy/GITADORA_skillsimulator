@@ -78,6 +78,7 @@
     .opt-sra      { color: #ffedd5; border: 1px solid #c2410c; } 
     .opt-ran-plus { color: #67e8f9; border: 1px solid #0369a1; } 
     .opt-sra-plus { color: #fecdd3; border: 1px solid #be123c; } 
+    .opt-bass-mirror { color: #c4b5fd; border: 1px solid #7c3aed; width:54px; }
 
     /* HOT/OTHER/ALL管理タブ（白背景）用の見え方調整 */
     .m-card .opt-ran      { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
@@ -2167,6 +2168,15 @@ body.dm-mode #optionFieldGroup{
 }
 body.dm-mode #scoreExtraFields{
   grid-template-columns:1fr !important;
+}
+body.dm-mode.dm-bass-mirror-enabled #scoreExtraFields{
+  grid-template-columns:1fr 1fr !important;
+}
+#dmOptionFieldGroup{
+  display:none;
+}
+body.dm-mode #dmOptionFieldGroup:not(.hidden){
+  display:block;
 }
 
 /* === v21 FIX8: プルダウン視認性 / 曲登録コンパクト化 === */
@@ -7985,6 +7995,62 @@ body.light-mode :is(
   border-radius:999px;
 }
 
+/* === APP VERSION 3.9.0: DM バスミラー（管理者先行公開） === */
+.bass-mirror-check{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid #334155;
+  border-radius:8px;
+  background:#111827;
+  color:#f8fafc;
+  box-sizing:border-box;
+  cursor:pointer;
+}
+.bass-mirror-check input{
+  width:19px !important;
+  height:19px !important;
+  min-height:19px !important;
+  margin:0;
+  accent-color:#7c3aed;
+  flex:0 0 auto;
+}
+.bass-mirror-check span{
+  font-size:11px;
+  font-weight:900;
+  line-height:1.2;
+}
+.opt-bass-mirror,
+:is(#viewAllManage, #userDetailRecords) .m-card .opt-bass-mirror,
+.rate-badges .opt-bass-mirror{
+  width:auto !important;
+  min-width:54px !important;
+  padding-left:5px !important;
+  padding-right:5px !important;
+  color:#c4b5fd !important;
+  -webkit-text-fill-color:#c4b5fd !important;
+  background:rgba(76,29,149,.28) !important;
+  border:1px solid #7c3aed !important;
+}
+body.light-mode .bass-mirror-check{
+  background:#ffffff !important;
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .opt-bass-mirror,
+body.light-mode #viewAllManage .opt-bass-mirror,
+body.light-mode #userDetailRecords .opt-bass-mirror,
+body.light-mode .dc-card .opt-bass-mirror,
+body.light-mode .rate-badges .opt-bass-mirror{
+  color:#6d28d9 !important;
+  -webkit-text-fill-color:#6d28d9 !important;
+  background:#f5f3ff !important;
+  border-color:#7c3aed !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -8183,6 +8249,13 @@ body.light-mode :is(
           </select>
         </div>
       </div>
+      <div id="dmOptionFieldGroup" class="f-group hidden">
+        <label>オプション</label>
+        <label class="bass-mirror-check" for="formBassMirror">
+          <input id="formBassMirror" type="checkbox">
+          <span>バスミラー</span>
+        </label>
+      </div>
     </div>
 
     <div id="scorePrivateCommentGroup" class="f-group hidden">
@@ -8226,7 +8299,7 @@ body.light-mode :is(
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.8.0</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.9.0</div>
     </div>
   </div>
 </div>
@@ -8511,7 +8584,7 @@ body.light-mode :is(
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.8.0</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.9.0</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8588,6 +8661,6 @@ body.light-mode :is(
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_8_0"></script>
+<script type="module" src="./js/app.js?v=3_9_0"></script>
 </body>
 </html>

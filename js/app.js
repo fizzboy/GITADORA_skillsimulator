@@ -924,6 +924,12 @@ async function switchGameVersion(versionId) {
 
 function instrumentParts() { return partsForInstrument(activeInstrument); }
 function isCurrentInstrumentPart(part) { return instrumentParts().includes(String(part || '')); }
+function updateDmBassMirrorFieldVisibility() {
+  const enabled = activeInstrument === 'DM' && adminEnabled;
+  $('dmOptionFieldGroup')?.classList.toggle('hidden', !enabled);
+  document.body.classList.toggle('dm-bass-mirror-enabled', enabled);
+  if (!enabled && $('formBassMirror')) $('formBassMirror').checked = false;
+}
 function applyInstrumentUI() {
   document.querySelectorAll('[data-instrument]').forEach(b => b.classList.toggle('active', b.dataset.instrument === activeInstrument));
   $('partSelect').innerHTML = instrumentParts().map(p => `<option value="${p}">${p}</option>`).join('');
@@ -933,6 +939,7 @@ function applyInstrumentUI() {
   if (activeInstrument === 'DM' && $('formOption')) {
     $('formOption').value = 'NORMAL';
   }
+  updateDmBassMirrorFieldVisibility();
 }
 async function switchInstrument(instrument) {
   if (!['GF','DM'].includes(instrument) || instrument === activeInstrument) return;
@@ -977,6 +984,7 @@ async function init() {
     if (event === 'SIGNED_OUT' || !session) {
       adminEnabled = false;
       adminAccessChecked = false;
+      updateDmBassMirrorFieldVisibility();
       document.body.classList.remove('light-mode');
       $('btnAdmin').classList.add('hidden');
       $('menuOfuseSupport')?.classList.add('hidden');
@@ -1289,20 +1297,24 @@ function shareSkillImage() {
       const partY = y + 48;
       x.fillText(partText, partX, partY);
 
-      // GFのオプションをパート右側に表示（正規は非表示）。
-      // 画面上の [RAN] / [SRA] / [RAN+] / [SRA+] に相当する小型バッジ。
+      // GFのRAN系とDMのバスミラーをパート右側に表示。
       const optionText = String(r.play_option || 'NORMAL').toUpperCase();
-      if (!partText.endsWith('-D') && optionText !== 'NORMAL') {
+      const optionLabel = optionText === 'BASS_MIRROR' ? 'バスミラー' : optionText;
+      const showOption =
+        (partText.endsWith('-D') && optionText === 'BASS_MIRROR') ||
+        (!partText.endsWith('-D') && optionText !== 'NORMAL');
+      if (showOption) {
         const optionStyles = {
           'RAN':  { text:'#86efac', border:'#15803d', bg:'rgba(20,83,45,.34)' },
           'SRA':  { text:'#fdba74', border:'#c2410c', bg:'rgba(124,45,18,.38)' },
           'RAN+': { text:'#4ade80', border:'#166534', bg:'rgba(20,83,45,.34)' },
-          'SRA+': { text:'#fb923c', border:'#9a3412', bg:'rgba(124,45,18,.38)' }
+          'SRA+': { text:'#fb923c', border:'#9a3412', bg:'rgba(124,45,18,.38)' },
+          'BASS_MIRROR': { text:'#c4b5fd', border:'#7c3aed', bg:'rgba(76,29,149,.28)' }
         };
         const st = optionStyles[optionText] || { text:'#cbd5e1', border:'#475569', bg:'rgba(30,41,59,.5)' };
 
         x.font = '900 9px sans-serif';
-        const optionW = Math.max(34, Math.ceil(x.measureText(optionText).width) + 12);
+        const optionW = Math.max(34, Math.ceil(x.measureText(optionLabel).width) + 12);
         const optionH = 15;
         const optionX = partX + x.measureText(partText).width + 8;
         const optionY = y + 36;
@@ -1320,7 +1332,7 @@ function shareSkillImage() {
           x.fillStyle = st.text;
           x.textAlign = 'center';
           x.textBaseline = 'middle';
-          x.fillText(optionText, optionX + optionW / 2, optionY + optionH / 2 + .5);
+          x.fillText(optionLabel, optionX + optionW / 2, optionY + optionH / 2 + .5);
           x.textAlign = 'left';
           x.textBaseline = 'alphabetic';
         }
@@ -1487,8 +1499,10 @@ async function applyPreviousScoreSettings(title, part) {
 
   // 前の曲・パートから値が残らないよう、取得前に初期値へ戻す。
   $('formOption').value = 'NORMAL';
+  $('formBassMirror').checked = false;
   $('formPrivateComment').value = '';
   const initialOption = $('formOption').value;
+  const initialBassMirror = $('formBassMirror').checked;
   const initialComment = $('formPrivateComment').value;
 
   if (!cleanTitle || !cleanPart || !versionId) return;
@@ -1516,10 +1530,12 @@ async function applyPreviousScoreSettings(title, part) {
 
     const option = String(row.play_option || 'NORMAL');
     const allowedOptions = ['NORMAL','RAN','SRA','RAN+','SRA+'];
-    if ($('formOption').value === initialOption) {
-      $('formOption').value = activeInstrument === 'DM' || !allowedOptions.includes(option)
-        ? 'NORMAL'
-        : option;
+    if (activeInstrument === 'DM') {
+      if (adminEnabled && $('formBassMirror').checked === initialBassMirror) {
+        $('formBassMirror').checked = option === 'BASS_MIRROR';
+      }
+    } else if ($('formOption').value === initialOption) {
+      $('formOption').value = allowedOptions.includes(option) ? option : 'NORMAL';
     }
 
     if ($('formPrivateComment').value === initialComment) {
@@ -1647,14 +1663,17 @@ function getFcBadgeMarkup(fc, achievementRate = null) {
 }
 
 function getOptionBadgeMarkup(option) {
-  const value = option || 'NORMAL';
+  const value = String(option || 'NORMAL').toUpperCase();
   if (value === 'NORMAL') return '';
   const cls =
     value === 'RAN' ? 'opt-ran' :
     value === 'SRA' ? 'opt-sra' :
     value === 'RAN+' ? 'opt-ran-plus' :
-    value === 'SRA+' ? 'opt-sra-plus' : '';
-  return `<span class="opt-badge ${cls}">${esc(value)}</span>`;
+    value === 'SRA+' ? 'opt-sra-plus' :
+    value === 'BASS_MIRROR' ? 'opt-bass-mirror' : '';
+  if (!cls) return '';
+  const label = value === 'BASS_MIRROR' ? 'バスミラー' : value;
+  return `<span class="opt-badge ${cls}">${esc(label)}</span>`;
 }
 
 function getHotTagMarkup(isHot) {
@@ -1815,6 +1834,11 @@ function openScoreModal(score = null) {
   $('formOption').value = activeInstrument === 'DM'
     ? 'NORMAL'
     : (score?.play_option || 'NORMAL');
+  updateDmBassMirrorFieldVisibility();
+  $('formBassMirror').checked =
+    activeInstrument === 'DM' &&
+    adminEnabled &&
+    score?.play_option === 'BASS_MIRROR';
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
 
   // コメントは本人だけが入力・参照できる非公開項目。
@@ -1909,6 +1933,7 @@ async function suggestSongs() {
   if (!editingScoreId) {
     previousScoreSettingsRequestSeq++;
     $('formOption').value = 'NORMAL';
+    $('formBassMirror').checked = false;
     $('formPrivateComment').value = '';
   }
   $('formLevel').value = '';
@@ -2107,7 +2132,16 @@ async function submitScore() {
 
   const numericRate = Number(rate);
   const autoFc = numericRate === 100 ? 'EXC' : $('formFc').value;
-  const playOption = activeInstrument === 'DM' ? 'NORMAL' : $('formOption').value;
+  const editingScore = editingScoreId
+    ? scores.find(row => row.score_id === editingScoreId)
+    : null;
+  const playOption = activeInstrument === 'DM'
+    ? (
+        adminEnabled
+          ? ($('formBassMirror').checked ? 'BASS_MIRROR' : 'NORMAL')
+          : (editingScore?.play_option === 'BASS_MIRROR' ? 'BASS_MIRROR' : 'NORMAL')
+      )
+    : $('formOption').value;
 
   await saveScore({
     scoreId: editingScoreId,
@@ -2557,6 +2591,7 @@ function getOptionDisplayName(option) {
     case 'SRA': return 'SRA';
     case 'RAN+': return 'RAN+';
     case 'SRA+': return 'SRA+';
+    case 'BASS_MIRROR': return 'バスミラー';
     default: return String(option || '');
   }
 }
@@ -2734,6 +2769,7 @@ async function checkAdminAccess() {
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
   $('menuOfuseSupport')?.classList.remove('hidden');
   $('scorePrivateCommentGroup')?.classList.remove('hidden');
+  updateDmBassMirrorFieldVisibility();
 
   primaryAdminEnabled = false;
   if (adminEnabled) {
