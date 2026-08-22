@@ -236,6 +236,22 @@ function captureSkillSyncHash() {
 
 async function importSkillSyncRecords(payload) {
   if (skillSyncInProgress) return;
+  $('skillSyncMask').style.display = 'flex';
+
+  const payloadSlug = String(payload?.eamusement_slug || '').trim();
+  if (payloadSlug) {
+    const payloadVersion = gameVersions.find(version => version.eamusement_slug === payloadSlug);
+    if (!payloadVersion) {
+      setSkillSyncStatus('取得したGITADORAバージョンは、このアプリにまだ登録されていません。', 'error');
+      return;
+    }
+
+    // 公式サイト側で取得したVERSIONを正とし、保存先の取り違えを防ぐ。
+    if (payloadVersion.id !== activeVersionId) {
+      await switchGameVersion(payloadVersion.id);
+      $('versionSelect').value = payloadVersion.id;
+    }
+  }
 
   const records = Array.isArray(payload?.records) ? payload.records : [];
   if (!records.length) {
@@ -274,8 +290,8 @@ async function importSkillSyncRecords(payload) {
   try {
     setSkillSyncStatus(`同期中… ${rows.length}件を一括処理しています`, 'running');
 
-    // v20: 100件をブラウザから1件ずつ保存せず、DB側RPCで一括処理。
-    // ネットワーク往復を大幅に減らし、FC/オプションは既存値を維持する。
+    // DB側RPCで一括処理。同一VERSIONの既存FC/オプションは維持し、
+    // 新VERSION初回登録では直前VERSIONのオプション/コメントを引き継ぐ。
     const { data, error } = await supabase.rpc('sync_skill_records', {
       p_records: rows,
       p_version_id: activeVersionId
@@ -1461,6 +1477,62 @@ async function savePrivateScoreComment({ scoreId = null, songId = null, requestI
   if (error) throw error;
 }
 
+let previousScoreSettingsRequestSeq = 0;
+
+async function applyPreviousScoreSettings(title, part) {
+  if (editingScoreId) return;
+
+  const requestSeq = ++previousScoreSettingsRequestSeq;
+  const versionId = activeVersionId;
+  const cleanTitle = String(title || '').trim();
+  const cleanPart = String(part || '');
+
+  // 前の曲・パートから値が残らないよう、取得前に初期値へ戻す。
+  $('formOption').value = 'NORMAL';
+  if (adminEnabled) $('formPrivateComment').value = '';
+  const initialOption = $('formOption').value;
+  const initialComment = $('formPrivateComment').value;
+
+  if (!cleanTitle || !cleanPart || !versionId) return;
+
+  try {
+    const { data, error } = await supabase.rpc('get_my_previous_score_settings', {
+      p_title: cleanTitle,
+      p_part: cleanPart,
+      p_version_id: versionId
+    });
+    if (error) throw error;
+
+    if (
+      requestSeq !== previousScoreSettingsRequestSeq ||
+      editingScoreId ||
+      versionId !== activeVersionId ||
+      cleanTitle !== $('formTitle').value.trim() ||
+      cleanPart !== $('partSelect').value
+    ) {
+      return;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return;
+
+    const option = String(row.play_option || 'NORMAL');
+    const allowedOptions = ['NORMAL','RAN','SRA','RAN+','SRA+'];
+    if ($('formOption').value === initialOption) {
+      $('formOption').value = activeInstrument === 'DM' || !allowedOptions.includes(option)
+        ? 'NORMAL'
+        : option;
+    }
+
+    if (adminEnabled && $('formPrivateComment').value === initialComment) {
+      $('formPrivateComment').value = String(row.private_comment || '').slice(0, 100);
+    }
+  } catch (error) {
+    // SQL適用前でも登録自体は止めず、引き継ぎだけを無効にする。
+    console.warn('前バージョン設定の取得失敗:', error);
+  }
+}
+
 async function loadScores() {
   try {
     scores = await getMyScores(activeVersionId);
@@ -1725,6 +1797,7 @@ function switchTab(tab) {
 }
 
 function openScoreModal(score = null) {
+  previousScoreSettingsRequestSeq++;
   editingScoreId = score?.score_id || null;
   selectedSong = score?.song_id ? {
     id: score.song_id,
@@ -1778,6 +1851,7 @@ function openScoreModal(score = null) {
 }
 
 function closeModal() {
+  previousScoreSettingsRequestSeq++;
   // iOS Safariではキーボードを閉じた直後にVisualViewportと
   // ページレイアウトの再計算がずれることがあるため、
   // blur → body固定解除 → 再描画 → scroll復元の順で処理する。
@@ -1834,6 +1908,11 @@ async function suggestSongs() {
   const instrument = activeInstrument;
 
   selectedSong = null;
+  if (!editingScoreId) {
+    previousScoreSettingsRequestSeq++;
+    $('formOption').value = 'NORMAL';
+    if (adminEnabled) $('formPrivateComment').value = '';
+  }
   $('formLevel').value = '';
   $('formLevel').readOnly = true;
   hide('masterRequestArea');
@@ -1954,6 +2033,7 @@ async function refreshSelectedPart() {
     setMissingMasterState();
   }
 
+  await applyPreviousScoreSettings(title, part);
   updateSkillPreview();
 }
 
@@ -3308,8 +3388,8 @@ $('formTitle').addEventListener('compositionend', () => {
 $('partSelect').addEventListener('change', async () => {
   ++songSuggestRequestSeq;
   clearTimeout(songSuggestTimer);
-  await refreshSelectedPart();
   if ($('formTitle').value.trim()) await suggestSongs();
+  await refreshSelectedPart();
 });
 $('formLevel').addEventListener('input', updateSkillPreview);
 $('formRate').addEventListener('input', updateSkillPreview);
