@@ -7288,7 +7288,7 @@ body.light-mode .request-title-edit{
 
     <div class="skill-sync-note">
       <strong>実行前にe-amusementへログインしてください。</strong><br>
-      「同期ブックマーク」を使ってスキル対象を取得します。初回だけ登録すれば、次回以降は同じブックマークを使えます。同期処理はサイト側から自動で最新版を読み込みます。
+      「同期用ブックマーク」を使ってスキル対象を取得します。2回目以降も同じブックマークを使えます。
     </div>
 
     <div id="skillSyncStatus" class="skill-sync-status skill-sync-status-top">待機中</div>
@@ -7296,7 +7296,7 @@ body.light-mode .request-title-edit{
     <div class="skill-sync-step">
       <span class="skill-sync-step-no">1</span>
       <div>
-        <strong>同期ブックマークを登録</strong>
+        <strong>同期用ブックマークの作成</strong>
         <div id="skillSyncBrowserGuide" class="section-note skill-sync-browser-guide"></div>
         <div class="skill-sync-actions">
           <button id="btnCopySkillSync" type="button">コードをコピー</button>
@@ -7308,8 +7308,11 @@ body.light-mode .request-title-edit{
       <span class="skill-sync-step-no">2</span>
       <div>
         <strong>e-amusementを開く</strong>
-        <div class="section-note">開いたページでログイン状態を確認し、作成した同期用ブックマークを実行してください。</div>
-        <button id="btnOpenEamusement" type="button" class="btn-open-eamusement">e-amusementを開く</button>
+        <div class="section-note">
+          開いたページでログイン状態を確認し、そのページを開いたまま、作成した同期用ブックマークを開きます。<br>
+          ⚠この時、複数カードがある場合、参照するカードが合っているかご確認ください。
+        </div>
+        <button id="btnOpenEamusement" type="button" class="btn-open-eamusement">GITADORA公式サイトを開く</button>
       </div>
     </div>
 
@@ -7317,7 +7320,7 @@ body.light-mode .request-title-edit{
       <span class="skill-sync-step-no">3</span>
       <div>
         <strong>自動取得・登録</strong>
-        <div class="section-note">GF HOT / GF OTHER / DM HOT / DM OTHER を各25件取得し、このサイトへ戻して登録します。既存のFC・オプションは上書きしません。</div>
+        <div class="section-note">スキル対象を取得し、当サイトに戻ってきます。FCマークやオプションは手動入力です。</div>
       </div>
     </div>
 
@@ -7368,7 +7371,7 @@ body.light-mode .request-title-edit{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX162</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX163</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7445,6 +7448,6 @@ body.light-mode .request-title-edit{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_162"></script>
+<script type="module" src="./js/app.js?v=21_163"></script>
 </body>
 </html>
