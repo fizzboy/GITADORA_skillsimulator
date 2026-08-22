@@ -2563,7 +2563,17 @@ async function loadAdminRequests() {
     $('adminBody').innerHTML = adminRequests.map(req => `
       <div class="admin-card">
         <div class="admin-card-top">
-          <div class="admin-card-title">${esc(req.title)}</div>
+          ${req.request_type === 'level_correction'
+            ? `<div class="admin-card-title">${esc(req.title)}</div>`
+            : `<div class="admin-request-title-wrap">
+                <label for="requestTitle_${req.id}">承認する曲名（修正可）</label>
+                <input id="requestTitle_${req.id}"
+                  class="request-title-edit"
+                  type="text"
+                  autocomplete="off"
+                  maxlength="255"
+                  value="${esc(req.title)}">
+               </div>`}
           <span class="pending-badge">${req.request_type === 'level_correction' ? '難易度修正' : '新規曲'}</span>
         </div>
         <div class="admin-card-meta">
@@ -3529,15 +3539,37 @@ document.addEventListener('click', async e => {
   }
 
   if (adminApproveRequest) {
-    if (!await showSiteConfirm('この登録依頼をOTHERとして承認しますか？', '登録依頼の承認', '承認する')) return;
     try {
       const requestId = adminApproveRequest.dataset.adminApproveRequest;
+      const req = adminRequests.find(r => r.id === requestId);
       const level = $(`requestLevel_${requestId}`).value;
+      const title = req?.request_type === 'level_correction'
+        ? req.title
+        : ($(`requestTitle_${requestId}`)?.value || '').trim();
+
       const numericLevel = Number(level);
+      if (!title) throw new Error('承認する曲名を入力してください。');
       if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 9.99) {
         throw new Error('難易度は0.01～9.99の範囲で入力してください。');
       }
-      await approveSongRequest(requestId, level, false);
+
+      const changed = Boolean(req && title !== req.title);
+      const confirmText = changed
+        ? `曲名を「${req.title}」から「${title}」へ修正して、OTHERとして承認しますか？`
+        : 'この登録依頼をOTHERとして承認しますか？';
+      if (!await showSiteConfirm(confirmText, '登録依頼の承認', '承認する')) return;
+
+      if (req?.request_type === 'level_correction') {
+        await approveSongRequest(requestId, level, false);
+      } else {
+        const { error } = await supabase.rpc('approve_song_request_with_title', {
+          p_request_id: requestId,
+          p_title: title,
+          p_level: numericLevel,
+          p_is_hot: false
+        });
+        if (error) throw error;
+      }
       await loadAdminRequests();
     } catch (e) {
       await showSiteDialog('承認に失敗しました: ' + e.message, 'エラー');
@@ -3545,15 +3577,37 @@ document.addEventListener('click', async e => {
   }
 
   if (adminHotRequest) {
-    if (!await showSiteConfirm('この登録依頼をHOT曲として承認しますか？', 'HOT承認', '承認する')) return;
     try {
       const requestId = adminHotRequest.dataset.adminHotRequest;
+      const req = adminRequests.find(r => r.id === requestId);
       const level = $(`requestLevel_${requestId}`).value;
+      const title = req?.request_type === 'level_correction'
+        ? req.title
+        : ($(`requestTitle_${requestId}`)?.value || '').trim();
+
       const numericLevel = Number(level);
+      if (!title) throw new Error('承認する曲名を入力してください。');
       if (!Number.isFinite(numericLevel) || numericLevel <= 0 || numericLevel > 9.99) {
         throw new Error('難易度は0.01～9.99の範囲で入力してください。');
       }
-      await approveSongRequest(requestId, level, true);
+
+      const changed = Boolean(req && title !== req.title);
+      const confirmText = changed
+        ? `曲名を「${req.title}」から「${title}」へ修正して、HOT曲として承認しますか？`
+        : 'この登録依頼をHOT曲として承認しますか？';
+      if (!await showSiteConfirm(confirmText, 'HOT承認', '承認する')) return;
+
+      if (req?.request_type === 'level_correction') {
+        await approveSongRequest(requestId, level, true);
+      } else {
+        const { error } = await supabase.rpc('approve_song_request_with_title', {
+          p_request_id: requestId,
+          p_title: title,
+          p_level: numericLevel,
+          p_is_hot: true
+        });
+        if (error) throw error;
+      }
       await loadAdminRequests();
     } catch (e) {
       await showSiteDialog('HOT承認に失敗しました: ' + e.message, 'エラー');
