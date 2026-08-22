@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_8';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_9';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -2025,6 +2025,51 @@ async function loadUsers({ resetPage = false } = {}) {
   }
 }
 
+function buildUserListPager(totalPages) {
+  if (totalPages <= 1) return '';
+
+  const current = userListPage + 1;
+  const items = [];
+
+  // 先頭・末尾を残しつつ、現在ページ周辺を表示。
+  // 例: ◀ 1 2 3 … 13 ▶ / ◀ 1 … 6 7 8 … 13 ▶
+  const pages = new Set([1, totalPages]);
+  for (let p = current - 1; p <= current + 1; p++) {
+    if (p >= 1 && p <= totalPages) pages.add(p);
+  }
+  if (current <= 3) {
+    [1,2,3,4].forEach(p => { if (p <= totalPages) pages.add(p); });
+  }
+  if (current >= totalPages - 2) {
+    [totalPages-3,totalPages-2,totalPages-1,totalPages].forEach(p => {
+      if (p >= 1) pages.add(p);
+    });
+  }
+
+  const sorted = [...pages].sort((a,b) => a-b);
+  let previous = 0;
+  for (const page of sorted) {
+    if (previous && page - previous > 1) {
+      items.push('<span class="user-pager-ellipsis" aria-hidden="true">…</span>');
+    }
+    items.push(
+      `<button type="button"
+        class="user-pager-page ${page === current ? 'active' : ''}"
+        data-user-page-number="${page - 1}"
+        ${page === current ? 'aria-current="page"' : ''}>${page}</button>`
+    );
+    previous = page;
+  }
+
+  return `
+    <button type="button" class="user-pager-arrow" data-user-page="prev"
+      ${userListPage <= 0 ? 'disabled' : ''} aria-label="前のページ">◀</button>
+    <div class="user-pager-numbers">${items.join('')}</div>
+    <button type="button" class="user-pager-arrow" data-user-page="next"
+      ${userListPage + 1 >= totalPages ? 'disabled' : ''} aria-label="次のページ">▶</button>
+  `;
+}
+
 function renderUsers() {
   const { key, dir } = userListSort;
   const sign = dir === 'asc' ? 1 : -1;
@@ -2091,9 +2136,8 @@ function renderUsers() {
         : '';
     } else {
       pager.innerHTML = `
-        <button type="button" data-user-page="prev" ${userListPage <= 0 ? 'disabled' : ''}>← 前へ</button>
-        <span>${userListPage + 1} / ${totalPages}ページ　${users.length}件</span>
-        <button type="button" data-user-page="next" ${userListPage + 1 >= totalPages ? 'disabled' : ''}>次へ →</button>
+        <div class="user-pager-main">${buildUserListPager(totalPages)}</div>
+        <div class="user-list-page-summary">${users.length}件</div>
       `;
     }
   }
@@ -3459,14 +3503,27 @@ document.querySelector('.user-list-header')?.addEventListener('click', e => {
   renderUsers();
 });
 $('userListPager')?.addEventListener('click', e => {
-  const button = e.target.closest('[data-user-page]');
-  if (!button || button.disabled) return;
+  const numberButton = e.target.closest('[data-user-page-number]');
+  const navButton = e.target.closest('[data-user-page]');
 
-  if (button.dataset.userPage === 'prev' && userListPage > 0) {
-    userListPage--;
-  } else if (button.dataset.userPage === 'next') {
+  if (numberButton && !numberButton.disabled) {
+    const nextPage = Number(numberButton.dataset.userPageNumber);
     const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
-    if (userListPage + 1 < totalPages) userListPage++;
+    if (Number.isInteger(nextPage) && nextPage >= 0 && nextPage < totalPages) {
+      userListPage = nextPage;
+    } else {
+      return;
+    }
+  } else if (navButton && !navButton.disabled) {
+    if (navButton.dataset.userPage === 'prev' && userListPage > 0) {
+      userListPage--;
+    } else if (navButton.dataset.userPage === 'next') {
+      const totalPages = Math.max(1, Math.ceil(publicUsers.length / USER_LIST_PAGE_SIZE));
+      if (userListPage + 1 < totalPages) userListPage++;
+      else return;
+    } else {
+      return;
+    }
   } else {
     return;
   }
