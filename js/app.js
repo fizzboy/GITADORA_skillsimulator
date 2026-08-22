@@ -200,24 +200,6 @@ const MASTER_PARTS = adminApi.MASTER_PARTS ?? [
   'MAS-G','MAS-B','MAS-D','EXT-G','EXT-B','EXT-D','ADV-G','ADV-B','ADV-D','BSC-G','BSC-B','BSC-D'
 ];
 
-
-async function checkRequestAlreadyRegistered(requestId, title) {
-  const { data, error } = await supabase.rpc('check_song_request_already_registered', {
-    p_request_id: requestId,
-    p_title: String(title || '').trim()
-  });
-  if (error) throw error;
-  return Boolean(data);
-}
-
-async function deletePendingSongRequest(requestId) {
-  const { data, error } = await supabase.rpc('delete_pending_song_request', {
-    p_request_id: requestId
-  });
-  if (error) throw error;
-  return data;
-}
-
 const EAMUSEMENT_ORIGIN = 'https://p.eagate.573.jp';
 function getEamusementSlug() {
   return activeVersion?.eamusement_slug || 'gitadora_galaxywave_delta';
@@ -441,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_157';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_163';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -3052,10 +3034,8 @@ function renderSkillSyncBrowserGuide() {
   if (!guide) return;
 
   guide.innerHTML =
-    '<strong>同期ブックマークの設定</strong><br>' +
-    '①「コードをコピー」→ 作成した同期用ブックマークのURL欄へ貼り付け<br>' +
-    '② e-amusementを開いてログイン状態を確認<br>' +
-    '③ 作成した同期用ブックマークを実行';
+    '1. 何でもいいので適当にブックマークを作ります。<br>' +
+    '2. 「コードをコピー」を押し、1で作成したブックマークのURLの欄に貼り付けます。ブックマークの名前は分かりやすいように好きな文字でOKです👌';
 }
 
 function openSkillSyncDialog() {
@@ -3572,19 +3552,6 @@ document.addEventListener('click', async e => {
       }
 
       const changed = Boolean(req && title !== req.title);
-
-      if (req?.request_type !== 'level_correction' && await checkRequestAlreadyRegistered(requestId, title)) {
-        const shouldDelete = await showSiteConfirm(
-          '正式データを既に登録済みなので申請を削除しますか？',
-          '登録済みデータを確認',
-          '削除する'
-        );
-        if (!shouldDelete) return;
-        await deletePendingSongRequest(requestId);
-        await loadAdminRequests();
-        return;
-      }
-
       const confirmText = changed
         ? `曲名を「${req.title}」から「${title}」へ修正して、OTHERとして承認しますか？`
         : 'この登録依頼をOTHERとして承認しますか？';
@@ -3623,19 +3590,6 @@ document.addEventListener('click', async e => {
       }
 
       const changed = Boolean(req && title !== req.title);
-
-      if (req?.request_type !== 'level_correction' && await checkRequestAlreadyRegistered(requestId, title)) {
-        const shouldDelete = await showSiteConfirm(
-          '正式データを既に登録済みなので申請を削除しますか？',
-          '登録済みデータを確認',
-          '削除する'
-        );
-        if (!shouldDelete) return;
-        await deletePendingSongRequest(requestId);
-        await loadAdminRequests();
-        return;
-      }
-
       const confirmText = changed
         ? `曲名を「${req.title}」から「${title}」へ修正して、HOT曲として承認しますか？`
         : 'この登録依頼をHOT曲として承認しますか？';
