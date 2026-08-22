@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_3';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_3_4';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -891,13 +891,14 @@ async function switchGameVersion(versionId) {
   editingScoreId = null;
   viewedUserScores = [];
   publicUsers = [];
+  userListPage = 0;
 
   closeModal();
   closeRateComparison();
   closeUserDetail();
 
   await loadScores();
-  if (activeTabName === 'USERS') await loadUsers();
+  if (activeTabName === 'USERS') await loadUsers({ resetPage: true });
   if (adminEnabled && adminTab === 'songs' && $('adminModal').style.display !== 'none') {
     adminSongPage = 0;
     await loadAdminSongs();
@@ -926,7 +927,7 @@ async function switchInstrument(instrument) {
   applyInstrumentUI();
   closeModal();
   render();
-  if (activeTabName === 'USERS') await loadUsers();
+  if (activeTabName === 'USERS') await loadUsers({ resetPage: true });
 
   if (viewedUserId && $('userDetailPage').style.display !== 'none') {
     await openUserDetail(viewedUserId, viewedUserName);
@@ -1990,12 +1991,36 @@ function formatDateOnly(value) {
   });
 }
 
-async function loadUsers() {
+let userListLoadSeq = 0;
+
+async function loadUsers({ resetPage = false } = {}) {
+  const requestSeq = ++userListLoadSeq;
+  const keyword = $('userSearch')?.value || '';
+  const instrument = activeInstrument;
+  const versionId = activeVersionId;
+
   try {
-    publicUsers = await listUserSummaries($('userSearch')?.value || '', activeInstrument, activeVersionId);
-    userListPage = 0;
+    const rows = await listUserSummaries(keyword, instrument, versionId);
+
+    // 古い再取得結果が後から返ってきても現在の表示を巻き戻さない。
+    if (
+      requestSeq !== userListLoadSeq ||
+      instrument !== activeInstrument ||
+      versionId !== activeVersionId ||
+      keyword !== ($('userSearch')?.value || '')
+    ) {
+      return;
+    }
+
+    publicUsers = rows;
+
+    // 検索・VERSION変更・楽器変更など、明示的な条件変更時だけ1ページ目へ。
+    // focus/visibilitychange等の自動再取得では現在ページを維持する。
+    if (resetPage) userListPage = 0;
+
     renderUsers();
   } catch (e) {
+    if (requestSeq !== userListLoadSeq) return;
     $('userList').innerHTML = `<div class="empty-state">ユーザーリストの取得に失敗しました: ${esc(e.message)}</div>`;
   }
 }
@@ -3405,7 +3430,7 @@ $('btnAdminPasswordSave').addEventListener('click', async () => {
 let userSearchTimer = null;
 $('userSearch').addEventListener('input', () => {
   clearTimeout(userSearchTimer);
-  userSearchTimer = setTimeout(loadUsers, 250);
+  userSearchTimer = setTimeout(() => loadUsers({ resetPage: true }), 250);
 });
 
 document.querySelector('.user-list-header')?.addEventListener('click', e => {
