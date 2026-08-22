@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.2.6 ===
+/* === APP VERSION 3.2.7 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.2.6: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.2.7: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6951,6 +6951,23 @@ body:has(#viewUsers:not(.hidden)) .p-header{
 
 body.light-mode #viewUsers .user-list-sticky{
   box-shadow:0 5px 10px rgba(15,23,42,.18) !important;
+}
+
+
+/* === APP VERSION 3.2.7: モーダル表示中の背面スクロール禁止 === */
+body.global-modal-scroll-lock{
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+  touch-action:none;
+}
+
+/* モーダル内部のスクロールは維持 */
+.site-dialog-mask > *,
+.mypage-modal > *,
+.admin-form-mask > *,
+.admin-modal,
+.mdl-mask > *{
+  touch-action:pan-y;
 }
 
 </style>
@@ -7172,7 +7189,7 @@ body.light-mode #viewUsers .user-list-sticky{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.2.6</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.2.7</div>
     </div>
   </div>
 </div>
@@ -7429,7 +7446,7 @@ body.light-mode #viewUsers .user-list-sticky{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX164</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.2.7</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7506,6 +7523,6 @@ body.light-mode #viewUsers .user-list-sticky{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=21_163"></script>
+<script type="module" src="./js/app.js?v=3_2_7"></script>
 </body>
 </html>
