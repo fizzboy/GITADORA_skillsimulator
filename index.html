@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.3.4 ===
+/* === APP VERSION 3.3.5 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -6938,7 +6938,7 @@ body.light-mode .app-code-version{
 }
 
 
-/* === APP VERSION 3.3.4: ユーザーリスト固定エリアの影を他タブと統一 === */
+/* === APP VERSION 3.3.5: ユーザーリスト固定エリアの影を他タブと統一 === */
 /* ユーザーリスト表示中は、通常の固定ヘッダー下の影を消す */
 body:has(#viewUsers:not(.hidden)) .p-header{
   box-shadow:none !important;
@@ -6954,7 +6954,7 @@ body.light-mode #viewUsers .user-list-sticky{
 }
 
 
-/* === APP VERSION 3.3.4: モーダル表示中の背面スクロール禁止 === */
+/* === APP VERSION 3.3.5: モーダル表示中の背面スクロール禁止 === */
 body.global-modal-scroll-lock{
   overflow:hidden !important;
   overscroll-behavior:none !important;
@@ -6971,7 +6971,7 @@ body.global-modal-scroll-lock{
 }
 
 
-/* === APP VERSION 3.3.4: 管理者用 登録曲一括削除 === */
+/* === APP VERSION 3.3.5: 管理者用 登録曲一括削除 === */
 .admin-bulk-delete-area{
   display:flex;
   justify-content:flex-end;
@@ -6998,6 +6998,33 @@ body.light-mode .admin-bulk-delete-btn{
   color:#b91c1c !important;
   -webkit-text-fill-color:#b91c1c !important;
   border-color:#ef4444 !important;
+}
+
+
+/* === APP VERSION 3.3.5: ライトモードの青背景は白文字で統一 === */
+body.light-mode .skill-sync-dialog .skill-sync-step-no{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+body.light-mode .skill-sync-encoding-note{
+  margin-top:6px;
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+
+/* ライトモードで青系の主要アクション背景を使う要素は白文字に統一 */
+body.light-mode .p-tab-btn.active,
+body.light-mode .btn-add-inline,
+body.light-mode .btn-submit,
+body.light-mode .site-dialog-ok,
+body.light-mode .menu-primary-btn,
+body.light-mode .mypage-action-btn,
+body.light-mode .feature-save-btn,
+body.light-mode .feedback-submit-btn,
+body.light-mode [class*="primary"][class*="btn"],
+body.light-mode [class*="btn"][class*="primary"]{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
 }
 
 </style>
@@ -7224,7 +7251,7 @@ body.light-mode .admin-bulk-delete-btn{
     <div class="app-menu-version">
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.4</div>
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.3.5</div>
     </div>
   </div>
 </div>
@@ -7408,6 +7435,9 @@ body.light-mode .admin-bulk-delete-btn{
       <div>
         <strong>同期用ブックマークの作成</strong>
         <div id="skillSyncBrowserGuide" class="section-note skill-sync-browser-guide"></div>
+        <div class="section-note skill-sync-encoding-note">
+          ※保存後、URL内の一部記号が「%○○」の形式に変換される場合がありますが、正常です。
+        </div>
         <div class="skill-sync-actions">
           <button id="btnCopySkillSync" type="button">コードをコピー</button>
         </div>
@@ -7481,7 +7511,7 @@ body.light-mode .admin-bulk-delete-btn{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.4</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.3.5</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -7558,6 +7588,6 @@ body.light-mode .admin-bulk-delete-btn{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_3_4"></script>
+<script type="module" src="./js/app.js?v=3_3_5"></script>
 </body>
 </html>
