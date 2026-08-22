@@ -6896,6 +6896,30 @@ body.light-mode .request-title-edit{
   -webkit-text-fill-color:#111827!important;border-color:#94a3b8!important
 }
 
+
+/* === FIX164: ライトモード ユーザーリストページ切替 === */
+body.light-mode .user-list-pager {
+  color:#64748b !important;
+}
+body.light-mode .user-list-pager button {
+  border:1px solid #94a3b8 !important;
+  background:#f8fafc !important;
+  color:#111827 !important;
+  box-shadow:none !important;
+}
+body.light-mode .user-list-pager button:not(:disabled):active {
+  background:#e2e8f0 !important;
+}
+body.light-mode .user-list-pager button:disabled {
+  background:#e2e8f0 !important;
+  color:#64748b !important;
+  border-color:#cbd5e1 !important;
+  opacity:1 !important;
+}
+body.light-mode .user-list-page-summary {
+  color:#64748b !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7371,7 +7395,7 @@ body.light-mode .request-title-edit{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX163</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: FIX164</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
