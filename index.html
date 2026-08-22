@@ -6921,7 +6921,7 @@ body.light-mode .user-list-page-summary {
 }
 
 
-/* === APP VERSION 3.4.0 ===
+/* === APP VERSION 3.4.1 ===
    表記: 大きな機能改善.小さな機能改善.修正 */
 .app-code-version{
   margin-top:7px;
@@ -7463,6 +7463,114 @@ body.light-mode .menu-ofuse-support-arrow{
   -webkit-text-fill-color:#2563eb !important;
 }
 
+
+/* === APP VERSION 3.4.1: MENUスクロール / VERSION幅 / OFUSEモーダル === */
+.app-menu-sheet{
+  max-height:calc(100dvh - 24px) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+.app-menu-version{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+.app-menu-version .version-select,
+#versionSelect{
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+.menu-version-support-separator{
+  width:100%;
+  height:1px;
+  margin:10px 0 9px;
+  background:#475569;
+}
+body.light-mode .menu-version-support-separator{
+  background:#94a3b8 !important;
+}
+.menu-ofuse-support{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  padding:8px 0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-align:left;
+  color:#f8fafc;
+}
+.menu-ofuse-support.hidden{ display:none !important; }
+.menu-ofuse-support-text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.menu-ofuse-support-text strong{
+  font-size:13px !important;
+  font-weight:900;
+}
+.menu-ofuse-support-text small{
+  font-size:9px !important;
+  color:#94a3b8;
+}
+.menu-ofuse-support-arrow{
+  font-size:18px !important;
+  color:#60a5fa;
+}
+body.light-mode .menu-ofuse-support{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+  background:transparent !important;
+}
+body.light-mode .menu-ofuse-support-text small{
+  color:#64748b !important;
+  -webkit-text-fill-color:#64748b !important;
+}
+
+.support-dialog{
+  width:min(92vw,520px);
+  max-height:calc(100dvh - 28px);
+  overflow-y:auto;
+  border:1px solid #475569;
+  border-radius:12px;
+  background:#111827;
+  color:#f8fafc;
+}
+.support-dialog-body{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:16px 18px 18px;
+  font-size:13px;
+  line-height:1.7;
+}
+.support-ofuse-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  margin-top:4px;
+  border-radius:9px;
+  background:#2563eb;
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  text-decoration:none;
+  font-weight:900;
+}
+body.light-mode .support-dialog{
+  background:#f3f4f6 !important;
+  color:#111827 !important;
+  border-color:#94a3b8 !important;
+}
+body.light-mode .support-dialog-body{
+  color:#111827 !important;
+  -webkit-text-fill-color:#111827 !important;
+}
+
 </style>
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
@@ -7688,19 +7796,37 @@ body.light-mode .menu-ofuse-support-arrow{
       <label>VERSION</label>
       <select id="versionSelect" class="version-select" aria-label="GITADORAバージョン"></select>
 
-      <a id="menuOfuseSupport"
-         class="menu-ofuse-support hidden"
+      <div class="menu-version-support-separator" aria-hidden="true"></div>
+
+      <button id="menuOfuseSupport"
+              type="button"
+              class="menu-ofuse-support hidden">
+        <span class="menu-ofuse-support-text">
+          <strong>☕ 運営を支援する</strong>
+          <small>サイトの維持・運営費への任意支援</small>
+        </span>
+        <span class="menu-ofuse-support-arrow">›</span>
+      </button>
+
+      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.1</div>
+    </div>
+  </div>
+</div>
+
+<div id="supportMask" class="site-dialog-mask">
+  <div class="support-dialog">
+    <div class="app-menu-head">
+      <strong>運営を支援する</strong>
+      <button id="btnCloseSupport" type="button" class="menu-back-btn">戻る</button>
+    </div>
+    <div class="support-dialog-body">
+      <p>GITADORA Skill Simulatorは無料で公開・運営しています。</p>
+      <p>サイトの維持・運営費として、任意でご支援いただけると助かります。</p>
+      <p>支援の有無によって利用できる機能が変わることはありません。</p>
+      <a class="support-ofuse-button"
          href="https://ofuse.me/gitadorafc"
          target="_blank"
-         rel="noopener noreferrer">
-        <span class="menu-ofuse-support-text">
-          <strong>運営を支援する</strong>
-          <small>OFUSEを開きます</small>
-        </span>
-        <span class="menu-ofuse-support-arrow">↗</span>
-      </a>
-
-      <div class="app-code-version" aria-label="アプリバージョン">APP VERSION 3.4.0</div>
+         rel="noopener noreferrer">OFUSEで支援する</a>
     </div>
   </div>
 </div>
@@ -7966,7 +8092,7 @@ body.light-mode .menu-ofuse-support-arrow{
 <div id="adminModal" class="admin-modal">
   <div class="admin-header">
     <div class="admin-title-row">
-      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.0</div></div>
+      <div class="admin-title-wrap"><div class="admin-title">管理者画面</div><div class="admin-code-version">CODE VER: 3.4.1</div></div>
       <button id="btnCloseAdmin" class="admin-close">閉じる</button>
     </div>
     <div class="admin-tabs">
@@ -8043,6 +8169,6 @@ body.light-mode .menu-ofuse-support-arrow{
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=3_4_0"></script>
+<script type="module" src="./js/app.js?v=3_4_1"></script>
 </body>
 </html>
