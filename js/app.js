@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_5_0';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=3_6_0';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -1413,9 +1413,65 @@ function shareSkillImage() {
   },'image/png');
 }
 
+async function getMyPrivateScoreComments() {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) return new Map();
+
+  const { data, error } = await supabase
+    .from('user_scores')
+    .select('id,private_comment')
+    .eq('user_id', userData.user.id);
+
+  if (error) {
+    // SQL未適用時でもアプリ全体を止めず、コメント機能だけ無効にする。
+    console.warn('曲コメント取得失敗:', error);
+    return new Map();
+  }
+
+  return new Map((data ?? []).map(row => [row.id, row.private_comment || '']));
+}
+
+async function savePrivateScoreComment({ scoreId = null, songId = null, requestId = null, comment = '' }) {
+  if (!adminEnabled) return;
+
+  const normalized = String(comment || '').trim();
+  if (normalized.length > 100) {
+    throw new Error('コメントは100文字以内で入力してください。');
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error('ログイン情報を取得できません。');
+
+  let query = supabase
+    .from('user_scores')
+    .update({ private_comment: normalized || null })
+    .eq('user_id', userData.user.id);
+
+  if (scoreId) {
+    query = query.eq('id', scoreId);
+  } else if (songId) {
+    query = query.eq('song_id', songId);
+  } else if (requestId) {
+    query = query.eq('song_request_id', requestId);
+  } else {
+    throw new Error('コメント保存対象の登録データを特定できません。');
+  }
+
+  const { error } = await query;
+  if (error) throw error;
+}
+
 async function loadScores() {
   try {
     scores = await getMyScores(activeVersionId);
+
+    // private_commentは既存VIEWを変更せずuser_scoresから自分の分だけ取得して結合。
+    const commentMap = await getMyPrivateScoreComments();
+    scores = scores.map(row => ({
+      ...row,
+      private_comment: commentMap.get(row.score_id) || ''
+    }));
+
     render();
   } catch (e) {
     console.error(e);
@@ -1689,6 +1745,11 @@ function openScoreModal(score = null) {
     ? 'NORMAL'
     : (score?.play_option || 'NORMAL');
   $('formSkill').textContent = score ? formatSkill(score.skill) : '-';
+
+  // 管理者先行公開。一般ユーザーには入力欄自体を表示しない。
+  $('scorePrivateCommentGroup').classList.toggle('hidden', !adminEnabled);
+  $('formPrivateComment').value = adminEnabled ? (score?.private_comment || '') : '';
+
   $('songSuggestions').innerHTML = '';
   $('btnSubmitForm').textContent = '保存する';
   $('editDeleteArea').classList.toggle('hidden', !score);
@@ -1978,6 +2039,15 @@ async function submitScore() {
     fc: autoFc,
     playOption
   });
+
+  if (adminEnabled) {
+    await savePrivateScoreComment({
+      scoreId: editingScoreId,
+      songId,
+      requestId,
+      comment: $('formPrivateComment').value
+    });
+  }
 
   closeModal();
   await loadScores();
@@ -2422,6 +2492,8 @@ function formatOptionPercentage(value) {
 
 async function openRateComparison(songId, title, part) {
   $('rateCompareTitle').textContent = `${title} / ${part}`;
+  $('ratePrivateComment').classList.add('hidden');
+  $('ratePrivateComment').textContent = '';
   $('ratePersonalBest').classList.add('hidden');
   $('ratePersonalBest').innerHTML = '';
   $('rateOptionSummary').innerHTML = part.endsWith('-D')
@@ -2439,6 +2511,17 @@ async function openRateComparison(songId, title, part) {
       part.endsWith('-D') ? Promise.resolve([]) : getSongOptionDistribution(songId),
       getSongPersonalBestHistory(songId)
     ]);
+
+    // 詳細に出すコメントは常に「自分の同一譜面」のものだけ。
+    // 他ユーザーのスキル対象から開いた場合でも他人のコメントは取得・表示しない。
+    if (adminEnabled) {
+      const ownScore = scores.find(row => row.song_id === songId);
+      const ownComment = String(ownScore?.private_comment || '').trim();
+      if (ownComment) {
+        $('ratePrivateComment').textContent = ownComment;
+        $('ratePrivateComment').classList.remove('hidden');
+      }
+    }
 
     if (personalBest) {
       $('ratePersonalBest').classList.remove('hidden');
@@ -2576,6 +2659,7 @@ async function checkAdminAccess() {
   adminAccessChecked = true;
   $('btnAdmin').classList.toggle('hidden', !adminEnabled);
   $('menuOfuseSupport')?.classList.remove('hidden');
+  $('scorePrivateCommentGroup')?.classList.toggle('hidden', !adminEnabled);
 
   primaryAdminEnabled = false;
   if (adminEnabled) {
