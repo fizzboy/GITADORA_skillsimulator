@@ -423,7 +423,7 @@ async function deleteMasterSongTitle(title) {
 }
 
 import * as adminApi from './admin.js?v=21_57';
-import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_151';
+import { listUserSummaries, getUserSkillTargets, getSongRateComparison, getSongPersonalBestHistory, getSongOptionDistribution, getMyFavorites, addFavorite, removeFavorite } from './users.js?v=21_156';
 
 let activeInstrument = localStorage.getItem('gitadora_instrument') === 'DM' ? 'DM' : 'GF';
 let userListSort = { key: activeInstrument === 'DM' ? 'dm' : 'gf', dir: 'desc' };
@@ -558,8 +558,9 @@ async function openFeatureSettings() {
   }
 }
 
-function closeFeatureSettings() {
+function closeFeatureSettings(returnToMenu = false) {
   $('featureSettingsMask').style.display = 'none';
+  if (returnToMenu) openMenu();
 }
 
 async function saveFeatureSettings() {
@@ -859,6 +860,7 @@ async function init() {
 }
 
 
+let myPageOpenedFromMenu = false;
 function openMenu() { $('menuMask').style.display = 'flex'; }
 function openRivalManage() {
   closeMenu();
@@ -2298,7 +2300,8 @@ function closeRateComparison() {
   $('rateCompareMask').style.display = 'none';
 }
 
-async function openMyPage() {
+async function openMyPage(fromMenu = false) {
+  myPageOpenedFromMenu = Boolean(fromMenu);
   const { data } = await supabase.auth.getUser();
   $('mypageUsernameInput').value = data.user?.user_metadata?.username || $('headerUsername').textContent || '';
   $('newPassword').value = '';
@@ -2324,8 +2327,10 @@ async function changeOwnUsername() {
   await showSiteDialog('ユーザー名を変更しました。\n次回から新しいユーザー名でログインしてください。', '変更完了');
 }
 
-function closeMyPage() {
+function closeMyPage(returnToPrevious = false) {
   $('mypageModal').style.display = 'none';
+  if (returnToPrevious && myPageOpenedFromMenu) openMenu();
+  myPageOpenedFromMenu = false;
 }
 
 async function deleteOwnAccount() {
@@ -2988,7 +2993,7 @@ $('btnDeleteEditingScore').addEventListener('click', async () => {
 
 $('btnCancelForm').addEventListener('click', closeModal);
 
-$('btnCloseMypage').addEventListener('click', closeMyPage);
+$('btnCloseMypage').addEventListener('click', () => closeMyPage(true));
 
 function renderSkillSyncBrowserGuide() {
   const guide = $('skillSyncBrowserGuide');
@@ -3010,8 +3015,14 @@ function openSkillSyncDialog() {
   if (dialog) dialog.scrollTop = 0;
 }
 
+function closeSkillSyncDialog(returnToMenu = false) {
+  if (skillSyncInProgress) return;
+  $('skillSyncMask').style.display = 'none';
+  if (returnToMenu) openMenu();
+}
+
 $('btnCloseSkillSync').addEventListener('click', () => {
-  if (!skillSyncInProgress) $('skillSyncMask').style.display = 'none';
+  closeSkillSyncDialog(true);
 });
 
 $('skillSyncMask').addEventListener('click', e => {
@@ -3563,9 +3574,9 @@ $('btnIntroRegister').addEventListener('click', () => { showAuth('register').cat
 $('btnMenu').addEventListener('click', openMenu);
 $('btnCloseMenu').addEventListener('click', closeMenu);
 $('menuMask').addEventListener('click', e => { if (e.target === $('menuMask')) closeMenu(); });
-$('btnMenuMypage').addEventListener('click', async () => { closeMenu(); await openMyPage(); });
+$('btnMenuMypage').addEventListener('click', async () => { closeMenu(); await openMyPage(true); });
 $('btnMenuFeatureSettings').addEventListener('click', openFeatureSettings);
-$('btnCloseFeatureSettings').addEventListener('click', closeFeatureSettings);
+$('btnCloseFeatureSettings').addEventListener('click', () => closeFeatureSettings(true));
 $('featureSettingsMask').addEventListener('click', e => {
   if (e.target === $('featureSettingsMask')) closeFeatureSettings();
 });
